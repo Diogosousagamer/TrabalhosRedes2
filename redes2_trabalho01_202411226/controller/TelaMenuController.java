@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 14/03/2026
-* Ultima alteracao.: 15/03/2026
+* Ultima alteracao.: 20/03/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -54,10 +54,11 @@ public class TelaMenuController implements Initializable {
 
 	@Override 
 	public void initialize(URL url, ResourceBundle rb) {
+		// Carrega as versoes do algoritmo existentes
 		ObservableList<String> versoes = FXCollections.observableArrayList("1.0", "2.0", "3.0", "4.0");
 		cbVersao.setItems(versoes);
 		cbVersao.getSelectionModel().selectFirst();
-		lblNota.setText(notas[cbVersao.getSelectionModel().getSelectedIndex()]);
+		selecionarVersao(new ActionEvent());
 
 		// Metodo que altera a cor do texto da comboBox
     cbVersao.setButtonCell(new ListCell<String>() {

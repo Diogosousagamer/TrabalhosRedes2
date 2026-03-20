@@ -112,9 +112,8 @@ public class TelaPrincipalController implements Initializable {
     diogo = new Host(-10, 105);
     gustavo = new Host(430, 105);
 
+    // Carrega as ArrayLists que armazenarao os roteadores, bem como os pacotes e suas respectivas imagens
     roteadores = new ArrayList<>();
-
-    // Carrega as ArrayLists que armazenarao os pacotes e suas respectivas imagens
     pacotes = new ArrayList<>();
     imagens = new ArrayList<>();
 
@@ -129,6 +128,7 @@ public class TelaPrincipalController implements Initializable {
     cbTransmissor.setItems(hosts);
     cbTransmissor.getSelectionModel().selectFirst();
     
+    // Define quem sera o transmissor
     definirTransmissor(new ActionEvent());
 	}
 
@@ -188,6 +188,14 @@ public class TelaPrincipalController implements Initializable {
     // if (quantidadeNos != 0) gerarPacoteInicial((transmissor == 0) ? rotDiogo : rotGustavo);
 	} 
 
+  /*
+   * ***************************************************************
+   * Metodo: gerarPacoteInicial
+   * Funcao: gera um pacote para iniciar a simulacao
+   * Parametros: Roteador r - roteador onde o pacote iniciara
+   * Retorno: void
+   ****************************************************************/
+
   private void gerarPacoteInicial(Roteador r) {
     Platform.runLater(() -> {
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
@@ -211,6 +219,15 @@ public class TelaPrincipalController implements Initializable {
       p.start();
     });
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: gerarMaisPacotes
+   * Funcao: gera mais pacotes para dar continuidade a simulacao
+   * Parametros: Roteador origem - roteador do qual o pacote se originou
+                 Roteador destino - roteador para o qual o pacote sera encaminhado
+   * Retorno: void
+   ****************************************************************/
 
   public void gerarMaisPacotes(Roteador origem, Roteador destino) {
     Platform.runLater(() -> {
@@ -236,6 +253,14 @@ public class TelaPrincipalController implements Initializable {
     });
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: reiniciar
+   * Funcao: reinicia a simulacao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
 	private void reiniciar() {
     for (int i = 0; i < pacotes.size(); i++) {
       Pacote p = pacotes.get(i);
@@ -254,6 +279,14 @@ public class TelaPrincipalController implements Initializable {
       }
     }
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: interromper
+   * Funcao: interrompe a simulacao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   public void interromper() {
     reiniciar();
@@ -288,6 +321,14 @@ public class TelaPrincipalController implements Initializable {
 		// Define a versao do algoritmo
 		this.versao = versao;
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: configurarSubrede
+   * Funcao: gera o grafo correspondente a topologia da sub rede 
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   private void configurarSubrede() {
     try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
@@ -325,6 +366,14 @@ public class TelaPrincipalController implements Initializable {
     }
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: calcularPosicaoNos
+   * Funcao: calcula a posicao para cada no que sera criado dentro do grafo
+   * Parametros: int totalNos - total de nos existentes na sub rede
+   * Retorno: void
+   ****************************************************************/
+
   private void calcularPosicaoNos(int totalNos) {
     double centroX = subrede.getPrefWidth() / 2;
     double centroY = subrede.getPrefHeight() / 2;
@@ -341,9 +390,25 @@ public class TelaPrincipalController implements Initializable {
     }
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: gerarNome
+   * Funcao: gera um rotulo para cada no (roteador)
+   * Parametros: int i - indice do no (roteador)
+   * Retorno: String
+   ****************************************************************/
+
   private String gerarNome(int i) {
     return String.valueOf((char) ('A' + i));
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: calcularPosicaoLabels
+   * Funcao: calcula as posicoes das labels correspondentes a cada roteador
+   * Parametros: int totalNos - total de nos existentes na sub rede
+   * Retorno: void
+   ****************************************************************/
 
   private void calcularPosicaoLabels(int totalNos) {
     for (int i = 0; i < totalNos; i++) {
@@ -369,6 +434,14 @@ public class TelaPrincipalController implements Initializable {
     }
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: calcularPosicaoRoteadoress
+   * Funcao: calcula a posicao de cada roteador gerado na sub rede
+   * Parametros: int totalNos - total de nos existentes na sub rede
+   * Retorno: void
+   ****************************************************************/
+
   private void calcularPosicaoRoteadores(int totalNos) {
     double larguraPacote = 41.0;
     double alturaPacote = 98.0;
@@ -385,6 +458,14 @@ public class TelaPrincipalController implements Initializable {
       atualizarRoteador(r);
     }
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: criarNo
+   * Funcao: cria um no correspondente a cada roteador
+   * Parametros: String nome - rotulo do roteador
+   * Retorno: Circle
+   ****************************************************************/
 
   private Circle criarNo(String nome) {
     if (nosCriados.containsKey(nome)) return nosCriados.get(nome);
@@ -403,6 +484,14 @@ public class TelaPrincipalController implements Initializable {
     return circulo;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: gerarLabels
+   * Funcao: gera as Labels correspondentes a cada no
+   * Parametros: int totalNos - total de nos existentes na sub rede
+   * Retorno: void
+   ****************************************************************/
+
   private void gerarLabels(int totalNos) {
     for (int i = 0; i < totalNos; i++) {
       String nome = gerarNome(i);
@@ -412,6 +501,16 @@ public class TelaPrincipalController implements Initializable {
       labels.put(nome, label);
     }
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: gerarAresta
+   * Funcao: desenha a aresta existente entre dois roteadores
+   * Parametros: Roteador r1 - roteador de origem
+                 Roteador r2 - roteador de destino
+                 String peso - peso da aresta
+   * Retorno: void
+   ****************************************************************/
 
   private void gerarAresta(Roteador r1, Roteador r2, String peso) {
     String idConexao = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
@@ -431,12 +530,29 @@ public class TelaPrincipalController implements Initializable {
     } 
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: criarRoteador
+   * Funcao: cria uma nova instancia da classe Roteador
+   * Parametros: Circle no - no do roteador
+                 String nome - rotulo do roteador
+   * Retorno: Roteador
+   ****************************************************************/
+
   private Roteador criarRoteador(Circle no, String nome) {
     Roteador r = new Roteador(no, nome);
     roteadores.add(r);
 
     return r;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: obterRoteador
+   * Funcao: obtem um roteador ja existente na sub rede
+   * Parametros: String nome - rotulo do roteador a ser buscado
+   * Retorno: Roteador
+   ****************************************************************/
 
   private Roteador obterRoteador(String nome) {
     for (Roteador r : roteadores) {
@@ -447,15 +563,33 @@ public class TelaPrincipalController implements Initializable {
 
     return null;
   }
+ 
+  /*
+   * ***************************************************************
+   * Metodo: atualizarRoteador
+   * Funcao: atualiza os dados de um roteador ja existente na sub rede
+   * Parametros: Roteador r - roteador a ser atualizado
+   * Retorno: void
+   ****************************************************************/
 
   private void atualizarRoteador(Roteador r) {
     for (int i = 0; i < roteadores.size(); i++) {
-      if (r.getNome().equals(roteadores.get(i).getNome())) {
+      String nome = roteadores.get(i).getNome();
+
+      if (r.getNome().equals(nome)) {
         roteadores.set(i, r);
         break;
       }
     }
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: definirTempoDeVida
+   * Funcao: define o tempo de vida (TTL) de cada pacote dentro da rede
+   * Parametros: int tempoDeVida - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
 
   public void definirTempoDeVida(int tempoDeVida) {
     this.tempoDeVida = tempoDeVida;
