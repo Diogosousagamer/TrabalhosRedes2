@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaMenuController">
+   <children>
+      <ImageView fitHeight="500.0" fitWidth="700.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/Menu.png" />
+         </image>
+      </ImageView>
+      <ComboBox fx:id="cbVersao" layoutX="66.0" layoutY="421.0" onAction="#selecionarVersao" prefHeight="29.0" prefWidth="159.0" promptText="VERSÃO" styleClass="combobox" stylesheets="@../util/menu.css" />
+      <Label fx:id="lblNota" layoutX="337.0" layoutY="353.0" prefHeight="84.0" prefWidth="347.0" textFill="WHITE" wrapText="true">
+         <font>
+            <Font name="Arial Italic" size="13.0" />
+         </font>
+      </Label>
+      <Button fx:id="btnProsseguir" alignment="CENTER" contentDisplay="CENTER" layoutX="532.0" layoutY="444.0" mnemonicParsing="false" onAction="#prosseguir" prefHeight="36.0" prefWidth="135.0" styleClass="botao" stylesheets="@../util/menu.css" text="PROSSEGUIR" textAlignment="CENTER" textFill="#1b42b5">
+         <font>
+            <Font name="VCR OSD Mono" size="17.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+   </children>
+</AnchorPane>
