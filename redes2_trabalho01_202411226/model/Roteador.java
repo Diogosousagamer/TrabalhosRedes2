@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 19/03/2026
+* Ultima alteracao.: 20/03/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -23,6 +23,7 @@ public class Roteador {
   private boolean ocupado;
   private boolean intermediario;
   private Host hostProximo;
+  private boolean destino;
 
   /*
    * ***************************************************************
@@ -50,10 +51,11 @@ public class Roteador {
   }
 
   public void alterarVizinho(Roteador v) {
-    for (Roteador r : vizinhos) {
+    for (int i = 0; i < vizinhos.size(); i++) {
+      Roteador r = vizinhos.get(i);
+
       if (r.getNome().equals(v.getNome())) {
-        vizinhos.remove(r);
-        vizinhos.add(v);
+        vizinhos.set(i, v);
         break;
       }
     }

@@ -61,8 +61,6 @@ public class TelaPrincipalController implements Initializable {
   public static volatile TelaPrincipalController controller;
 	private Host diogo;
 	private Host gustavo;
-  private Host hostTransmissor;
-  private Host hostReceptor;
   private int quantidadeNos;
 	private int versao;
 	private int numPacotes;
@@ -73,9 +71,8 @@ public class TelaPrincipalController implements Initializable {
   private ArrayList<Roteador> roteadores;
   private HashMap<String, Circle> nosCriados = new HashMap<>();
   private Set<String> arestasExistentes = new HashSet<>();
-  private final Map<String, double[]> posicaoCirculos = new HashMap<>();
-  private final Map<String, double[]> posicaoLabels = new HashMap<>();
-  private final Map<String, double[]> posicaoRoteadores = new HashMap<>();
+  private Map<String, double[]> posicaoCirculos = new HashMap<>();
+  private HashMap<String, Label> labels = new HashMap<>();
 
   /*
    * ***************************************************************
@@ -88,33 +85,6 @@ public class TelaPrincipalController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-    // Preenchendo PosicaoCirculos
-    posicaoCirculos.put("A", new double[]{60.0, 126.0});
-    posicaoCirculos.put("B", new double[]{133.0, 52.0});
-    posicaoCirculos.put("C", new double[]{133.0, 189.0});
-    posicaoCirculos.put("D", new double[]{237.0, 126.0});
-    posicaoCirculos.put("E", new double[]{330.0, 52.0});
-    posicaoCirculos.put("F", new double[]{330.0, 189.0});
-    posicaoCirculos.put("G", new double[]{400.0, 126.0});
-
-    // Preenchendo PosicaoLabels
-    posicaoLabels.put("A", new double[]{54.0, 142.0});
-    posicaoLabels.put("B", new double[]{127.0, 20.0});
-    posicaoLabels.put("C", new double[]{127.0, 206.0});
-    posicaoLabels.put("D", new double[]{233.0, 96.0});
-    posicaoLabels.put("E", new double[]{324.0, 20.0});
-    posicaoLabels.put("F", new double[]{326.0, 206.0});
-    posicaoLabels.put("G", new double[]{395.0, 145.0});
-
-    // Preenchendo PosicaoRoteadores
-    posicaoRoteadores.put("A", new double[]{40.0, 105.0});
-    posicaoRoteadores.put("B", new double[]{113.0, 32.0});
-    posicaoRoteadores.put("C", new double[]{114.0, 168.0});
-    posicaoRoteadores.put("D", new double[]{217.0, 105.0});
-    posicaoRoteadores.put("E", new double[]{310.0, 32.0});
-    posicaoRoteadores.put("F", new double[]{310.0, 168.0});
-    posicaoRoteadores.put("G", new double[]{380.0, 105.0});
-
 		// Metodo que altera a cor do texto da comboBox
     cbTransmissor.setButtonCell(new ListCell<String>() {
       @Override
@@ -158,6 +128,7 @@ public class TelaPrincipalController implements Initializable {
     ObservableList<String> hosts = FXCollections.observableArrayList("Diogo", "Gustavo");
     cbTransmissor.setItems(hosts);
     cbTransmissor.getSelectionModel().selectFirst();
+    
     definirTransmissor(new ActionEvent());
 	}
 
@@ -214,7 +185,7 @@ public class TelaPrincipalController implements Initializable {
     if (pacotes.size() != 0) reiniciar();
 
     // Inicia a geracao de pacotes
-    gerarPacoteInicial((transmissor == 0) ? rotDiogo : rotGustavo);
+    // if (quantidadeNos != 0) gerarPacoteInicial((transmissor == 0) ? rotDiogo : rotGustavo);
 	} 
 
   private void gerarPacoteInicial(Roteador r) {
@@ -320,22 +291,33 @@ public class TelaPrincipalController implements Initializable {
 
   private void configurarSubrede() {
     try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
-      quantidadeNos = Integer.parseInt(br.readLine());
-      String linha;
+      String linha = br.readLine();
+      if (linha == null) return;
+
+      quantidadeNos = Integer.parseInt(linha.trim());
+      calcularPosicaoNos(quantidadeNos);
+      gerarLabels(quantidadeNos);
+
+      for (int i = 0; i < quantidadeNos; i++) {
+        String nome = gerarNome(i);
+        Circle c = criarNo(nome);
+        Roteador r = criarRoteador(c, nome);
+      }
+
+      calcularPosicaoLabels(quantidadeNos);
+      calcularPosicaoRoteadores(quantidadeNos);
 
       while ((linha = br.readLine()) != null) {
         String[] partes = linha.split(",");
+        if (partes.length < 3) continue;
 
-        String no1 = partes[0];
-        String no2 = partes[1];
+        String nome1 = partes[0];
+        String nome2 = partes[1];
         String peso = partes[2];
 
-        Circle c1 = criarNo(no1);
-        Circle c2 = criarNo(no2);
-
-        Roteador r1 = (!verificarRoteador(no1)) ? criarRoteador(c1, no1) : obterRoteador(no1);
-        Roteador r2 = (!verificarRoteador(no2)) ? criarRoteador(c2, no2) : obterRoteador(no2);
-        gerarAresta(r1, r2, peso);
+        Roteador r1 = obterRoteador(nome1);
+        Roteador r2 = obterRoteador(nome2);
+        if (r1 != null && r2 != null) gerarAresta(r1, r2, peso);
       }
     }
     catch (IOException e) {
@@ -343,39 +325,92 @@ public class TelaPrincipalController implements Initializable {
     }
   }
 
+  private void calcularPosicaoNos(int totalNos) {
+    double centroX = subrede.getPrefWidth() / 2;
+    double centroY = subrede.getPrefHeight() / 2;
+    double raio = Math.min(centroX, centroY) - 60;
+
+    for (int i = 0; i < totalNos; i++) {
+      String nome = gerarNome(i);
+
+      double angulo = (2 * Math.PI * i) / totalNos;
+      double x = centroX + raio * Math.cos(angulo);
+      double y = centroY + raio * Math.sin(angulo);
+
+      posicaoCirculos.put(nome, new double[]{x, y});
+    }
+  }
+
+  private String gerarNome(int i) {
+    return String.valueOf((char) ('A' + i));
+  }
+
+  private void calcularPosicaoLabels(int totalNos) {
+    for (int i = 0; i < totalNos; i++) {
+      String nome = gerarNome(i);
+      Roteador r = obterRoteador(nome);
+      Circle c = r.getNo();
+      Label l = labels.get(nome);
+      if (c == null || l == null) continue;
+
+      l.applyCss();
+      l.layout();
+
+      double largura = l.getLayoutBounds().getWidth();
+      double altura = l.getLayoutBounds().getHeight();
+
+      double x = c.getCenterX() - (largura / 2);
+      double y = c.getCenterY() - (altura / 2);
+
+      l.setLayoutX(x);
+      l.setLayoutY(y);
+
+      subrede.getChildren().add(l);
+    }
+  }
+
+  private void calcularPosicaoRoteadores(int totalNos) {
+    double larguraPacote = 41.0;
+    double alturaPacote = 98.0;
+
+    for (int i = 0; i < totalNos; i++) {
+      String nome = gerarNome(i);
+      Roteador r = obterRoteador(nome);
+      Circle c = r.getNo();
+      if (c == null) continue;
+
+      double x = c.getCenterX() - (larguraPacote / 2);
+      double y = c.getCenterY() - (alturaPacote / 2);
+      r.definirPosicao(x, y);
+      atualizarRoteador(r);
+    }
+  }
+
   private Circle criarNo(String nome) {
     if (nosCriados.containsKey(nome)) return nosCriados.get(nome);
 
-    double xCirculo, yCirculo, xLabel, yLabel;
-
-    if (posicaoCirculos.containsKey(nome) && posicaoLabels.containsKey(nome)) {
-      xCirculo = posicaoCirculos.get(nome)[0];
-      yCirculo = posicaoCirculos.get(nome)[1];
-      xLabel = posicaoLabels.get(nome)[0];
-      yLabel = posicaoLabels.get(nome)[1];
-    }
-    else {
-      xCirculo = Math.random() * (subrede.getPrefWidth() - 40) + 20;
-      yCirculo = Math.random() * (subrede.getPrefHeight() - 40) + 20;
-      xLabel = 0;
-      yLabel = 0;
-    }
+    double xCirculo = posicaoCirculos.get(nome)[0];
+    double yCirculo = posicaoCirculos.get(nome)[1];
 
     Circle circulo = new Circle(xCirculo, yCirculo, 15, Color.WHITE); 
     circulo.setStroke(Color.BLACK);
     circulo.setStrokeWidth(1);
     circulo.setStrokeType(StrokeType.OUTSIDE);
 
-    Label label = new Label(nome);
-    label.setTextFill(Color.WHITE);
-    label.setFont(Font.font("VCR OSD Mono", 15));
-    label.setLayoutX(xLabel);
-    label.setLayoutY(yLabel);
-
     nosCriados.put(nome, circulo);
-    subrede.getChildren().addAll(circulo, label);
+    subrede.getChildren().addAll(circulo);
 
     return circulo;
+  }
+
+  private void gerarLabels(int totalNos) {
+    for (int i = 0; i < totalNos; i++) {
+      String nome = gerarNome(i);
+      Label label = new Label(nome);
+      label.setTextFill(Color.web("#2d4180"));
+      label.setFont(Font.font("VCR OSD Mono", 15));
+      labels.put(nome, label);
+    }
   }
 
   private void gerarAresta(Roteador r1, Roteador r2, String peso) {
@@ -388,34 +423,16 @@ public class TelaPrincipalController implements Initializable {
 
       double meioX = (r1.getNo().getCenterX() + r2.getNo().getCenterX()) / 2;
       double meioY = (r1.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
-        
-      Label labelPeso = new Label(peso);
-      labelPeso.setLayoutX(meioX + 5);
-      labelPeso.setLayoutY(meioY - 10);
-      labelPeso.setFont(Font.font("VCR OSD Mono", 15));
-      labelPeso.setTextFill(Color.WHITE);
 
       arestasExistentes.add(idConexao);
-      subrede.getChildren().addAll(linha, labelPeso);
+      subrede.getChildren().add(linha);
       r1.adicionarVizinho(r2);
       r2.adicionarVizinho(r1);
     } 
   }
 
-  private boolean verificarRoteador(String nome) {
-    for (Roteador r : roteadores) {
-      if (r.getNome().equals(nome)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   private Roteador criarRoteador(Circle no, String nome) {
     Roteador r = new Roteador(no, nome);
-    double[] posicoes = posicaoRoteadores.get(nome);
-    r.definirPosicao(posicoes[0], posicoes[1]);
     roteadores.add(r);
 
     return r;
@@ -429,6 +446,15 @@ public class TelaPrincipalController implements Initializable {
     }
 
     return null;
+  }
+
+  private void atualizarRoteador(Roteador r) {
+    for (int i = 0; i < roteadores.size(); i++) {
+      if (r.getNome().equals(roteadores.get(i).getNome())) {
+        roteadores.set(i, r);
+        break;
+      }
+    }
   }
 
   public void definirTempoDeVida(int tempoDeVida) {

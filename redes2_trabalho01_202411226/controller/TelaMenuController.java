@@ -118,6 +118,7 @@ public class TelaMenuController implements Initializable {
 		TelaPrincipalController p = loader.getController();
 		int versao = cbVersao.getSelectionModel().getSelectedIndex();
 		p.configurar(versao);
+		if (versao > 1) p.definirTempoDeVida(0);
 
     // Carrega a cena (tela) dentro da mesma janela
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
