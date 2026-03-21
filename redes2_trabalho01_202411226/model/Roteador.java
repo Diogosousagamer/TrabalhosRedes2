@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 20/03/2026
+* Ultima alteracao.: 21/03/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -21,8 +21,7 @@ public class Roteador {
   private String nome;
   private ArrayList<Roteador> vizinhos;
   private boolean ocupado;
-  private boolean intermediario;
-  private Host hostProximo;
+  private boolean origem;
   private boolean destino;
 
   /*
@@ -38,7 +37,8 @@ public class Roteador {
     this.nome = nome;
     vizinhos = new ArrayList<>();
     ocupado = false;
-    intermediario = false;
+    origem = false;
+    destino = false;
   }
 
   public void definirPosicao(double x, double y) {
@@ -174,16 +174,19 @@ public class Roteador {
     return ocupado;
   }
 
-  public boolean getIntermediario() {
-    return intermediario;
+  public void setOrigem(boolean origem) {
+    this.origem = origem;
   }
 
-  public void setHostProximo(Host h) {
-    this.hostProximo = h;
-    intermediario = true;
+  public boolean isOrigem() {
+    return origem;
   }
 
-  public Host getHostProximo() {
-    return hostProximo;
+  public void setDestino(boolean destino) {
+    this.destino = destino;
+  }
+
+  public boolean isDestino() {
+    return destino;
   }
 }

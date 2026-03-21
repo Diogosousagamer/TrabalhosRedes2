@@ -24,13 +24,13 @@ public class Pacote extends Thread {
 	private int versao;
 	private int tempoDeVida;
 
-	public Pacote(ImageView envelope, int versao, Roteador roteadorInicial) {
+	public Pacote(ImageView envelope, int versao, Roteador destino) {
 		this.envelope = envelope;
 		this.versao = versao;
 		this.roteadorInicial = roteadorInicial;
 	}
 
-	public Pacote(ImageView envelope, int versao, Roteador roteadorInicial, int tempoDeVida) {
+	public Pacote(ImageView envelope, int versao, Roteador destino, int tempoDeVida) {
 		this.envelope = envelope;
 		this.versao = versao;
 		this.roteadorInicial = roteadorInicial;
@@ -39,7 +39,12 @@ public class Pacote extends Thread {
 
   @Override
 	public void run() {
-		movimentar(roteadorInicial);
+		if (destino.isOrigem()) {
+			encaminharPacotesVizinhos();
+		}
+		else {
+			movimentar(destino);
+		}
 	}
 
 	public void definirPosicao() {
@@ -148,7 +153,7 @@ public class Pacote extends Thread {
 		tempoDeVida--;
 	}
 
-	private void gerarVizinhos() {
+	private void encaminharPacotesVizinhos() {
 		if (roteadorInicial.getIntermediario() && !roteadorInicial.getHostProximo().getTransmissor()) {
 			Host destino = roteadorInicial.getHostProximo();
 			chegarNoDestino(destino);

@@ -29,11 +29,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.ImageView;
@@ -45,7 +45,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import model.Host;
 import model.Pacote;
 import model.Roteador;
 
@@ -53,14 +52,12 @@ public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
   @FXML private AnchorPane subrede;
 	@FXML private Button btnVoltar;
-	@FXML private ComboBox<String> cbTransmissor;
 	@FXML private Label lblPacotes;
   @FXML private AnchorPane painelReinicio;
 
 	// Variaveis e instancias
   public static volatile TelaPrincipalController controller;
-	private Host diogo;
-	private Host gustavo;
+	private Roteador origem;
   private int quantidadeNos;
 	private int versao;
 	private int numPacotes;
@@ -108,10 +105,6 @@ public class TelaPrincipalController implements Initializable {
       }
     });
 
-    // Carrega os hosts e suas respetivas posicoes
-    diogo = new Host(-10, 105);
-    gustavo = new Host(430, 105);
-
     // Carrega as ArrayLists que armazenarao os roteadores, bem como os pacotes e suas respectivas imagens
     roteadores = new ArrayList<>();
     pacotes = new ArrayList<>();
@@ -122,14 +115,6 @@ public class TelaPrincipalController implements Initializable {
 
     // Configura a subrede
     configurarSubrede();
-
-    // Carrega a combo box contendo as opcoes para o host transmissor
-    ObservableList<String> hosts = FXCollections.observableArrayList("Diogo", "Gustavo");
-    cbTransmissor.setItems(hosts);
-    cbTransmissor.getSelectionModel().selectFirst();
-    
-    // Define quem sera o transmissor
-    definirTransmissor(new ActionEvent());
 	}
 
   /*
@@ -156,38 +141,6 @@ public class TelaPrincipalController implements Initializable {
 		stage.setScene(scene);
 	}
 
-
-	/*
-   * ***************************************************************
-   * Metodo: definirTransmissor
-   * Funcao: define o host transmissor
-   * Parametros: ActionEvent event - evento gerado ao selecionar uma opcao na ComboBox
-   * Retorno: void
-   ****************************************************************/
-
-	@FXML
-	private void definirTransmissor(ActionEvent event) {
-		transmissor = cbTransmissor.getSelectionModel().getSelectedIndex();
-		diogo.setTransmissor((transmissor == 0) ? true : false);
-		gustavo.setTransmissor((transmissor == 1) ? true : false);
-
-    roteadores.get(0).setHostProximo(diogo);
-    roteadores.get(roteadores.size() - 1).setHostProximo(gustavo);
-    Roteador rotDiogo = roteadores.get(0);
-    Roteador rotGustavo = roteadores.get(roteadores.size() - 1);
-
-    for (int i = 1; i < roteadores.size() - 1; i++) {
-      roteadores.get(i).alterarVizinho(rotDiogo);
-      roteadores.get(i).alterarVizinho(rotGustavo);
-    }
-
-    // Se haver algum pacote na rede, reinicia a simulacao
-    if (pacotes.size() != 0) reiniciar();
-
-    // Inicia a geracao de pacotes
-    // if (quantidadeNos != 0) gerarPacoteInicial((transmissor == 0) ? rotDiogo : rotGustavo);
-	} 
-
   /*
    * ***************************************************************
    * Metodo: gerarPacoteInicial
@@ -203,8 +156,8 @@ public class TelaPrincipalController implements Initializable {
       ImageView envelope = new ImageView(mail);
       envelope.setFitWidth(41);
       envelope.setFitHeight(98);
-      envelope.setLayoutX((transmissor == 0) ? diogo.getPosX() : gustavo.getPosY());
-      envelope.setLayoutY((transmissor == 0) ? diogo.getPosY() : gustavo.getPosY());
+      envelope.setLayoutX(r.getPosX());
+      envelope.setLayoutY(r.getPosY());
       envelope.setVisible(true);
       envelope.setPreserveRatio(true);
       subrede.getChildren().add(envelope);
@@ -418,19 +371,21 @@ public class TelaPrincipalController implements Initializable {
       Label l = labels.get(nome);
       if (c == null || l == null) continue;
 
+      if (!subrede.getChildren().contains(l)) {
+        subrede.getChildren().add(l);
+      }
+
       l.applyCss();
       l.layout();
 
-      double largura = l.getLayoutBounds().getWidth();
-      double altura = l.getLayoutBounds().getHeight();
+      double largura = l.getBoundsInLocal().getWidth();
+      double altura = l.getBoundsInLocal().getHeight();
 
-      double x = c.getCenterX() - (largura / 2);
-      double y = c.getCenterY() - (altura / 2);
+      double x = c.getCenterX() - (largura / 2.0);
+      double y = c.getCenterY() - (altura / 2.0);
 
       l.setLayoutX(x);
       l.setLayoutY(y);
-
-      subrede.getChildren().add(l);
     }
   }
 
