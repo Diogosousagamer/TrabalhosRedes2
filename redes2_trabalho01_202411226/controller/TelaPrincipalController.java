@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 20/03/2026
+* Ultima alteracao.: 21/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -30,6 +30,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
@@ -38,6 +39,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -50,18 +52,21 @@ import model.Roteador;
 
 public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
+  @FXML private AnchorPane painelReinicio;
   @FXML private AnchorPane subrede;
+  @FXML private Button btnContinuar;
 	@FXML private Button btnVoltar;
 	@FXML private Label lblPacotes;
-  @FXML private AnchorPane painelReinicio;
+  @FXML private Label lblResultados;
+  @FXML private Label lblSelecao;
 
 	// Variaveis e instancias
   public static volatile TelaPrincipalController controller;
 	private Roteador origem;
+  private Roteador destino;
   private int quantidadeNos;
 	private int versao;
 	private int numPacotes;
-	private int transmissor;
   private int tempoDeVida;
   private ArrayList<Pacote> pacotes;
   private ArrayList<ImageView> imagens;
@@ -82,29 +87,6 @@ public class TelaPrincipalController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		// Metodo que altera a cor do texto da comboBox
-    cbTransmissor.setButtonCell(new ListCell<String>() {
-      @Override
-      protected void updateItem(String item, boolean empty) {
-        // O item e atualizado ao ser selecionado na comboBox
-        super.updateItem(item, empty);
-
-        // Inicio do bloco if/else
-        if (empty || item == null) {
-          // Define o texto como nulo
-          // caso o item estiver vazio
-          setText(null);
-        } 
-        else {
-          // Caso contrario, o item e selecionado
-          setText(item);
-
-          // E a cor do texto e trocada para branco
-          setTextFill(Color.web("#1b42b5"));
-        } // Fim do bloco if/else
-      }
-    });
-
     // Carrega as ArrayLists que armazenarao os roteadores, bem como os pacotes e suas respectivas imagens
     roteadores = new ArrayList<>();
     pacotes = new ArrayList<>();
@@ -115,6 +97,10 @@ public class TelaPrincipalController implements Initializable {
 
     // Configura a subrede
     configurarSubrede();
+
+    // Joga o btnVoltar para frente, caso o usuario quiser sair do programa
+    // apos o fim da simulacao
+    btnVoltar.toFront();
 	}
 
   /*
@@ -140,6 +126,54 @@ public class TelaPrincipalController implements Initializable {
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		stage.setScene(scene);
 	}
+
+  @FXML
+  private void definirOrigemDestino(MouseEvent event, Circle c) {
+    String nome = obterRotuloNo(c);
+    if (nome == null) return;
+
+    if (!existeOrigem()) {
+      c.setStroke(Color.web("#1fdb18"));      
+      c.setCursor(Cursor.DEFAULT);
+
+      origem = obterRoteador(nome);
+      origem.setOrigem(true);
+      origem.setNo(c);
+      atualizarRoteador(origem);
+
+      for (int i = 0; i < roteadores.size(); i++) {
+        Roteador r = roteadores.get(i);
+        r.alterarVizinho(origem);
+        atualizarRoteador(r);
+      }
+    }
+    else if (!existeDestino() && origem != null && !nome.equals(origem.getNome())) {
+      c.setStroke(Color.web("#d60b18"));
+      c.setCursor(Cursor.DEFAULT);
+
+      for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+        Circle circulo = entrada.getValue();
+        circulo.setCursor(Cursor.DEFAULT);
+      }
+
+      destino = obterRoteador(nome);
+      destino.setNo(c);
+      destino.setDestino(true);
+      atualizarRoteador(destino);
+
+      for (int i = 0; i < roteadores.size(); i++) {
+        Roteador r = roteadores.get(i);
+        r.alterarVizinho(destino);
+        atualizarRoteador(r);
+      }
+
+      lblSelecao.setVisible(false);
+      if (origem != null) gerarPacoteInicial(origem);
+    }
+    else if (existeOrigem() && existeDestino()) {
+      return;
+    }
+  } 
 
   /*
    * ***************************************************************
@@ -215,14 +249,29 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
 	private void reiniciar() {
-    for (int i = 0; i < pacotes.size(); i++) {
-      Pacote p = pacotes.get(i);
+    for (Pacote p : pacotes) {
       p.interrupt();
+    }
 
-      ImageView img = imagens.get(i);
-      subrede.getChildren().remove(img);
-      imagens.remove(img);
-      pacotes.remove(p);
+    Platform.runLater(() -> {
+      for (ImageView img : imagens) {
+        subrede.getChildren().remove(img);
+      }
+
+      imagens.clear();
+      pacotes.clear();
+
+      if (origem != null) {
+        origem.setOrigem(false);
+        atualizarRoteador(origem);
+        origem = null;
+      }
+
+      if (destino != null) {
+        destino.setDestino(false);
+        atualizarRoteador(destino);
+        destino = null;
+      }
 
       try {
         Thread.sleep(200);
@@ -230,7 +279,7 @@ public class TelaPrincipalController implements Initializable {
       catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
-    }
+    });
 	}
 
   /*
@@ -244,7 +293,38 @@ public class TelaPrincipalController implements Initializable {
   public void interromper() {
     reiniciar();
     int quantidadePacotes = Integer.parseInt(lblPacotes.getText());
-    painelReinicio.setVisible(true);
+
+    Platform.runLater(() -> {
+      painelReinicio.setVisible(true);
+      painelReinicio.toFront();
+
+      String resultados = lblResultados.getText().replace("X", Integer.toString(quantidadePacotes))
+                                                 .replace("Y", origem.getNome())
+                                                 .replace("Z", destino.getNome())
+                                                 .replace("W", Integer.toString(versao) + ".0");
+
+      lblResultados.setText(resultados);
+    });
+  }
+
+  @FXML
+  private void continuar(ActionEvent event) {
+    painelReinicio.setVisible(false);
+    lblSelecao.setVisible(true);
+    numPacotes = 0;
+    lblPacotes.setText(Integer.toString(numPacotes));
+
+    for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+      String nome = entrada.getKey();
+      Circle c = entrada.getValue();
+
+      c.setStroke(Color.BLACK);
+      c.setCursor(Cursor.HAND);
+
+      Roteador r = obterRoteador(nome);
+      r.setNo(c);
+      atualizarRoteador(r);
+    }
   }
 
   /*
@@ -432,6 +512,11 @@ public class TelaPrincipalController implements Initializable {
     circulo.setStroke(Color.BLACK);
     circulo.setStrokeWidth(1);
     circulo.setStrokeType(StrokeType.OUTSIDE);
+    circulo.setCursor(Cursor.HAND);
+
+    circulo.setOnMouseClicked(event -> {
+      definirOrigemDestino(event, circulo);
+    });
 
     nosCriados.put(nome, circulo);
     subrede.getChildren().addAll(circulo);
@@ -536,6 +621,36 @@ public class TelaPrincipalController implements Initializable {
         break;
       }
     }
+  }
+
+  private boolean existeOrigem() {
+    for (Roteador r : roteadores) {
+      if (r.isOrigem()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean existeDestino() {
+    for (Roteador r : roteadores) {
+      if (r.isDestino()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private String obterRotuloNo(Circle c) {
+    for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+      if (entrada.getValue().equals(c)) {
+        return entrada.getKey();
+      }
+    }
+
+    return null;
   }
 
   /*

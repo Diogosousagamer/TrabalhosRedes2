@@ -40,3 +40,24 @@
   -fx-text-fill: white;
   -fx-background-radius: 5px;
 }
+
+.spinner .text-field {
+	-fx-background-color: white;
+	-fx-font-family: 'VCR OSD Mono';
+	-fx-font-size: 15px;
+}
+
+.spinner .increment-arrow,
+.spinner .decrement-arrow {
+    -fx-background-color: white;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: #2d4180;
+}
+
+.spinner .increment-arrow-button:hover,
+.spinner .decrement-arrow-button:hover {
+	-fx-background-color: #2c4799;
+}

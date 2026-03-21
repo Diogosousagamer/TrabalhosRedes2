@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 14/03/2026
-* Ultima alteracao.: 20/03/2026
+* Ultima alteracao.: 21/03/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -13,27 +13,31 @@ package controller;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
-import javafx.stage.Stage;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.stage.Stage;
 import javafx.fxml.Initializable;
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public class TelaMenuController implements Initializable {
 	// Componentes da interface
+	@FXML private Button btnProsseguir;
 	@FXML private ComboBox<String> cbVersao;
 	@FXML private Label lblNota;
-	@FXML private Button btnProsseguir;
+	@FXML private Label lblTTL;
+	@FXML private Spinner<Integer> spTTL;
 
   // Notas explicando as funcionalidades de cada versao do algoritmo
 	private String[] notas = {
@@ -82,6 +86,10 @@ public class TelaMenuController implements Initializable {
         } // Fim do bloco if/else
       }
     });
+
+    // Configura o spinner do TTL 
+    SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 15, 5);
+    spTTL.setValueFactory(valueFactory);
 	}
 
 	/*
@@ -98,6 +106,15 @@ public class TelaMenuController implements Initializable {
 		// Obtem-se o indice da opcao
 		int opcao = cbVersao.getSelectionModel().getSelectedIndex();
 		lblNota.setText(notas[opcao]);
+
+		if (opcao > 1) {
+			lblTTL.setVisible(true);
+			spTTL.setVisible(true);
+		}
+		else {
+			lblTTL.setVisible(false);
+			spTTL.setVisible(false);
+		}
 	}
 
   /*
@@ -119,7 +136,14 @@ public class TelaMenuController implements Initializable {
 		TelaPrincipalController p = loader.getController();
 		int versao = cbVersao.getSelectionModel().getSelectedIndex();
 		p.configurar(versao);
-		if (versao > 1) p.definirTempoDeVida(0);
+
+    // Inicio do bloco if
+		if (versao > 1) {
+			// Define o tempo de vida (TTL) dos pacotes gerados na TelaPrincipal
+			// se as versoes 3.0 ou 4.0 forem selecionadas
+			int tempoDeVida = spTTL.getValue();
+			p.definirTempoDeVida(tempoDeVida);
+		} // Fim do bloco if
 
     // Carrega a cena (tela) dentro da mesma janela
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
