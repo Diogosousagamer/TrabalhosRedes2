@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/03/2026
-* Ultima alteracao.: 21/03/2026
+* Ultima alteracao.: 22/03/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -17,23 +17,36 @@ import javafx.application.Platform;
 import controller.TelaPrincipalController;
 
 public class Pacote extends Thread {
-	private ImageView envelope;
 	private double posX;
 	private double posY;
-	private Roteador destino;
-	private int versao;
+	private ImageView envelope;
 	private int tempoDeVida;
+	private int versao;
+	private Roteador origem;
+	private Roteador destino;
+	private Roteador vindoDe;
 
-	public Pacote(ImageView envelope, int versao, Roteador destino) {
+	public Pacote(ImageView envelope, int versao, Roteador origem, Roteador destino) {
 		this.envelope = envelope;
 		this.versao = versao;
+		this.origem = origem;
 		this.destino = destino;
 	}
 
-	public Pacote(ImageView envelope, int versao, Roteador destino, int tempoDeVida) {
+	public Pacote(ImageView envelope, int versao, Roteador origem, Roteador destino, Roteador vindoDe) {
 		this.envelope = envelope;
 		this.versao = versao;
+		this.origem = origem;
 		this.destino = destino;
+		this.vindoDe = vindoDe;
+	}
+
+	public Pacote(ImageView envelope, int versao, Roteador origem, Roteador destino, Roteador vindoDe, int tempoDeVida) {
+		this.envelope = envelope;
+		this.versao = versao;
+		this.origem = origem;
+		this.destino = destino;
+		this.vindoDe = vindoDe;
 		this.tempoDeVida = tempoDeVida;
 	}
 
@@ -96,8 +109,6 @@ public class Pacote extends Thread {
 			envelope.setLayoutY(posY);
 		});		
 
-		if (versao != 0) roteador.ocupar();
-
 		encaminharPacotesVizinhos();
 	}
 
@@ -114,7 +125,19 @@ public class Pacote extends Thread {
 		ArrayList<Roteador> vizinhos = destino.getVizinhos();
 
 		for (Roteador v : vizinhos) {
-			TelaPrincipalController.controller.gerarMaisPacotes(destino, v);
+			if (versao > 0 && (vindoDe != null && v.equals(vindoDe))) {
+				continue;
+			}
+
+			TelaPrincipalController.controller.gerarMaisPacotes(origem, v, destino);
 		}
+	}
+
+	public void setEnvelope(ImageView envelope) {
+		this.envelope = envelope;
+	}
+
+	public ImageView getEnvelope() {
+		return envelope;
 	}
 }

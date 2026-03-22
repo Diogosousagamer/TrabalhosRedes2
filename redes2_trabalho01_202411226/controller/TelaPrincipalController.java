@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 21/03/2026
+* Ultima alteracao.: 22/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -197,7 +197,7 @@ public class TelaPrincipalController implements Initializable {
       subrede.getChildren().add(envelope);
       imagens.add(envelope);
 
-      Pacote p = (tempoDeVida == 0) ? new Pacote(envelope, versao, r) : new Pacote(envelope, versao, r, tempoDeVida);
+      Pacote p = criarPacote(envelope, r, r, null);
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
@@ -213,10 +213,12 @@ public class TelaPrincipalController implements Initializable {
    * Funcao: gera mais pacotes para dar continuidade a simulacao
    * Parametros: Roteador origem - roteador do qual o pacote se originou
                  Roteador destino - roteador para o qual o pacote sera encaminhado
+                 Roteador vindoDe - roteador
    * Retorno: void
    ****************************************************************/
 
-  public void gerarMaisPacotes(Roteador origem, Roteador destino) {
+  public void gerarMaisPacotes(Roteador origem, Roteador destino, Roteador vindoDe) {
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
 
@@ -230,14 +232,31 @@ public class TelaPrincipalController implements Initializable {
       subrede.getChildren().add(envelope);
       imagens.add(envelope);
 
-      Pacote p = (tempoDeVida == 0) ? new Pacote(envelope, versao, destino) : new Pacote(envelope, versao, destino, tempoDeVida);
+      Pacote p = criarPacote(envelope, origem, destino, vindoDe);
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
 
       p.setDaemon(true);
       p.start();
-    });
+    }); // Fim do bloco Platform.runLater
+  }
+
+  private Pacote criarPacote(ImageView envelope, Roteador origem, Roteador destino, Roteador vindoDe) {
+    // Inicio do bloco switch/case
+    switch (versao) {
+      case 0:
+        return new Pacote(envelope, this.versao, origem, destino);
+      case 1:
+        return new Pacote(envelope, this.versao, origem, destino, vindoDe);
+      case 2:
+        return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida);
+      case 3:
+        return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida);
+    } // Fim do bloco switch/case
+
+    // Retorna nulo caso nenhuma das opcoes for atendida
+    return null;
   }
 
   /*
@@ -291,18 +310,17 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public void interromper() {
-    reiniciar();
-    int quantidadePacotes = Integer.parseInt(lblPacotes.getText());
-
-    Platform.runLater(() -> {
-      painelReinicio.setVisible(true);
-      painelReinicio.toFront();
-
-      String resultados = lblResultados.getText().replace("X", Integer.toString(quantidadePacotes))
+    String modelo = "Voce precisou de X pacotes para caminhar do roteador Y para o roteador Z com a versão W do algoritmo de inundacao.";
+    String resultados = modelo.replace("X", Integer.toString(numPacotes))
                                                  .replace("Y", origem.getNome())
                                                  .replace("Z", destino.getNome())
                                                  .replace("W", Integer.toString(versao) + ".0");
 
+    reiniciar();
+
+    Platform.runLater(() -> {
+      painelReinicio.setVisible(true);
+      painelReinicio.toFront();
       lblResultados.setText(resultados);
     });
   }
@@ -325,6 +343,22 @@ public class TelaPrincipalController implements Initializable {
       r.setNo(c);
       atualizarRoteador(r);
     }
+  }
+
+  public void removerPacote(Pacote p) {
+    Platform.runLater(() -> {
+      p.interrupt();
+
+      for (ImageView img : imagens) {
+        if (img.equals(p.getEnvelope())) {
+          imagens.remove(p.getEnvelope());
+          subrede.getChildren().remove(p.getEnvelope());
+          break;
+        }
+      }
+
+      pacotes.remove(p);
+    });
   }
 
   /*
