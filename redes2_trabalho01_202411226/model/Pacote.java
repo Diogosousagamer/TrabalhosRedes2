@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/03/2026
-* Ultima alteracao.: 22/03/2026
+* Ultima alteracao.: 23/03/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -52,12 +52,12 @@ public class Pacote extends Thread {
 
   @Override
 	public void run() {
-		if (destino.isOrigem()) {
+		if (vindoDe == null && destino.isOrigem()) {
 			encaminharPacotesVizinhos();
+			return;
 		}
-		else {
-			movimentar(destino);
-		}
+
+		movimentar(destino);
 	}
 
 	public void definirPosicao() {
@@ -109,11 +109,8 @@ public class Pacote extends Thread {
 			envelope.setLayoutY(posY);
 		});		
 
+    if (versao > 1) decrementarTempoDeVida();
 		encaminharPacotesVizinhos();
-	}
-
-	private void decrementarTempoDeVida() {
-		tempoDeVida--;
 	}
 
 	private void encaminharPacotesVizinhos() {
@@ -122,6 +119,14 @@ public class Pacote extends Thread {
 			return;
 		}
 
+		if (Thread.currentThread().isInterrupted()) return;
+
+		if (versao > 1 && this.tempoDeVida <= 0) {
+			TelaPrincipalController.controller.removerPacote(this);
+			return;
+		}
+
+    Roteador proximoDestino = null;
 		ArrayList<Roteador> vizinhos = destino.getVizinhos();
 
 		for (Roteador v : vizinhos) {
@@ -129,8 +134,26 @@ public class Pacote extends Thread {
 				continue;
 			}
 
-			TelaPrincipalController.controller.gerarMaisPacotes(origem, v, destino);
+			if (proximoDestino == null) {
+				proximoDestino = v;
+			}
+			else {
+				TelaPrincipalController.controller.gerarMaisPacotes(destino, v, destino);
+			}
 		}
+
+		if (proximoDestino != null) {
+			this.vindoDe = destino;
+			this.destino = proximoDestino;
+			movimentar(destino);
+		}
+		else {
+			TelaPrincipalController.controller.removerPacote(this);
+		}
+	}
+
+	private void decrementarTempoDeVida() {
+		tempoDeVida--;
 	}
 
 	public void setEnvelope(ImageView envelope) {

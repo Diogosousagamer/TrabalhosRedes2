@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 22/03/2026
+* Ultima alteracao.: 23/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -61,6 +61,7 @@ public class TelaPrincipalController implements Initializable {
   @FXML private Label lblSelecao;
 
 	// Variaveis e instancias
+  private volatile boolean simulacaoAtiva;
   public static volatile TelaPrincipalController controller;
 	private Roteador origem;
   private Roteador destino;
@@ -95,12 +96,8 @@ public class TelaPrincipalController implements Initializable {
     // Carrega a instancia volatil do controller
     controller = this;
 
-    // Configura a subrede
+    // Gera o grafo da subrede via backbone
     configurarSubrede();
-
-    // Joga o btnVoltar para frente, caso o usuario quiser sair do programa
-    // apos o fim da simulacao
-    btnVoltar.toFront();
 	}
 
   /*
@@ -121,11 +118,22 @@ public class TelaPrincipalController implements Initializable {
     // Deixa a versao executada marcada no menu
 		TelaMenuController m = loader.getController();
 		m.definirVersao(this.versao);
+    if (this.versao > 1) m.definirTTL(this.tempoDeVida);
 
     // Carrega a cena (tela) dentro da mesma janela
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		stage.setScene(scene);
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: definirOrigemDestino
+   * Funcao: define os roteadores de origem e destino ao clicar em dois nos
+             presentes na subrede gerada via backbone
+   * Parametros: MouseEvent event - evento gerado ao clicar no circulo
+                 Circle c - circulo no qual o usuario clicou
+   * Retorno: void
+   ****************************************************************/
 
   @FXML
   private void definirOrigemDestino(MouseEvent event, Circle c) {
@@ -168,7 +176,10 @@ public class TelaPrincipalController implements Initializable {
       }
 
       lblSelecao.setVisible(false);
-      if (origem != null) gerarPacoteInicial(origem);
+      if (origem != null) {
+        simulacaoAtiva = true;
+        gerarPacoteInicial(origem);
+      }
     }
     else if (existeOrigem() && existeDestino()) {
       return;
@@ -184,6 +195,8 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void gerarPacoteInicial(Roteador r) {
+    if (!simulacaoAtiva) return;
+
     Platform.runLater(() -> {
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
 
@@ -213,11 +226,14 @@ public class TelaPrincipalController implements Initializable {
    * Funcao: gera mais pacotes para dar continuidade a simulacao
    * Parametros: Roteador origem - roteador do qual o pacote se originou
                  Roteador destino - roteador para o qual o pacote sera encaminhado
-                 Roteador vindoDe - roteador
+                 Roteador vindoDe - roteador do qual o pacote veio (parametro usado para impedir que ele seja encaminhado
+                 novamente para o roteador do qual veio na versao 2 do algoritmo de inundacao)
    * Retorno: void
    ****************************************************************/
 
   public void gerarMaisPacotes(Roteador origem, Roteador destino, Roteador vindoDe) {
+    if (!simulacaoAtiva) return;
+
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
@@ -268,6 +284,8 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
 	private void reiniciar() {
+    simulacaoAtiva = false;
+
     for (Pacote p : pacotes) {
       p.interrupt();
     }
@@ -310,17 +328,19 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public void interromper() {
-    String modelo = "Voce precisou de X pacotes para caminhar do roteador Y para o roteador Z com a versão W do algoritmo de inundacao.";
+    int vFinal = versao + 1;
+    String modelo = "Voce precisou de X pacotes para caminhar do roteador Y para o roteador Z com a versao W do algoritmo de inundacao.";
     String resultados = modelo.replace("X", Integer.toString(numPacotes))
                                                  .replace("Y", origem.getNome())
                                                  .replace("Z", destino.getNome())
-                                                 .replace("W", Integer.toString(versao) + ".0");
+                                                 .replace("W", Integer.toString(vFinal) + ".0");
 
     reiniciar();
 
     Platform.runLater(() -> {
       painelReinicio.setVisible(true);
       painelReinicio.toFront();
+      btnVoltar.toFront();
       lblResultados.setText(resultados);
     });
   }
@@ -346,17 +366,11 @@ public class TelaPrincipalController implements Initializable {
   }
 
   public void removerPacote(Pacote p) {
+    p.interrupt();
+
     Platform.runLater(() -> {
-      p.interrupt();
-
-      for (ImageView img : imagens) {
-        if (img.equals(p.getEnvelope())) {
-          imagens.remove(p.getEnvelope());
-          subrede.getChildren().remove(p.getEnvelope());
-          break;
-        }
-      }
-
+      ImageView envelope = p.getEnvelope();
+      subrede.getChildren().remove(envelope);
       pacotes.remove(p);
     });
   }
@@ -657,6 +671,14 @@ public class TelaPrincipalController implements Initializable {
     }
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: existeOrigem
+   * Funcao: verifica se um roteador ja foi marcado como origem no percurso
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
   private boolean existeOrigem() {
     for (Roteador r : roteadores) {
       if (r.isOrigem()) {
@@ -667,6 +689,14 @@ public class TelaPrincipalController implements Initializable {
     return false;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: existeDestino
+   * Funcao: verifica se um roteador ja foi marcado como destino no percurso
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
   private boolean existeDestino() {
     for (Roteador r : roteadores) {
       if (r.isDestino()) {
@@ -676,6 +706,15 @@ public class TelaPrincipalController implements Initializable {
 
     return false;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: obterRotuloNo
+   * Funcao: obtem e retorna o rotulo do no para determinar o roteador
+             que ele representa
+   * Parametros: Circle c - no cujo rotulo sera determinado
+   * Retorno: String
+   ****************************************************************/
 
   private String obterRotuloNo(Circle c) {
     for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {

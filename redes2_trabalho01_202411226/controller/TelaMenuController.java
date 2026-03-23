@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 14/03/2026
-* Ultima alteracao.: 21/03/2026
+* Ultima alteracao.: 23/03/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -107,14 +107,18 @@ public class TelaMenuController implements Initializable {
 		int opcao = cbVersao.getSelectionModel().getSelectedIndex();
 		lblNota.setText(notas[opcao]);
 
+    // Inicio do bloco if/else
 		if (opcao > 1) {
+			// Exibe o spinner do valor do tempo de vida (TTL)
+			// se o usuario selecionar as versoes 3 ou 4 do algoritmo
 			lblTTL.setVisible(true);
 			spTTL.setVisible(true);
 		}
 		else {
+			// Caso contrario, o spinner permanecera oculto
 			lblTTL.setVisible(false);
 			spTTL.setVisible(false);
-		}
+		} // Fim do bloco if/else
 	}
 
   /*
@@ -161,5 +165,19 @@ public class TelaMenuController implements Initializable {
 	public void definirVersao(int versao) {
 		// A versao fica marcada dentro da ComboBox
 		cbVersao.getSelectionModel().select(versao);
+		selecionarVersao(new ActionEvent());
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: definirTTL
+   * Funcao: define o valor do tempo de vida (TTL) selecionado anteriormente 
+             (caso o usuario usar as versoes 3 e 4 do algoritmo)
+   * Parametros: int ttl - valor do ttl selecionado anteriormente
+   * Retorno: void
+   ****************************************************************/
+
+	public void definirTTL(int ttl) {
+		spTTL.getValueFactory().setValue(ttl);
 	}
 }
