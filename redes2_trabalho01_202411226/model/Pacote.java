@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/03/2026
-* Ultima alteracao.: 23/03/2026
+* Ultima alteracao.: 24/03/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -25,6 +25,7 @@ public class Pacote extends Thread {
 	private Roteador origem;
 	private Roteador destino;
 	private Roteador vindoDe;
+	private ArrayList<Roteador> roteadoresVisitados;
 
 	public Pacote(ImageView envelope, int versao, Roteador origem, Roteador destino) {
 		this.envelope = envelope;
@@ -48,6 +49,16 @@ public class Pacote extends Thread {
 		this.destino = destino;
 		this.vindoDe = vindoDe;
 		this.tempoDeVida = tempoDeVida;
+	}
+
+	public Pacote(ImageView envelope, int versao, Roteador origem, Roteador destino, Roteador vindoDe, int tempoDeVida, ArrayList<Roteador> roteadoresVisitados) {
+		this.envelope = envelope;
+		this.versao = versao;
+		this.origem = origem;
+		this.destino = destino;
+		this.vindoDe = vindoDe;
+		this.tempoDeVida = tempoDeVida;
+		this.roteadoresVisitados = roteadoresVisitados;
 	}
 
   @Override
@@ -109,7 +120,6 @@ public class Pacote extends Thread {
 			envelope.setLayoutY(posY);
 		});		
 
-    if (versao > 1) decrementarTempoDeVida();
 		encaminharPacotesVizinhos();
 	}
 
@@ -121,24 +131,30 @@ public class Pacote extends Thread {
 
 		if (Thread.currentThread().isInterrupted()) return;
 
-		if (versao > 1 && this.tempoDeVida <= 0) {
-			TelaPrincipalController.controller.removerPacote(this);
-			return;
+		if (versao > 1) {
+			decrementarTempoDeVida();
+		
+			if (this.tempoDeVida <= 0) {
+				TelaPrincipalController.controller.removerPacote(this);
+				return;
+			}
 		}
+
+		if (versao == 3) adicionarRoteadorVisitado(destino);
 
     Roteador proximoDestino = null;
 		ArrayList<Roteador> vizinhos = destino.getVizinhos();
 
 		for (Roteador v : vizinhos) {
-			if (versao > 0 && (vindoDe != null && v.equals(vindoDe))) {
-				continue;
-			}
+			if (versao > 0 && (vindoDe != null && v.equals(vindoDe))) continue;
+			if (versao == 3 && visitado(v)) continue;
 
 			if (proximoDestino == null) {
 				proximoDestino = v;
 			}
 			else {
-				TelaPrincipalController.controller.gerarMaisPacotes(destino, v, destino);
+				TelaPrincipalController.controller.gerarMaisPacotes(destino, v, destino, 
+					                                                 (versao == 3) ? new ArrayList<>(this.roteadoresVisitados) : null);
 			}
 		}
 
@@ -154,6 +170,20 @@ public class Pacote extends Thread {
 
 	private void decrementarTempoDeVida() {
 		tempoDeVida--;
+	}
+
+	private void adicionarRoteadorVisitado(Roteador r) {
+		roteadoresVisitados.add(r);
+	}
+
+	private boolean visitado(Roteador r) {
+		for (Roteador v : roteadoresVisitados) {
+			if (v.getNome().equals(r.getNome())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public void setEnvelope(ImageView envelope) {

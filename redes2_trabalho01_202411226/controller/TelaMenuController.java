@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 14/03/2026
-* Ultima alteracao.: 23/03/2026
+* Ultima alteracao.: 24/03/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -44,7 +44,7 @@ public class TelaMenuController implements Initializable {
 		"Nota: Cada pacote que chega em um roteador eh enviado para TODAS as interfaces de rede deste roteador.",
 		"Nota: Cada pacote que chega em um roteador eh enviado para todas as interfaces de rede deste roteador, EXCETO por aquela pela qual ele chegou.",
 		"Nota: Cada pacote que chega em um roteador eh enviado para todas as interfaces de rede deste roteador, exceto por aquela pela qual ele chegou. Cada roteador verifica a informacao de TTL para decidir se o pacote continua a circular na rede.",
-		"Nota: Cada pacote que chega em um roteador eh enviado para todas as interfaces de rede deste roteador, exceto por aquela pela qual ele chegou. Cada roteador verifica a informacao de TTL para decidir se o pacote continua a circular na rede."
+		"Nota: Cada pacote que chega em um roteador eh enviado para todas as interfaces de rede deste roteador, exceto por aquela pela qual ele chegou. Cada roteador verifica a informacao de TTL para decidir se o pacote continua a circular na rede. Os pacotes nao sao encaminhados para um roteador visitado anteriormente."
 	};
 
   /*

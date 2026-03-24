@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaMenuController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaMenuController">
    <children>
       <ImageView fitHeight="500.0" fitWidth="700.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -18,12 +18,12 @@
          </image>
       </ImageView>
       <ComboBox fx:id="cbVersao" layoutX="66.0" layoutY="367.0" onAction="#selecionarVersao" prefHeight="29.0" prefWidth="159.0" promptText="VERSÃO" styleClass="combobox" stylesheets="@../util/menu.css" />
-      <Label fx:id="lblNota" layoutX="339.0" layoutY="325.0" prefHeight="84.0" prefWidth="347.0" textFill="WHITE" wrapText="true">
+      <Label fx:id="lblNota" layoutX="339.0" layoutY="305.0" prefHeight="122.0" prefWidth="347.0" textFill="WHITE" wrapText="true">
          <font>
             <Font name="Arial Italic" size="13.0" />
          </font>
       </Label>
-      <Label fx:id="lblTTL" alignment="CENTER" contentDisplay="CENTER" layoutX="122.0" layoutY="409.0" text="TTL:" textAlignment="CENTER" textFill="WHITE" visible="false">
+      <Label fx:id="lblTTL" alignment="CENTER" contentDisplay="CENTER" layoutX="122.0" layoutY="409.0" stylesheets="@../util/menu.css" text="TTL:" textAlignment="CENTER" textFill="WHITE" visible="false">
          <font>
             <Font name="VCR OSD Mono" size="20.0" />
          </font>

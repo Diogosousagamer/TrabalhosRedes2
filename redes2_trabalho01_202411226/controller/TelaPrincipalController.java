@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 23/03/2026
+* Ultima alteracao.: 24/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -210,7 +210,7 @@ public class TelaPrincipalController implements Initializable {
       subrede.getChildren().add(envelope);
       imagens.add(envelope);
 
-      Pacote p = criarPacote(envelope, r, r, null);
+      Pacote p = criarPacote(envelope, r, r, null, new ArrayList<>());
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
@@ -231,7 +231,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  public void gerarMaisPacotes(Roteador origem, Roteador destino, Roteador vindoDe) {
+  public void gerarMaisPacotes(Roteador origem, Roteador destino, Roteador vindoDe, ArrayList<Roteador> roteadoresVisitados) {
     if (!simulacaoAtiva) return;
 
     // Inicio do bloco Platform.runLater
@@ -248,7 +248,7 @@ public class TelaPrincipalController implements Initializable {
       subrede.getChildren().add(envelope);
       imagens.add(envelope);
 
-      Pacote p = criarPacote(envelope, origem, destino, vindoDe);
+      Pacote p = criarPacote(envelope, origem, destino, vindoDe, roteadoresVisitados);
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
@@ -258,7 +258,7 @@ public class TelaPrincipalController implements Initializable {
     }); // Fim do bloco Platform.runLater
   }
 
-  private Pacote criarPacote(ImageView envelope, Roteador origem, Roteador destino, Roteador vindoDe) {
+  private Pacote criarPacote(ImageView envelope, Roteador origem, Roteador destino, Roteador vindoDe, ArrayList<Roteador> roteadoresVisitados) {
     // Inicio do bloco switch/case
     switch (versao) {
       case 0:
@@ -268,7 +268,7 @@ public class TelaPrincipalController implements Initializable {
       case 2:
         return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida);
       case 3:
-        return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida);
+        return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida, roteadoresVisitados);
     } // Fim do bloco switch/case
 
     // Retorna nulo caso nenhuma das opcoes for atendida
@@ -680,11 +680,12 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private boolean existeOrigem() {
+    // Inicio do bloco for
     for (Roteador r : roteadores) {
       if (r.isOrigem()) {
         return true;
       }
-    }
+    } // Fim do bloco for
 
     return false;
   }
@@ -698,12 +699,20 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private boolean existeDestino() {
+    // Inicio do bloco for
+    // Realiza-se uma busca dentro da lista de roteadores
+    // existentes na topologia
     for (Roteador r : roteadores) {
+      // Inicio do bloco if
       if (r.isDestino()) {
+        // Retorna verdadeiro se algum roteador ja tiver sido
+        // definido como a origem
         return true;
-      }
-    }
+      } // Fim do bloco if
+    } // Fim do bloco for
 
+    // Retorna falso caso o destino nao tiver sido
+    // definido anteriormente
     return false;
   }
 
@@ -717,12 +726,19 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private String obterRotuloNo(Circle c) {
+    // Inicio do bloco for
+    // Realiza-se uma busca dentro do HashMap de nos existentes na interface
     for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+      // Inicio do bloco if
       if (entrada.getValue().equals(c)) {
+        // Retorna o rotulo caso o circulo for encontrado
+        // dentro do HashMap
         return entrada.getKey();
-      }
-    }
+      } // Fim do bloco if
+    } // Fim do bloco for
 
+    // Retorna nulo caso nao for obtido nenhum retorno
+    // a partir da busca
     return null;
   }
 

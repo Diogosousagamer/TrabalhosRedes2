@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 14/03/2026
-* Ultima alteracao.: 23/03/2026
+* Ultima alteracao.: 24/03/2026
 * Nome.............: Inundacao Na Rede (Principal)
 * Funcao...........: Este trabalho tem como objetivo simular quatro diferentes formas de funcionamento do algoritmo de inundacao
                      para roteamento de pacotes dentro de uma rede, incluindo uma opcao otimizada.
@@ -13,6 +13,7 @@ import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.scene.text.Font;
 import javafx.application.Application;
@@ -43,10 +44,14 @@ public class Principal extends Application {
 			// Carregando a fonte
 			Font.loadFont(getClass().getResourceAsStream("/util/VCR_OSD_MONO_1.001.ttf"), 18);
 
-			// Configurando a tela inicial (titulo, redimensionamento etc)
+      // Carrega a imagem do icone da janela
+			Image icone = new Image(getClass().getResource("/img/Icone.png").toExternalForm());
+
+			// Configurando a tela inicial (titulo, redimensionamento, icone etc)
 			stage.setScene(scene);
 			stage.setTitle("Inundacao Na Rede");
 			stage.setResizable(false);
+			stage.getIcons().add(icone);
 			stage.show();
 		}
 		catch (IOException ex) {

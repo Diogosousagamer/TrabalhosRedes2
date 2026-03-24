@@ -47,6 +47,10 @@
 	-fx-font-size: 15px;
 }
 
+.label {
+	-fx-font-family: 'VCR OSD Mono';
+}
+
 .spinner .increment-arrow,
 .spinner .decrement-arrow {
     -fx-background-color: white;
