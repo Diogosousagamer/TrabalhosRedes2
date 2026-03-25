@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 24/03/2026
+* Ultima alteracao.: 25/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -56,6 +56,8 @@ public class TelaPrincipalController implements Initializable {
   @FXML private AnchorPane subrede;
   @FXML private Button btnContinuar;
 	@FXML private Button btnVoltar;
+  @FXML private Label lblOrigem;
+  @FXML private Label lblDestino;
 	@FXML private Label lblPacotes;
   @FXML private Label lblResultados;
   @FXML private Label lblSelecao;
@@ -154,6 +156,8 @@ public class TelaPrincipalController implements Initializable {
         r.alterarVizinho(origem);
         atualizarRoteador(r);
       }
+
+      lblOrigem.setText(origem.getNome());
     }
     else if (!existeDestino() && origem != null && !nome.equals(origem.getNome())) {
       c.setStroke(Color.web("#d60b18"));
@@ -175,7 +179,9 @@ public class TelaPrincipalController implements Initializable {
         atualizarRoteador(r);
       }
 
+      lblDestino.setText(destino.getNome());
       lblSelecao.setVisible(false);
+
       if (origem != null) {
         simulacaoAtiva = true;
         gerarPacoteInicial(origem);
@@ -329,8 +335,10 @@ public class TelaPrincipalController implements Initializable {
 
   public void interromper() {
     int vFinal = versao + 1;
+    int nFinalPacotes = Integer.parseInt(lblPacotes.getText());
+
     String modelo = "Voce precisou de X pacotes para caminhar do roteador Y para o roteador Z com a versao W do algoritmo de inundacao.";
-    String resultados = modelo.replace("X", Integer.toString(numPacotes))
+    String resultados = modelo.replace("X", Integer.toString(nFinalPacotes))
                                                  .replace("Y", origem.getNome())
                                                  .replace("Z", destino.getNome())
                                                  .replace("W", Integer.toString(vFinal) + ".0");
@@ -348,6 +356,8 @@ public class TelaPrincipalController implements Initializable {
   @FXML
   private void continuar(ActionEvent event) {
     painelReinicio.setVisible(false);
+    lblOrigem.setText("");
+    lblDestino.setText("");
     lblSelecao.setVisible(true);
     numPacotes = 0;
     lblPacotes.setText(Integer.toString(numPacotes));
@@ -529,17 +539,20 @@ public class TelaPrincipalController implements Initializable {
     double larguraPacote = 41.0;
     double alturaPacote = 98.0;
 
+    // Inicio do bloco for
     for (int i = 0; i < totalNos; i++) {
       String nome = gerarNome(i);
       Roteador r = obterRoteador(nome);
       Circle c = r.getNo();
+
+      // Pula para outro laco se o circulo for nulo
       if (c == null) continue;
 
       double x = c.getCenterX() - (larguraPacote / 2);
       double y = c.getCenterY() - (alturaPacote / 2);
       r.definirPosicao(x, y);
       atualizarRoteador(r);
-    }
+    } // Fim do bloco for
   }
 
   /*
@@ -558,7 +571,7 @@ public class TelaPrincipalController implements Initializable {
 
     Circle circulo = new Circle(xCirculo, yCirculo, 15, Color.WHITE); 
     circulo.setStroke(Color.BLACK);
-    circulo.setStrokeWidth(1);
+    circulo.setStrokeWidth(2);
     circulo.setStrokeType(StrokeType.OUTSIDE);
     circulo.setCursor(Cursor.HAND);
 
