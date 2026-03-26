@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/03/2026
-* Ultima alteracao.: 25/03/2026
+* Ultima alteracao.: 26/03/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -17,6 +17,7 @@ import javafx.application.Platform;
 import controller.TelaPrincipalController;
 
 public class Pacote extends Thread {
+	// Variaveis e instancias
 	private double posX;
 	private double posY;
 	private ImageView envelope;
