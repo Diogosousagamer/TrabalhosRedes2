@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 26/03/2026
+* Ultima alteracao.: 27/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -348,9 +348,9 @@ public class TelaPrincipalController implements Initializable {
 	private void reiniciar() {
     // Desativa a simulacao
     simulacaoAtiva = false;
-
+ 
     // Inicio do bloco for
-    for (Pacote p : pacotes) {
+    for (Pacote p : new ArrayList<>(pacotes)) {
       // Interrompe a Thread de cada pacote ainda presente na rede
       p.interrupt();
     } // Fim do bloco for
@@ -358,7 +358,7 @@ public class TelaPrincipalController implements Initializable {
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       // Inicio do bloco for
-      for (ImageView img : imagens) {
+      for (ImageView img : new ArrayList<>(imagens)) {
         // Remove cada imagem presente na interface
         subrede.getChildren().remove(img);
       } // Fim do bloco for
@@ -384,16 +384,6 @@ public class TelaPrincipalController implements Initializable {
         atualizarRoteador(destino);
         destino = null;
       } // Fim do bloco if
-
-      // Inicio do bloco try/catch
-      try {
-        // O processo e posto para dormir por 200 ms
-        Thread.sleep(200);
-      }
-      catch (InterruptedException e) {
-        // Em caso de excecao, a Thread e interrompida
-        Thread.currentThread().interrupt();
-      } // Fim do bloco try/catch
     }); // Fim do bloco Platform.runLater
 	}
 
@@ -499,8 +489,10 @@ public class TelaPrincipalController implements Initializable {
       ImageView envelope = p.getEnvelope();
       subrede.getChildren().remove(envelope);
 
-      // Remove o pacote da lista de pacotes
+      // Remove o pacote da lista de pacotes e decrementa 
+      // a quantidade de pacotes existentes na rede
       pacotes.remove(p);
+      decrementarPacotes();
     }); // Fim do bloco Platform.runLater
   }
 
@@ -515,6 +507,20 @@ public class TelaPrincipalController implements Initializable {
   private void incrementarPacotes() {
     // Incrementa o numero de pacotes e exibe na Label
     numPacotes++;
+    lblPacotes.setText(Integer.toString(numPacotes));
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: decrementarPacotes
+   * Funcao: decrementa a quantidade de pacotes presentes na rede
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void decrementarPacotes() {
+    // Decrementa o numero de pacotes e exibe na Label
+    numPacotes--;
     lblPacotes.setText(Integer.toString(numPacotes));
   }
 
