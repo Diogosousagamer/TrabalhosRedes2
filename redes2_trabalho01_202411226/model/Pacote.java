@@ -26,7 +26,7 @@ public class Pacote extends Thread {
 	private Roteador origem;
 	private Roteador destino;
 	private Roteador vindoDe;
-	private ArrayList<Roteador> roteadoresVisitados;
+	private ArrayList<Roteador> roteadoresVisitados = new ArrayList<>();
 
   /*
    * ***************************************************************
@@ -290,8 +290,7 @@ public class Pacote extends Thread {
 			}
 			else {
 				// Caso contrario, um novo pacote eh gerado e encaminhado para o proximo vizinho
-				TelaPrincipalController.controller.gerarMaisPacotes(destino, v, destino, 
-					                                                 (versao == 3) ? new ArrayList<>(this.roteadoresVisitados) : null);
+				TelaPrincipalController.controller.gerarMaisPacotes(destino, v, destino);
 			} // Fim do bloco if/else
 		} // Fim do bloco for
 

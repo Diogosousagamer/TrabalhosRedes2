@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 27/03/2026
+* Ultima alteracao.: 29/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -259,7 +259,7 @@ public class TelaPrincipalController implements Initializable {
 
       // Gera um novo pacote, define a sua posicao, o adiciona na lista de pacotes e incrementa a quantidade
       // de pacotes existentes
-      Pacote p = criarPacote(envelope, r, r, null, new ArrayList<>());
+      Pacote p = criarPacote(envelope, r, r, null);
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
@@ -280,11 +280,10 @@ public class TelaPrincipalController implements Initializable {
                  Roteador destino - roteador para o qual o pacote sera encaminhado
                  Roteador vindoDe - roteador do qual o pacote veio (parametro usado para impedir que ele seja encaminhado
                  novamente para o roteador do qual veio na versao 2 do algoritmo de inundacao)
-                 ArrayList<Roteador> roteadoresVisitados - lista de roteadores visitados
    * Retorno: void
    ****************************************************************/
 
-  public void gerarMaisPacotes(Roteador origem, Roteador destino, Roteador vindoDe, ArrayList<Roteador> roteadoresVisitados) {
+  public void gerarMaisPacotes(Roteador origem, Roteador destino, Roteador vindoDe) {
     // Interompe o metodo se a simulacao nao estiver ativa
     if (!simulacaoAtiva) return;
 
@@ -306,7 +305,7 @@ public class TelaPrincipalController implements Initializable {
 
       // Gera um novo pacote, define a sua posicao, o adiciona na lista de pacotes e incrementa a quantidade
       // de pacotes existentes
-      Pacote p = criarPacote(envelope, origem, destino, vindoDe, roteadoresVisitados);
+      Pacote p = criarPacote(envelope, origem, destino, vindoDe);
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
@@ -319,7 +318,19 @@ public class TelaPrincipalController implements Initializable {
     }); // Fim do bloco Platform.runLater
   }
 
-  private Pacote criarPacote(ImageView envelope, Roteador origem, Roteador destino, Roteador vindoDe, ArrayList<Roteador> roteadoresVisitados) {
+  /*
+   * ***************************************************************
+   * Metodo: criarPacote
+   * Funcao: cria uma nova instancia da classe Pacote
+   * Parametros: ImageView envelope - imagem do pacote
+                 Roteador origem - roteador do qual o pacote se originou
+                 Roteador destino - roteador para o qual o pacote sera encaminhado
+                 Roteador vindoDe - roteador do qual o pacote veio (parametro usado para impedir que ele seja encaminhado
+                 novamente para o roteador do qual veio na versao 2 do algoritmo de inundacao)
+   * Retorno: void
+   ****************************************************************/
+
+  private Pacote criarPacote(ImageView envelope, Roteador origem, Roteador destino, Roteador vindoDe) {
     // Inicio do bloco switch/case
     // O pacote sera gerado conforme a versao do algoritmo de inundacao selecionada pelo usuario
     switch (versao) {
@@ -327,10 +338,9 @@ public class TelaPrincipalController implements Initializable {
         return new Pacote(envelope, this.versao, origem, destino);
       case 1: // Retorna um pacote para a versao 2.0 (inclui a linha de saida pela qual ele chegou)
         return new Pacote(envelope, this.versao, origem, destino, vindoDe);
-      case 2: // Retorna um pacote para a versao 3.0 (inclui a linha de saida pela qual ele chegou e o seu tempo de vida na rede)
+      case 2: 
+      case 3: // Retorna um pacote para a versao 3.0/4.0 (inclui a linha de saida pela qual ele chegou e o seu tempo de vida na rede)
         return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida);
-      case 3: // Retorna um pacote para a versao 4.0 (inclui a linha de saida pela qual ele chegou, o seu tempo de vida na rede e a lista de roteadores visitados)
-        return new Pacote(envelope, this.versao, origem, destino, vindoDe, this.tempoDeVida, roteadoresVisitados);
     } // Fim do bloco switch/case
 
     // Retorna nulo caso nenhuma das opcoes for atendida
