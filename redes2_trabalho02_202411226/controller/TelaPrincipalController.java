@@ -181,11 +181,8 @@ public class TelaPrincipalController implements Initializable {
       // Oculta a label de selecao
       lblSelecao.setVisible(false);
  
-      // Inicio do bloco if
-      // Se o roteador de origem nao for nulo
-      if (origem != null) {
-        iniciarSimulacao();
-      } // Fim do bloco if
+      // Inicia a simulacao se a origem nao for nula
+      if (origem != null) iniciarSimulacao(); 
     }
     else if (existeOrigem() && existeDestino()) {
       // Interrompe o metodo se uma origem e um destino ja tiverem
@@ -194,8 +191,18 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco if/else if/else if
   } 
 
+  /*
+   * ***************************************************************
+   * Metodo: inciarSimulacao
+   * Funcao: inicia a simulacao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   private void iniciarSimulacao() {
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Gera a imagem e a adiciona dentro da subrede
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
       ImageView envelope = new ImageView(mail);
       envelope.setFitWidth(41);
@@ -205,13 +212,25 @@ public class TelaPrincipalController implements Initializable {
       envelope.setPreserveRatio(true);
       subrede.getChildren().add(envelope);
 
+      // Gera uma nova Thread para o pacote e a inicializa
       Pacote p = new Pacote(envelope, origem, destino);
-      p.setDaemon(true);
+      p.setDaemon(true); // Garante que a Thread seja interrompida com o fechamento do programa
       p.start();
 
+      // Passa o pacote como parametro para obter o caminho mais curto
+      // da origem ate o destino
       calcularCaminhoMaisCurto(p);
-    });
+    }); // Fim do bloco Platform.runLater
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: calcularCaminhoMaisCurto
+   * Funcao: calcula o caminho mais curto a ser percorrido pelo pacote
+             da origem ate o destino
+   * Parametros: Pacote p - pacote cujo caminho sera montado
+   * Retorno: void
+   ****************************************************************/
 
   private void calcularCaminhoMaisCurto(Pacote p) {
     Thread calculo = new Thread(() -> {
@@ -289,24 +308,71 @@ public class TelaPrincipalController implements Initializable {
     calculo.start();
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: obterAresta
+   * Funcao: obtem uma aresta especifica dentro do grafo
+   * Parametros: Roteador r1 - primeiro roteador
+                 Roteador r2 - segundo roteador
+   * Retorno: Aresta
+   ****************************************************************/
+
   private Aresta obterAresta(Roteador r1, Roteador r2) {
+    // Obtem a id da aresta e retona a aresta correspondente dentro do HashMap
     String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
     return arestasExistentes.get(id);
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: alterarRoteadorNosVizinhos
+   * Funcao: altera a instancia do roteador nos roteadores em que ele for vizinho
+   * Parametros: Roteador r - roteador a ser atualizado
+   * Retorno: void
+   ****************************************************************/
+
   private void alterarRoteadorNosVizinhos(Roteador r) {
+    // Inicio do bloco for
+    // Percorremos cada roteador existente na lista de roteadores
     for (int i = 0; i < roteadores.size(); i++) {
+      // Obtem o roteador do instante atual
       Roteador rot = roteadores.get(i);
+
+      // Altera a instancia do roteador passado como parametro caso ele for 
+      // vizinho do roteador atual
       rot.alterarVizinho(r);
+
+      // Altera o roteador atual na lista de roteadores
       atualizarRoteador(rot);
-    }
+    } // Fim do bloco for
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: concatenarCaminho
+   * Funcao: monta o caminho a ser percorrido na Label
+   * Parametros: Roteador r - roteador a ser adicionado no caminho
+   * Retorno: void
+   ****************************************************************/
+
   private void concatenarCaminho(Roteador r) {
+    // Obtemos o texto atual
     String textoAtual = lblCaminho.getText();
+
+    // Gera um novo trecho (a seta e adicionada se o roteador nao corresponder a origem)
     String novoTrecho = (r.isOrigem()) ? r.getNome() : " -> " + r.getNome();
+
+    // Exibe o novo trecho no inicio junto com o texto anterior
     lblCaminho.setText(novoTrecho + textoAtual);
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: interromper
+   * Funcao: interrompe a simulacao
+   * Parametros: Pacote p - pacote a ser removido da tela
+   * Retorno: void
+   ****************************************************************/
 
   public void interromper(Pacote p) {
     final Pacote pacote = p;
@@ -321,6 +387,7 @@ public class TelaPrincipalController implements Initializable {
       for (Roteador r : roteadores) {
         r.setProvisorio();
         r.setDistancia(Integer.MAX_VALUE);
+        r.setAntecessor(null);
         r.setOrigem(false);
         r.setDestino(false);
       }
@@ -340,26 +407,44 @@ public class TelaPrincipalController implements Initializable {
     });
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: continuar
+   * Funcao: reinicia a selecao
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
   @FXML
   private void continuar(ActionEvent event) {
+    // Oculta o painel de interrupcao
     painelInterrupcao.setVisible(false);
+
+    // Exibe a Label de selecao
     lblSelecao.setVisible(true);
 
+    // Reinicia as Labels de origem, destino e caminho
     lblOrigem.setText("");
     lblDestino.setText("");
     lblCaminho.setText("");
 
+    // Inicio do bloco for
+    // Percorremos cada no existente dentro do grafo
     for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+      // Obtemos o no e o seu rotulo
       Circle c = entrada.getValue();
       String nome = entrada.getKey();
 
+      // Reinicia os circulos
       c.setStroke(Color.BLACK);
       c.setCursor(Cursor.HAND);
 
+      // Obtem o roteador, atualiza o no 
+      // e atualiza a instancia do roteador
       Roteador r = obterRoteador(nome);
       r.setNo(c);
       atualizarRoteador(r);
-    }
+    } // Fim do bloco for
   }
 
   /*

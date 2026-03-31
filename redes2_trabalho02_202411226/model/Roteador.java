@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 29/03/2026
+* Ultima alteracao.: 31/03/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -270,31 +270,88 @@ public class Roteador {
     return destino;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: setPermanente
+   * Funcao: marca o roteador como permanente
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   public void setPermanente() {
     this.permanente = true;
     this.provisorio = false;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: setProvisorio
+   * Funcao: marca o roteador como provisorio
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   public void setProvisorio() {
     this.provisorio = true;
     this.permanente = false;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: isPermanente
+   * Funcao: retorna se o roteador eh permanente ou nao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
   public boolean isPermanente() {
     return permanente;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: setDistancia
+   * Funcao: define a distancia do roteador dentro do caminho
+   * Parametros: int distancia - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
 
   public void setDistancia(int distancia) {
     this.distancia = distancia;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: getDistancia
+   * Funcao: retorna a distancia atual do roteador dentro do caminho
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: int
+   ****************************************************************/
+
   public int getDistancia() {
     return distancia;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: setAntecessor
+   * Funcao: define o antecessor desse roteador para que o caminho
+             final seja montado
+   * Parametros: Roteador a - valor a ser definido 
+   * Retorno: void
+   ****************************************************************/
+
   public void setAntecessor(Roteador a) {
     this.antecessor = a;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: getAntecessor
+   * Funcao: retorna o antecessor atual do roteador
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: Roteador
+   ****************************************************************/
 
   public Roteador getAntecessor() {
     return antecessor;
