@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 30/03/2026
+* Ultima alteracao.: 31/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -48,17 +48,22 @@ import model.Pacote;
 
 public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
+  @FXML private AnchorPane painelInterrupcao;
 	@FXML private AnchorPane subrede;
+  @FXML private Button btnContinuar;
 	@FXML private Button btnVoltar;
+  @FXML private Label lblCaminho;
+  @FXML private Label lblOrigem;
+  @FXML private Label lblDestino;
+  @FXML private Label lblResultados;
 	@FXML private Label lblSelecao;
 
 	// Variaveis e instancias
-	private volatile boolean simulacaoAtiva;
 	public static volatile TelaPrincipalController controller;
 	private int quantidadeNos;
-  private Pacote pacote;
 	private Roteador origem;
   private Roteador destino;
+  private String modelo;
   private ArrayList<Roteador> roteadores;
   private HashMap<String, Circle> nosCriados = new HashMap<>();
   private Map<String, double[]> posicaoCirculos = new HashMap<>();
@@ -76,6 +81,9 @@ public class TelaPrincipalController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
+    // Carrega a label de modelo para os resultados
+    modelo = lblResultados.getText();
+
     // Carrega a ArrayList que armazenara os roteadores
     roteadores = new ArrayList<>();
 
@@ -143,6 +151,7 @@ public class TelaPrincipalController implements Initializable {
       origem.setNo(c);
       atualizarRoteador(origem);
       alterarRoteadorNosVizinhos(origem);
+      lblOrigem.setText(origem.getNome());
     }
     else if (!existeDestino() && origem != null && !nome.equals(origem.getNome())) { // Porem se um destino nao tiver sido definido
                                                                                      // a origem da rota tiver sido definida
@@ -167,6 +176,7 @@ public class TelaPrincipalController implements Initializable {
       destino.setDestino(true);
       atualizarRoteador(destino);
       alterarRoteadorNosVizinhos(destino);
+      lblDestino.setText(destino.getNome());
 
       // Oculta a label de selecao
       lblSelecao.setVisible(false);
@@ -174,7 +184,7 @@ public class TelaPrincipalController implements Initializable {
       // Inicio do bloco if
       // Se o roteador de origem nao for nulo
       if (origem != null) {
-        // iniciarSimulacao();
+        iniciarSimulacao();
       } // Fim do bloco if
     }
     else if (existeOrigem() && existeDestino()) {
@@ -185,8 +195,6 @@ public class TelaPrincipalController implements Initializable {
   } 
 
   private void iniciarSimulacao() {
-    simulacaoAtiva = true;
-
     Platform.runLater(() -> {
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
       ImageView envelope = new ImageView(mail);
@@ -201,20 +209,84 @@ public class TelaPrincipalController implements Initializable {
       p.setDaemon(true);
       p.start();
 
-      // calcularCaminhoMaisCurto();
+      calcularCaminhoMaisCurto(p);
     });
   }
 
-  private void calcularCaminhoMaisCurto() {
+  private void calcularCaminhoMaisCurto(Pacote p) {
     Thread calculo = new Thread(() -> {
+      // Define a distancia da origem
       origem.setDistancia(0);
+
+      // Carrega a ArrayList contendo roteadores abertos
       ArrayList<Roteador> abertos = new ArrayList<>();
       abertos.add(origem);
 
       while (!abertos.isEmpty()) {
-        
+        Roteador atual = abertos.get(0);
+
+        for (Roteador r : abertos) {
+          if (r.getDistancia() < atual.getDistancia()) atual = r;
+        }
+
+        abertos.remove(atual);
+        atual.setPermanente();
+        final Roteador r = atual;
+
+        Platform.runLater(() -> {
+          atualizarRoteador(r);
+          alterarRoteadorNosVizinhos(r);
+        });
+
+        if (atual.equals(destino)) {
+          Roteador passo = destino;
+
+          while (passo != null) {
+            p.adicionarRoteadorAoCaminho(passo);
+            final Roteador rPasso = passo;
+            Platform.runLater(() -> concatenarCaminho(rPasso));
+
+            if (passo.getAntecessor() != null) {
+              Aresta a = obterAresta(passo, passo.getAntecessor());
+              Platform.runLater(() -> a.marcarLinha());
+            }
+
+            passo = passo.getAntecessor();
+
+            try {
+              Thread.sleep(500);
+            }
+            catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+          }
+
+          break;
+        }
+
+        for (Roteador v : atual.getVizinhos()) {
+          Aresta a = obterAresta(atual, v);
+          int novaDistancia = atual.getDistancia() + a.getPeso();
+
+          if (novaDistancia < v.getDistancia()) {
+            v.setDistancia(novaDistancia);
+            v.setAntecessor(atual);
+
+            if (!abertos.contains(v)) abertos.add(v);
+
+            Platform.runLater(() -> {
+              atualizarRoteador(v);
+              alterarRoteadorNosVizinhos(v);
+            });
+          }
+        }
       }
+
+      p.liberar();
     });
+
+    calculo.setDaemon(true);
+    calculo.start();
   }
 
   private Aresta obterAresta(Roteador r1, Roteador r2) {
@@ -227,6 +299,66 @@ public class TelaPrincipalController implements Initializable {
       Roteador rot = roteadores.get(i);
       rot.alterarVizinho(r);
       atualizarRoteador(rot);
+    }
+  }
+
+  private void concatenarCaminho(Roteador r) {
+    String textoAtual = lblCaminho.getText();
+    String novoTrecho = (r.isOrigem()) ? r.getNome() : " -> " + r.getNome();
+    lblCaminho.setText(novoTrecho + textoAtual);
+  }
+
+  public void interromper(Pacote p) {
+    final Pacote pacote = p;
+    p = null;
+
+    pacote.interrupt();
+
+    Platform.runLater(() -> {
+      ImageView envelope = pacote.getEnvelope();
+      subrede.getChildren().remove(envelope);
+
+      for (Roteador r : roteadores) {
+        r.setProvisorio();
+        r.setDistancia(Integer.MAX_VALUE);
+        r.setOrigem(false);
+        r.setDestino(false);
+      }
+
+      for (Map.Entry<String, Aresta> aresta : arestasExistentes.entrySet()) {
+        Aresta a = aresta.getValue();
+        a.resetarLinha();
+      }
+
+      String resultados = modelo.replace("X", origem.getNome()).replace("Y", destino.getNome());
+      origem = null;
+      destino = null;
+      lblResultados.setText(resultados);
+
+      painelInterrupcao.toFront();
+      painelInterrupcao.setVisible(true);
+    });
+  }
+
+  @FXML
+  private void continuar(ActionEvent event) {
+    painelInterrupcao.setVisible(false);
+    lblSelecao.setVisible(true);
+
+    lblOrigem.setText("");
+    lblDestino.setText("");
+    lblCaminho.setText("");
+
+    for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+      Circle c = entrada.getValue();
+      String nome = entrada.getKey();
+
+      c.setStroke(Color.BLACK);
+      c.setCursor(Cursor.HAND);
+
+      Roteador r = obterRoteador(nome);
+      r.setNo(c);
+      atualizarRoteador(r);
     }
   }
 

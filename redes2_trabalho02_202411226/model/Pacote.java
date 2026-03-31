@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 30/03/2026
-* Ultima alteracao.: 30/03/2026
+* Ultima alteracao.: 31/03/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -10,6 +10,7 @@
 
 package model;
 
+import controller.TelaPrincipalController;
 import java.lang.Thread;
 import java.util.ArrayList;
 import javafx.application.Platform;
@@ -61,7 +62,7 @@ public class Pacote extends Thread {
 			}
 		}
 
-		ponteiro = 0;
+		TelaPrincipalController.controller.interromper(this);
 	}
 
 	private void movimentar(Roteador r) {
@@ -133,7 +134,7 @@ public class Pacote extends Thread {
 	}
 
 	public void adicionarRoteadorAoCaminho(Roteador r) {
-		caminho.add(r);
+		caminho.add(0, r);
 	}
 
 	private void aguardar() {
@@ -149,5 +150,13 @@ public class Pacote extends Thread {
 
 	public void liberar() {
 		liberado = true;
+	}
+
+	public void setEnvelope(ImageView envelope) {
+		this.envelope = envelope;
+	}
+
+	public ImageView getEnvelope() {
+		return envelope;
 	}
 }

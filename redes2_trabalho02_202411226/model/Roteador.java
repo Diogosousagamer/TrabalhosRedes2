@@ -20,6 +20,7 @@ public class Roteador {
   private double posY;
   private String nome;
   private ArrayList<Roteador> vizinhos;
+  private Roteador antecessor;
   private boolean origem;
   private boolean destino;
   private int distancia;
@@ -43,7 +44,7 @@ public class Roteador {
     destino = false;
     provisorio = true;
     permanente = false;
-    distancia = 10000000;
+    distancia = Integer.MAX_VALUE;
   }
 
   /*
@@ -289,5 +290,13 @@ public class Roteador {
 
   public int getDistancia() {
     return distancia;
+  }
+
+  public void setAntecessor(Roteador a) {
+    this.antecessor = a;
+  }
+
+  public Roteador getAntecessor() {
+    return antecessor;
   }
 }

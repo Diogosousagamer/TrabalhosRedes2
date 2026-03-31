@@ -8,7 +8,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaMenuController">
    <children>
       <ImageView fitHeight="500.0" fitWidth="700.0" pickOnBounds="true" preserveRatio="true">
@@ -16,11 +15,11 @@
             <Image url="@../img/Menu.png" />
          </image>
       </ImageView>
-      <AnchorPane layoutX="110.0" layoutY="363.0" prefHeight="98.0" prefWidth="417.0" style="-fx-background-color: #fffbfb; -fx-background-radius: 8px;">
+      <AnchorPane layoutX="98.0" layoutY="342.0" prefHeight="119.0" prefWidth="432.0" style="-fx-background-color: #fffbfb; -fx-background-radius: 8px;">
          <children>
-            <Label layoutX="22.0" layoutY="14.0" text="Label">
+            <Label layoutX="10.0" layoutY="17.0" prefHeight="85.0" prefWidth="412.0" text="O algoritmo de Dijkstra para obter o caminho mais curto dentro de um grafo consiste em percorrer cada nó do grafo e seus respectivos vizinhos para ponderar a distância deles com base no peso de suas arestas para assim, encontrar o melhor caminho possível." wrapText="true">
                <font>
-                  <Font name="System Italic" size="14.0" />
+                  <Font name="System Italic" size="13.0" />
                </font>
             </Label>
          </children>
