@@ -22,6 +22,9 @@ public class Roteador {
   private ArrayList<Roteador> vizinhos;
   private boolean origem;
   private boolean destino;
+  private int distancia;
+  private boolean provisorio;
+  private boolean permanente;
 
   /*
    * ***************************************************************
@@ -38,6 +41,9 @@ public class Roteador {
     vizinhos = new ArrayList<>();
     origem = false;
     destino = false;
+    provisorio = true;
+    permanente = false;
+    distancia = 10000000;
   }
 
   /*
@@ -261,5 +267,27 @@ public class Roteador {
 
   public boolean isDestino() {
     return destino;
+  }
+
+  public void setPermanente() {
+    this.permanente = true;
+    this.provisorio = false;
+  }
+
+  public void setProvisorio() {
+    this.provisorio = true;
+    this.permanente = false;
+  }
+
+  public boolean isPermanente() {
+    return permanente;
+  }
+
+  public void setDistancia(int distancia) {
+    this.distancia = distancia;
+  }
+
+  public int getDistancia() {
+    return distancia;
   }
 }

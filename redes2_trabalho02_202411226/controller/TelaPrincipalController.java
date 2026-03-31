@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 29/03/2026
+* Ultima alteracao.: 30/03/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -13,6 +13,7 @@ package controller;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.Thread;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.Aresta;
 import model.Roteador;
+import model.Pacote;
 
 public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
@@ -54,6 +56,7 @@ public class TelaPrincipalController implements Initializable {
 	private volatile boolean simulacaoAtiva;
 	public static volatile TelaPrincipalController controller;
 	private int quantidadeNos;
+  private Pacote pacote;
 	private Roteador origem;
   private Roteador destino;
   private ArrayList<Roteador> roteadores;
@@ -139,15 +142,7 @@ public class TelaPrincipalController implements Initializable {
       origem.setOrigem(true);
       origem.setNo(c);
       atualizarRoteador(origem);
-
-      // Inicio do bloco for
-      for (int i = 0; i < roteadores.size(); i++) {
-        // Atualiza o roteador de origem dentro da lista de vizinhos 
-        // de cada roteador antes de atualiza-los na lista de roteadores
-        Roteador r = roteadores.get(i);
-        r.alterarVizinho(origem);
-        atualizarRoteador(r);
-      } // Fim do bloco for
+      alterarRoteadorNosVizinhos(origem);
     }
     else if (!existeDestino() && origem != null && !nome.equals(origem.getNome())) { // Porem se um destino nao tiver sido definido
                                                                                      // a origem da rota tiver sido definida
@@ -171,15 +166,7 @@ public class TelaPrincipalController implements Initializable {
       destino.setNo(c);
       destino.setDestino(true);
       atualizarRoteador(destino);
-
-      // Inicio do bloco for
-      for (int i = 0; i < roteadores.size(); i++) {
-        // Atualiza o roteador de destino dentro da lista de vizinhos 
-        // de cada roteador antes de atualiza-los na lista de roteadores
-        Roteador r = roteadores.get(i);
-        r.alterarVizinho(destino);
-        atualizarRoteador(r);
-      } // Fim do bloco for
+      alterarRoteadorNosVizinhos(destino);
 
       // Oculta a label de selecao
       lblSelecao.setVisible(false);
@@ -187,8 +174,7 @@ public class TelaPrincipalController implements Initializable {
       // Inicio do bloco if
       // Se o roteador de origem nao for nulo
       if (origem != null) {
-        // Inicia a simulacao
-        simulacaoAtiva = true;
+        // iniciarSimulacao();
       } // Fim do bloco if
     }
     else if (existeOrigem() && existeDestino()) {
@@ -197,6 +183,52 @@ public class TelaPrincipalController implements Initializable {
       return;
     } // Fim do bloco if/else if/else if
   } 
+
+  private void iniciarSimulacao() {
+    simulacaoAtiva = true;
+
+    Platform.runLater(() -> {
+      Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
+      ImageView envelope = new ImageView(mail);
+      envelope.setFitWidth(41);
+      envelope.setFitHeight(98);
+      envelope.setLayoutX(origem.getPosX());
+      envelope.setLayoutY(origem.getPosY());
+      envelope.setPreserveRatio(true);
+      subrede.getChildren().add(envelope);
+
+      Pacote p = new Pacote(envelope, origem, destino);
+      p.setDaemon(true);
+      p.start();
+
+      // calcularCaminhoMaisCurto();
+    });
+  }
+
+  private void calcularCaminhoMaisCurto() {
+    Thread calculo = new Thread(() -> {
+      origem.setDistancia(0);
+      ArrayList<Roteador> abertos = new ArrayList<>();
+      abertos.add(origem);
+
+      while (!abertos.isEmpty()) {
+        
+      }
+    });
+  }
+
+  private Aresta obterAresta(Roteador r1, Roteador r2) {
+    String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+    return arestasExistentes.get(id);
+  }
+
+  private void alterarRoteadorNosVizinhos(Roteador r) {
+    for (int i = 0; i < roteadores.size(); i++) {
+      Roteador rot = roteadores.get(i);
+      rot.alterarVizinho(r);
+      atualizarRoteador(rot);
+    }
+  }
 
   /*
    * ***************************************************************
