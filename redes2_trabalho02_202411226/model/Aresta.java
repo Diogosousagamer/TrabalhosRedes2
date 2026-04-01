@@ -75,7 +75,7 @@ public class Aresta {
    ****************************************************************/
 
 	public void setLinha(Line linha) {
-		this.linha = l;
+		this.linha = linha;
 	}
 
   /*
