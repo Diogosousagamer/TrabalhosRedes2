@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 31/03/2026
+* Ultima alteracao.: 01/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -12,6 +12,8 @@ package controller;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.lang.Thread;
 import java.net.URL;
@@ -32,6 +34,7 @@ import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
@@ -48,15 +51,21 @@ import model.Pacote;
 
 public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
+  @FXML private AnchorPane painelAlterarRede;
   @FXML private AnchorPane painelInterrupcao;
+  @FXML private AnchorPane popupAlterarRede;
 	@FXML private AnchorPane subrede;
+  @FXML private Button btnAlterarRede;
+  @FXML private Button btnAplicar;
   @FXML private Button btnContinuar;
+  @FXML private Button btnFechar;
 	@FXML private Button btnVoltar;
   @FXML private Label lblCaminho;
   @FXML private Label lblOrigem;
   @FXML private Label lblDestino;
   @FXML private Label lblResultados;
 	@FXML private Label lblSelecao;
+  @FXML private TextArea txtBackbone;
 
 	// Variaveis e instancias
 	public static volatile TelaPrincipalController controller;
@@ -180,6 +189,9 @@ public class TelaPrincipalController implements Initializable {
 
       // Oculta a label de selecao
       lblSelecao.setVisible(false);
+
+      // Impede que o botao seja clicado
+      btnAlterarRede.setMouseTransparent(true);
  
       // Inicia a simulacao se a origem nao for nula
       if (origem != null) iniciarSimulacao(); 
@@ -267,7 +279,7 @@ public class TelaPrincipalController implements Initializable {
 
             if (passo.getAntecessor() != null) {
               Aresta a = obterAresta(passo, passo.getAntecessor());
-              Platform.runLater(() -> a.marcarLinha());
+              Platform.runLater(() -> a.marcarPermanente());
             }
 
             passo = passo.getAntecessor();
@@ -306,6 +318,59 @@ public class TelaPrincipalController implements Initializable {
 
     calculo.setDaemon(true);
     calculo.start();
+  }
+
+  @FXML
+  private void hoverAlterarRede(MouseEvent event) {
+    if (!btnAlterarRede.isMouseTransparent()) {
+      popupAlterarRede.setVisible(true);
+    }
+  }
+
+  @FXML
+  private void exitAlterarRede(MouseEvent event) {
+    popupAlterarRede.setVisible(false);
+  }
+
+  @FXML
+  private void alterarRede(ActionEvent event) {
+    try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
+      String linha = "";
+      String backbone = "";
+
+      while ((linha = br.readLine()) != null) {
+        backbone += linha + "\n";
+      }
+
+      final String backboneFinal = backbone;
+
+      Platform.runLater(() -> {
+        painelAlterarRede.toFront();
+        painelAlterarRede.setVisible(true);
+        txtBackbone.setText(backboneFinal);
+      });
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @FXML
+  private void fechar(ActionEvent event) {
+    painelAlterarRede.setVisible(false);
+  }
+
+  @FXML
+  private void aplicar(ActionEvent event) {
+    try (PrintWriter out = new PrintWriter(new FileWriter("backbone.txt", false))) {
+      out.print(txtBackbone.getText());
+      painelAlterarRede.setVisible(false);
+
+      removerSubrede();
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /*
@@ -428,6 +493,9 @@ public class TelaPrincipalController implements Initializable {
     lblDestino.setText("");
     lblCaminho.setText("");
 
+    // 
+    btnAlterarRede.setMouseTransparent(false);
+
     // Inicio do bloco for
     // Percorremos cada no existente dentro do grafo
     for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
@@ -520,6 +588,35 @@ public class TelaPrincipalController implements Initializable {
       // no instante em que o metodo for interrompido
       e.printStackTrace();
     } // Fim do bloco try/catch
+  }
+
+  private void removerSubrede() {
+    Platform.runLater(() -> {
+      for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+        subrede.getChildren().remove(entrada.getValue());
+      }
+
+      for (Map.Entry<String, Label> entrada : labels.entrySet()) {
+        subrede.getChildren().remove(entrada.getValue());
+      }
+
+      for (Map.Entry<String, Aresta> entrada : arestasExistentes.entrySet()) {
+        Aresta a = entrada.getValue();
+        subrede.getChildren().remove(a.getLinha());
+      }
+
+      for (Roteador r : roteadores) {
+        r = null;
+      }
+
+      roteadores.clear();
+      nosCriados.clear();
+      posicaoCirculos.clear();
+      arestasExistentes.clear();
+      labels.clear();
+
+      configurarSubrede();
+    });
   }
 
   /*
@@ -758,6 +855,22 @@ public class TelaPrincipalController implements Initializable {
 
       // Coloca a aresta dentro do HashMap
       arestasExistentes.put(idConexao, aresta);
+
+      // Gera a label de peso
+      Label lblPeso = new Label(peso);
+      lblPeso.setFont(Font.font("VCR OSD Mono", 10));
+      lblPeso.setTextFill(Color.BLACK);
+
+      double xMedio = (r1.getNo().getCenterX() + r2.getNo().getCenterX()) / 2;
+      double yMedio = (r2.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
+
+      lblPeso.setLayoutX(xMedio);
+      lblPeso.setLayoutY(yMedio);
+
+      lblPeso.setTranslateX(-7);
+      lblPeso.setTranslateY(-7);
+
+      subrede.getChildren().add(lblPeso);
     } // Fim do bloco if
   }
 

@@ -41,17 +41,25 @@ public class Aresta {
 
   /*
    * ***************************************************************
-   * Metodo: marcarLinha
+   * Metodo: marcarPermanente
    * Funcao: marca a linha da aresta para destacar o caminho a ser
              percorrido pelo pacote
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
-	public void marcarLinha() {
+	public void marcarPermanente() {
 		// A linha tera a cor verde
 		linha.setStroke(Color.web("#1fdb18"));
 	}
+
+  public void marcarIntermediario() {
+    linha.setStroke(Color.web("#f5d11d"));
+  }
+
+  public void marcarVisitando() {
+    linha.setStroke(Color.web("#d60b18"));
+  }
 
   /*
    * ***************************************************************

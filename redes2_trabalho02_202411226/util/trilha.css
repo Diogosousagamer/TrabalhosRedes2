@@ -10,7 +10,7 @@
 	-fx-font-size: 17px;
 }
 
-.voltar {
+.redondo {
 	-fx-background-color: #fff;
 	-fx-background-radius: 20px;
 	-fx-padding: 5px;
@@ -19,7 +19,25 @@
 	-fx-font-size: 15px;
 }
 
-.voltar:hover {
+.redondo:hover {
 	-fx-background-color: #c7c8c9;
 	-fx-font-size: 15px;
+}
+
+#fechar {
+	-fx-background-color: #ff0000;
+	-fx-text-fill: #fff;
+	-fx-font-size: 18px;
+}
+
+#fechar:hover {
+	-fx-background-color: #d60b18;
+}
+
+.caixaDeTexto .content {
+	-fx-background-color: #ffffff;
+}
+
+.caixaDeTexto:focused .content {
+	-fx-background-color: #ffffff;
 }
