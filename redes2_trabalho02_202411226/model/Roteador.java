@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 31/03/2026
+* Ultima alteracao.: 01/04/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -11,6 +11,7 @@
 package model;
 
 import java.util.ArrayList;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class Roteador {
@@ -100,6 +101,22 @@ public class Roteador {
         break;
       } // Fim do bloco if
     } // Fim do bloco for
+  }
+
+  public void marcarNoAtivo() {
+    no.setStroke(Color.web("#2d4180"));
+  }
+
+  public void resetarNo() {
+    if (this.isOrigem()) {
+      no.setStroke(Color.web("#1fdb18"));
+    }
+    else if (this.isDestino()) {
+      no.setStroke(Color.web("#d60b18"));
+    }
+    else {
+      no.setStroke(Color.BLACK);
+    }
   }
 
   /*

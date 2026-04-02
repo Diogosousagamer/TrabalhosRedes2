@@ -147,8 +147,8 @@ public class TelaPrincipalController implements Initializable {
       // O contorno do no do roteador de destino se torna verde
       c.setStroke(Color.web("#1fdb18"));
 
-      // Altera o cursor para ele nao ser "selecionavel"     
-      c.setCursor(Cursor.DEFAULT);
+      // Impede que o circulo possa ser selecionado de novo    
+      c.setMouseTransparent(true);
 
       /* O circulo nao se torna exatamente "selecionavel"; o cursor eh alterado por motivos visuais, 
       para que nao induza erroneamente o usuario a tentar seleciona-lo novamente, pois ele ja foi marcado 
@@ -176,7 +176,7 @@ public class TelaPrincipalController implements Initializable {
       for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
         // Todos os nos tem seus cursores alterados para que nao sejam mais "selecionaveis"
         Circle circulo = entrada.getValue();
-        circulo.setCursor(Cursor.DEFAULT);
+        circulo.setMouseTransparent(true);
       } // Fim do bloco for
 
       // Configura o roteador de destino e o atualiza na lista de roteadores
@@ -253,20 +253,54 @@ public class TelaPrincipalController implements Initializable {
       ArrayList<Roteador> abertos = new ArrayList<>();
       abertos.add(origem);
 
+      ArrayList<Aresta> arestasVisitadas = new ArrayList<>();
+
       while (!abertos.isEmpty()) {
         Roteador atual = abertos.get(0);
 
         for (Roteador r : abertos) {
-          if (r.getDistancia() < atual.getDistancia()) atual = r;
+          if (r.getDistancia() < atual.getDistancia()) {
+            atual.resetarNo();
+            atual = r;
+          }
         }
 
         abertos.remove(atual);
         atual.setPermanente();
+        atual.marcarNoAtivo();
         final Roteador r = atual;
+
+        try {
+          Thread.sleep(500);
+        }
+        catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
 
         Platform.runLater(() -> {
           atualizarRoteador(r);
           alterarRoteadorNosVizinhos(r);
+
+          if (r.getAntecessor() != null) {
+            Aresta a = obterAresta(r, r.getAntecessor());
+            
+            for (int i = 0; i < arestasVisitadas.size(); i++) {
+              if (!arestasVisitadas.get(i).equals(a)) {
+                Aresta ar = arestasVisitadas.get(i);
+                ar.resetarLinha();
+              }
+            }
+
+            if (arestasVisitadas.size() > 0) arestasVisitadas.clear();
+            a.marcarIntermediario();
+          }
+
+          try {
+            Thread.sleep(500);
+          }
+          catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
         });
 
         if (atual.equals(destino)) {
@@ -298,6 +332,16 @@ public class TelaPrincipalController implements Initializable {
         for (Roteador v : atual.getVizinhos()) {
           Aresta a = obterAresta(atual, v);
           int novaDistancia = atual.getDistancia() + a.getPeso();
+          arestasVisitadas.add(a);
+
+          Platform.runLater(() -> a.marcarVisitando());
+
+          try {
+            Thread.sleep(500);
+          }
+          catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
 
           if (novaDistancia < v.getDistancia()) {
             v.setDistancia(novaDistancia);
@@ -493,7 +537,7 @@ public class TelaPrincipalController implements Initializable {
     lblDestino.setText("");
     lblCaminho.setText("");
 
-    // 
+    // Marca a alteracao da rede
     btnAlterarRede.setMouseTransparent(false);
 
     // Inicio do bloco for
@@ -505,7 +549,7 @@ public class TelaPrincipalController implements Initializable {
 
       // Reinicia os circulos
       c.setStroke(Color.BLACK);
-      c.setCursor(Cursor.HAND);
+      c.setMouseTransparent(false);
 
       // Obtem o roteador, atualiza o no 
       // e atualiza a instancia do roteador
