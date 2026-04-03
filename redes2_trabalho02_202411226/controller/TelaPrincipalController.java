@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 01/04/2026
+* Ultima alteracao.: 03/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -169,9 +169,6 @@ public class TelaPrincipalController implements Initializable {
       // O contorno do no do roteador de destino se torna vermelho
       c.setStroke(Color.web("#d60b18"));
 
-      // Altera o cursor do no para que ele nao seja mais "selecionavel"
-      c.setCursor(Cursor.DEFAULT);
-
       // Inicio do bloco for
       for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
         // Todos os nos tem seus cursores alterados para que nao sejam mais "selecionaveis"
@@ -304,6 +301,16 @@ public class TelaPrincipalController implements Initializable {
         });
 
         if (atual.equals(destino)) {
+          for (Roteador rot : roteadores) {
+            rot.resetarNo();
+            atualizarRoteador(rot);
+          }
+
+          for (Map.Entry<String, Aresta> aresta : arestasExistentes.entrySet()) {
+            Aresta a = aresta.getValue();
+            a.resetarLinha();
+          }
+
           Roteador passo = destino;
 
           while (passo != null) {
@@ -319,7 +326,7 @@ public class TelaPrincipalController implements Initializable {
             passo = passo.getAntecessor();
 
             try {
-              Thread.sleep(500);
+              Thread.sleep(1000);
             }
             catch (InterruptedException e) {
               Thread.currentThread().interrupt();
@@ -364,57 +371,116 @@ public class TelaPrincipalController implements Initializable {
     calculo.start();
   }
 
+  
+  /*
+   * ***************************************************************
+   * Metodo: hoverAlterarRede
+   * Funcao: exibe um popup quando o mouse esta em cima do btnAlterarRede
+   * Parametros: MouseEvent event - evento gerado ao colocar o mouse de cima do botao
+   * Retorno: void
+   ****************************************************************/
+
   @FXML
   private void hoverAlterarRede(MouseEvent event) {
-    if (!btnAlterarRede.isMouseTransparent()) {
-      popupAlterarRede.setVisible(true);
-    }
+    // Exibe o popup se o botao nao estiver bloqueado
+    if (!btnAlterarRede.isMouseTransparent()) popupAlterarRede.setVisible(true);
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: exitAlterarRede
+   * Funcao: oculta o popup quando o mouse sai do alcance do btnAlterarRede
+   * Parametros: MouseEvent event - evento gerado ao tirar o mouse de cima do botao
+   * Retorno: void
+   ****************************************************************/
 
   @FXML
   private void exitAlterarRede(MouseEvent event) {
     popupAlterarRede.setVisible(false);
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: alterarRede
+   * Funcao: exibe e configura o painel de alteracao da sub rede
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
   @FXML
   private void alterarRede(ActionEvent event) {
+    // Inicio do bloco try/catch
+    // Faz uma leitura do conteudo presente no arquivo do backbone da rede
     try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
+      // Variavel responsavel por ler cada linha do arquivo
       String linha = "";
+
+      // Variavel que guardara o texto obtido do arquivo
       String backbone = "";
 
+      // Inicio do bloco while
+      // Enquanto ainda houver texto escrito no arquivo "backbone.txt"
       while ((linha = br.readLine()) != null) {
+        // Guarda a linha dentro do texto de backbone, dando espaco para a proxima linha
         backbone += linha + "\n";
-      }
+      } // Fim do bloco while
 
+      // Armazena o backbone em uma constante
       final String backboneFinal = backbone;
 
+      // Inicio do bloco Platform.runLater
       Platform.runLater(() -> {
+        // Exibe o painel com o texto do backbone ja escrito
         painelAlterarRede.toFront();
         painelAlterarRede.setVisible(true);
         txtBackbone.setText(backboneFinal);
-      });
+      }); // Fim do bloco Platform.runLater
     }
     catch (IOException e) {
+      // Em caso de excecao, ela eh exibida no terminal
       e.printStackTrace();
-    }
+    } // Fim do bloco try/catch
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: fechar
+   * Funcao: oculta o painel de alteracao da sub rede
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
 
   @FXML
   private void fechar(ActionEvent event) {
     painelAlterarRede.setVisible(false);
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: aplicar
+   * Funcao: aplica as alteracoes na subrede
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
   @FXML
   private void aplicar(ActionEvent event) {
+    // Inicio do bloco try/catch
     try (PrintWriter out = new PrintWriter(new FileWriter("backbone.txt", false))) {
+      // Pega o texto inserido na caixa de texto e sobrescreve o texto
+      // anteriormente escrito no arquivo
       out.print(txtBackbone.getText());
+
+      // Oculta o painel de modificacao da rede
       painelAlterarRede.setVisible(false);
 
+      // Remove a sub rede para depois reconfigura-la
       removerSubrede();
     }
     catch (IOException e) {
+      // Em caso de excecao, ela eh exibida no terminal
       e.printStackTrace();
-    }
+    } // Fim do bloco try/catch
   }
 
   /*
@@ -484,36 +550,50 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public void interromper(Pacote p) {
+    // Armazena o pacote em uma constante
     final Pacote pacote = p;
+
+    // Anula a variavel do pacote
     p = null;
 
+    // Interrompe a Thread do pacote, armazenada em uma constante
     pacote.interrupt();
 
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Remove a imagem do pacote da tela
       ImageView envelope = pacote.getEnvelope();
       subrede.getChildren().remove(envelope);
 
+      // Inicio do bloco for
       for (Roteador r : roteadores) {
+        // Reseta os parametros de cada roteador
         r.setProvisorio();
         r.setDistancia(Integer.MAX_VALUE);
         r.setAntecessor(null);
         r.setOrigem(false);
         r.setDestino(false);
-      }
+        atualizarRoteador(r);
+      } // Fim do bloco for
 
+      // Inicio do bloco for
       for (Map.Entry<String, Aresta> aresta : arestasExistentes.entrySet()) {
         Aresta a = aresta.getValue();
         a.resetarLinha();
-      }
+      } // Fim do bloco for
 
+      // Carrega a Label de resultados trocando as letras X e Y pelos rotulos dos roteadores de origem e destino
       String resultados = modelo.replace("X", origem.getNome()).replace("Y", destino.getNome());
+      lblResultados.setText(resultados);
+ 
+      // Reseta os roteadores de origem e destino
       origem = null;
       destino = null;
-      lblResultados.setText(resultados);
 
+      // Exibe o painel de interrupcao em cima do grafo
       painelInterrupcao.toFront();
       painelInterrupcao.setVisible(true);
-    });
+    }); // Fim do bloco Platform.runLater
   }
 
   /*
@@ -634,33 +714,51 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco try/catch
   }
 
-  private void removerSubrede() {
-    Platform.runLater(() -> {
-      for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
-        subrede.getChildren().remove(entrada.getValue());
-      }
+  /*
+   * ***************************************************************
+   * Metodo: removerSubrede
+   * Funcao: remove a sub rede presente para dar lugar a uma nova
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
+  private void removerSubrede() {
+    // Inicio do bloco Platform.runLater
+    Platform.runLater(() -> {
+      // Inicio do bloco for
+      for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
+        // Remova os nos presentes na topologia da subrede
+        subrede.getChildren().remove(entrada.getValue());
+      } // Fim do bloco for
+
+      // Inicio do bloco for  
       for (Map.Entry<String, Label> entrada : labels.entrySet()) {
         subrede.getChildren().remove(entrada.getValue());
-      }
+      } // Fim do bloco for
 
+      // Inicio do bloco for
       for (Map.Entry<String, Aresta> entrada : arestasExistentes.entrySet()) {
+        // Remove as arestas presentes na topologia da subrede
         Aresta a = entrada.getValue();
         subrede.getChildren().remove(a.getLinha());
-      }
+      } // Fim do bloco for
 
+      // Inicio do bloco for
       for (Roteador r : roteadores) {
+        // Esvazia os roteadores
         r = null;
-      }
+      } // Fim do bloco for
 
+      // Esvazia as listas e os HashMaps
       roteadores.clear();
       nosCriados.clear();
       posicaoCirculos.clear();
       arestasExistentes.clear();
       labels.clear();
 
+      // Reconfigura a sub rede
       configurarSubrede();
-    });
+    }); // Fim do bloco Platform.runLater
   }
 
   /*
