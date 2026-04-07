@@ -3,10 +3,12 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane fx:id="subrede" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
@@ -50,33 +52,57 @@
             </Label>
          </children>
       </AnchorPane>
-      <AnchorPane layoutX="504.0" layoutY="14.0" prefHeight="97.0" prefWidth="182.0" style="-fx-background-color: rgba(0, 0, 0, 0.3); -fx-background-radius: 8px; -fx-border-color: #ffffff; -fx-border-width: 2px; -fx-border-radius: 8px;">
+      <AnchorPane layoutX="504.0" layoutY="14.0" prefHeight="110.0" prefWidth="182.0" style="-fx-background-color: rgba(0, 0, 0, 0.3); -fx-background-radius: 8px; -fx-border-color: #ffffff; -fx-border-width: 2px; -fx-border-radius: 8px;">
          <children>
-            <Label layoutX="18.0" layoutY="19.0" text="ORIGEM:" textFill="WHITE">
+            <Label layoutX="23.0" layoutY="14.0" text="ORIGEM:" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="lblOrigem" layoutX="88.0" layoutY="19.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+            <Label fx:id="lblOrigem" layoutX="93.0" layoutY="14.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label layoutX="17.0" layoutY="41.0" text="DESTINO:" textFill="WHITE">
+            <Label layoutX="22.0" layoutY="36.0" text="DESTINO:" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="lblDestino" layoutX="88.0" layoutY="41.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+            <Label fx:id="lblDestino" layoutX="93.0" layoutY="36.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="lblCaminho" alignment="CENTER" contentDisplay="CENTER" layoutX="24.0" layoutY="61.0" prefHeight="22.0" prefWidth="135.0" textAlignment="CENTER" textFill="WHITE">
+            <Label fx:id="lblCaminho" alignment="CENTER" contentDisplay="CENTER" layoutX="26.0" layoutY="75.0" prefHeight="22.0" prefWidth="135.0" textAlignment="CENTER" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
+            <Label layoutX="22.0" layoutY="57.0" text="NÓ ATIVO:" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="lblNoAtivo" layoutX="97.0" layoutY="57.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="14.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="14.0" layoutY="295.0" prefHeight="186.0" prefWidth="122.0" style="-fx-background-color: rgba(0, 0, 0, 0.3); -fx-background-radius: 8px; -fx-border-color: #ffffff; -fx-border-radius: 8px; -fx-border-width: 2px;">
+         <children>
+            <Label layoutX="47.0" layoutY="13.0" text="NÓS" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="18.0" />
+               </font>
+            </Label>
+            <ScrollPane hbarPolicy="NEVER" layoutX="10.0" layoutY="35.0" prefHeight="139.0" prefWidth="102.0" styleClass="scrollpane" stylesheets="@../util/trilha.css">
+               <content>
+                  <VBox fx:id="listaNos" alignment="CENTER" prefHeight="136.0" prefWidth="100.0" spacing="20.0" />
+               </content>
+            </ScrollPane>
          </children>
       </AnchorPane>
       <AnchorPane fx:id="painelAlterarRede" prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">

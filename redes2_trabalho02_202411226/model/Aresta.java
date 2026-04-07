@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 03/04/2026
+* Ultima alteracao.: 08/04/2026
 * Nome.............: Aresta
 * Funcao...........: Este trabalho tem como objetivo simular o roteamento de pacotes dentro da camada de rede 
                      atraves do algoritmo do caminho mais curto.
@@ -43,25 +43,62 @@ public class Aresta {
   /*
    * ***************************************************************
    * Metodo: marcarPermanente
-   * Funcao: marca a linha da aresta para destacar o caminho a ser
-             percorrido pelo pacote
+   * Funcao: marca a linha da aresta com a cor verde
+             para sinalizar que ela faz parte do caminho
+             a ser percorrido pelo pacote
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
 	public void marcarPermanente() {
-		// A linha tera a cor verde
 		linha.setStroke(Color.web("#1fdb18"));
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: marcarIntermediario
+   * Funcao: altera a cor da linha da aresta para amarelo 
+             para classifica-la como intermediaria (considerada para o caminho final)
+   * Parametros: nenhum valor foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   public void marcarIntermediario() {
     linha.setStroke(Color.web("#f5d11d"));
-    this.intermediario = true;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: setIntermediario
+   * Funcao: define a aresta como intermediaria (considerada para o caminho final)
+   * Parametros: boolean i - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setIntermediario(boolean i) {
+    this.intermediario = i;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: isIntermediario
+   * Funcao: retorna se a aresta eh intermediaria ou nao
+   * Parametros: nenhum valor foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
 
   public boolean isIntermediario() {
     return intermediario;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: marcarVisitando
+   * Funcao: marca a linha da aresta com a cor vermelha para sinalizar
+             que ela esta sendo visitada
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   public void marcarVisitando() {
     linha.setStroke(Color.web("#d60b18"));
@@ -76,9 +113,7 @@ public class Aresta {
    ****************************************************************/
 
 	public void resetarLinha() {
-		// A linha volta a ser branca
-		linha.setStroke(Color.WHITE);
-    this.intermediario = false;
+		linha.setStroke((intermediario) ? Color.web("#f5d11d") : Color.WHITE);
 	}
 
   /*
