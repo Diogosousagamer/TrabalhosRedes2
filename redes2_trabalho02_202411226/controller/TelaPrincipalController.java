@@ -336,16 +336,21 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void montarCaminhoFinal(Pacote p) {
-    lblNoAtivo.setText("");
+    Platform.runLater(() -> lblNoAtivo.setText(""));
+    marcarArestasPermanentes();
 
     for (Roteador r : roteadores) {
       r.resetarNo();
     }
 
     for (Aresta a : arestasExistentes.values()) {
-      if (a.isIntermediario()) a.setIntermediario(false);
-      a.resetarLinha();
+      if (!a.isPermanente()) {
+        if (a.isIntermediario()) a.setIntermediario(false);
+        a.resetarLinha();
+      }
     }
+
+    dormir(500);
 
     Roteador passo = destino;
 
@@ -475,6 +480,29 @@ public class TelaPrincipalController implements Initializable {
 
   /*
    * ***************************************************************
+   * Metodo: marcarArestasPermanentes
+   * Funcao: marca todas as arestas que fazem parte do caminho final
+             como permanentes
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void marcarArestasPermanentes() {
+    Roteador passo = destino;
+
+    while (passo != null) {
+      if (passo.getAntecessor() != null) {
+        Aresta a = obterAresta(passo, passo.getAntecessor());
+        a.setIntermediario(false);
+        a.setPermanente(true);
+      }
+
+      passo = passo.getAntecessor();
+    }
+  }
+
+  /*
+   * ***************************************************************
    * Metodo: concatenarCaminho
    * Funcao: monta o caminho a ser percorrido na Label
    * Parametros: Roteador r - roteador a ser adicionado no caminho
@@ -530,6 +558,7 @@ public class TelaPrincipalController implements Initializable {
       // Inicio do bloco for
       for (Map.Entry<String, Aresta> aresta : arestasExistentes.entrySet()) {
         Aresta a = aresta.getValue();
+        if (a.isPermanente()) a.setPermanente(false);
         a.resetarLinha();
       } // Fim do bloco for
 

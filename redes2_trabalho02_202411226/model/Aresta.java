@@ -21,6 +21,7 @@ public class Aresta {
 	private Roteador r2;
 	private int peso;
   private boolean intermediario;
+  private boolean permanente;
 
   /*
    * ***************************************************************
@@ -53,6 +54,30 @@ public class Aresta {
 	public void marcarPermanente() {
 		linha.setStroke(Color.web("#1fdb18"));
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: setIntermediario
+   * Funcao: define a aresta como permanente (parte do caminho final)
+   * Parametros: boolean p - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setPermanente(boolean p) {
+    this.permanente = p;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: isPermanente
+   * Funcao: retorna se a aresta eh permanente ou nao
+   * Parametros: nenhum valor foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+  public boolean isPermanente() {
+    return permanente;
+  }
 
   /*
    * ***************************************************************
