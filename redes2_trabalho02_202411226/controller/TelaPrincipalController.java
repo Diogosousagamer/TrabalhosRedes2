@@ -357,8 +357,8 @@ public class TelaPrincipalController implements Initializable {
           dormir(400);
         } // Fim do bloco for
 
-        // Reseta o contorno do no ativo e poe o processo para dormir por 300 ms
-        Platform.runLater(() -> rAtivo.resetarNo());
+        // Marca o no ativo como permanente e poe o processo para dormir por 300 ms
+        if (rAtivo.isPermanente()) Platform.runLater(() -> rAtivo.marcarNoPermanente());
         dormir(300);
       } // Fim do bloco while
 
@@ -644,13 +644,6 @@ public class TelaPrincipalController implements Initializable {
         atualizarRoteador(r);
       } // Fim do bloco for
 
-      // Inicio do bloco for
-      for (Map.Entry<String, Aresta> aresta : arestasExistentes.entrySet()) {
-        Aresta a = aresta.getValue();
-        if (a.isPermanente()) a.setPermanente(false);
-        a.resetarLinha();
-      } // Fim do bloco for
-
       // Carrega a Label de resultados trocando as letras X e Y pelos rotulos dos roteadores de origem e destino
       String resultados = modelo.replace("X", origem.getNome()).replace("Y", destino.getNome());
       lblResultados.setText(resultados);
@@ -706,14 +699,24 @@ public class TelaPrincipalController implements Initializable {
       r.setNo(c);
       atualizarRoteador(r);
 
+      // O roteador volta a ser rotulado como provisorio
       alterarRotulo(r, "PROV.");
     } // Fim do bloco for
 
+    // Inicio do bloco for
     for (Map.Entry<String, Label> entrada : distancias.entrySet()) {
+      // Reseta as distancias de cada no
       Label d = entrada.getValue();
       String modelo = "(" + entrada.getKey() + ", ?)";
       d.setText(modelo);
-    }    
+    } // Fim do bloco for  
+
+    // Inicio do bloco for
+    for (Aresta a : arestasExistentes.values()) {
+      // Obtem a aresta e a reseta
+      if (a.isPermanente()) a.setPermanente(false);
+      a.resetarLinha();
+    } // Fim do bloco for
   }
 
   /*
@@ -930,14 +933,19 @@ public class TelaPrincipalController implements Initializable {
         subrede.getChildren().remove(a.getLinha());
       } // Fim do bloco for
 
+      // Inicio do bloco for
       for (Label p : pesosArestas) {
+        // Remove os pesos das arestas
         subrede.getChildren().remove(p);
-      }
+      } // Fim do bloco for
 
+      // Inicio do bloco for
       for (Label d : distancias.values()) {
+        // Remove as distancias de cada no
         subrede.getChildren().remove(d);
-      }
+      } // Fim do bloco for
 
+      // Limpa a lista de nos
       listaNos.getChildren().clear();
 
       // Inicio do bloco for
@@ -1139,21 +1147,28 @@ public class TelaPrincipalController implements Initializable {
     // Adiciona o circulo/no e a sua respectiva distancia na sub rede
     subrede.getChildren().addAll(circulo, distancia);
 
+    // Cria uma caixa horizontal para guardar as informacoes do no
     HBox infoNo = new HBox();
     infoNo.setSpacing(20);
     infoNo.setAlignment(Pos.CENTER);
 
+    // Cria a label correspondente ao nome do no
     Label nomeNo = new Label(nome);
     nomeNo.setFont(Font.font("VCR OSD Mono", 16));
     nomeNo.setTextFill(Color.WHITE);
 
+    // Cria a label correspondente ao rotulo do no
     Label rotuloNo = new Label("PROV.");
     rotuloNo.setFont(Font.font("VCR OSD Mono", 16));
     rotuloNo.setTextFill(Color.WHITE);
 
+    // Adiciona o rotulo no HashMap
     rotulos.put(nome, rotuloNo);
 
+    // Adiciona o nome e o rotulo do no dentro da HBox
     infoNo.getChildren().addAll(nomeNo, rotuloNo);
+
+    // Adiciona a HBox dentro da lista de nos
     listaNos.getChildren().add(infoNo); 
 
     // Retorna o circulo
@@ -1227,18 +1242,22 @@ public class TelaPrincipalController implements Initializable {
 
       // Gera a label de peso
       Label lblPeso = new Label(peso);
-      lblPeso.setFont(Font.font("VCR OSD Mono", 10));
+      lblPeso.setFont(Font.font("VCR OSD Mono", 11));
       lblPeso.setTextFill(Color.BLACK);
 
+      // Calcula a posicao media do peso a partir do centro dos nos
       double xMedio = (r1.getNo().getCenterX() + r2.getNo().getCenterX()) / 2;
-      double yMedio = (r2.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
+      double yMedio = (r1.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
 
+      // Define a posicao do peso
       lblPeso.setLayoutX(xMedio);
       lblPeso.setLayoutY(yMedio);
 
+      // Adiciona uma translacao para garantir que fique alinhado
       lblPeso.setTranslateX(-7);
       lblPeso.setTranslateY(-7);
 
+      // Adiciona a label dentro da lista de pesos e da sub rede
       pesosArestas.add(lblPeso);
       subrede.getChildren().add(lblPeso);
     } // Fim do bloco if

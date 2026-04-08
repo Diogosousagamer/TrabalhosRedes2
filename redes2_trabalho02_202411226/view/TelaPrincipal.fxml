@@ -161,19 +161,19 @@
       </AnchorPane>
       <AnchorPane fx:id="painelInterrupcao" prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">
          <children>
-            <AnchorPane layoutX="187.0" layoutY="157.0" prefHeight="186.0" prefWidth="326.0" style="-fx-background-color: #5ce1e6; -fx-background-radius: 8px;">
+            <AnchorPane layoutX="112.0" layoutY="362.0" prefHeight="104.0" prefWidth="477.0" style="-fx-background-color: #5ce1e6; -fx-background-radius: 8px;">
                <children>
-                  <Label alignment="CENTER" contentDisplay="CENTER" layoutX="100.0" layoutY="29.0" prefHeight="29.0" prefWidth="122.0" text="PARABÉNS!" textAlignment="CENTER">
+                  <Label alignment="CENTER" contentDisplay="CENTER" layoutX="101.0" layoutY="7.0" prefHeight="29.0" prefWidth="122.0" text="PARABÉNS!" textAlignment="CENTER">
                      <font>
                         <Font name="VCR OSD Mono" size="23.0" />
                      </font>
                   </Label>
-                  <Label fx:id="lblResultados" alignment="CENTER" contentDisplay="CENTER" layoutX="22.0" layoutY="59.0" prefHeight="59.0" prefWidth="283.0" text="Você conseguiu determinar o caminho mais curto de X até Y. Deseja continuar com a simulacao?" textAlignment="CENTER" wrapText="true">
+                  <Label fx:id="lblResultados" alignment="CENTER" contentDisplay="CENTER" layoutX="20.0" layoutY="38.0" prefHeight="59.0" prefWidth="283.0" text="Você conseguiu determinar o caminho mais curto de X até Y. Deseja continuar com a simulacao?" textAlignment="CENTER" wrapText="true">
                      <font>
                         <Font name="VCR OSD Mono" size="12.0" />
                      </font>
                   </Label>
-                  <Button fx:id="btnContinuar" alignment="CENTER" contentDisplay="CENTER" layoutX="96.0" layoutY="122.0" mnemonicParsing="false" onAction="#continuar" prefHeight="36.0" prefWidth="135.0" styleClass="botao" stylesheets="@../util/trilha.css" text="CONTINUAR" textAlignment="CENTER" textFill="#009fe3">
+                  <Button fx:id="btnContinuar" alignment="CENTER" contentDisplay="CENTER" layoutX="322.0" layoutY="34.0" mnemonicParsing="false" onAction="#continuar" prefHeight="36.0" prefWidth="135.0" styleClass="botao" stylesheets="@../util/trilha.css" text="CONTINUAR" textAlignment="CENTER" textFill="#009fe3">
                      <font>
                         <Font name="VCR OSD Mono" size="17.0" />
                      </font>

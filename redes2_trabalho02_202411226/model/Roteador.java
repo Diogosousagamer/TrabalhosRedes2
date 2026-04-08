@@ -118,6 +118,18 @@ public class Roteador {
 
   /*
    * ***************************************************************
+   * Metodo: marcarNoPermanente
+   * Funcao: marca o no com o contorno amarelo escuro caso ele for permanente
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void marcarNoPermanente() {
+    no.setStroke(Color.web("#8c6804"));
+  }
+
+  /*
+   * ***************************************************************
    * Metodo: resetarNo
    * Funcao: marca o no cor a cor do contorno anterior
    * Parametros: nenhum parametro foi definido para esta funcao
@@ -125,15 +137,21 @@ public class Roteador {
    ****************************************************************/
 
   public void resetarNo() {
+    // Inicio do bloco if/else if/else
     if (this.isOrigem()) {
+      // Reverte para a cor verde caso o no corresponder ao roteador
+      // de origem
       no.setStroke(Color.web("#1fdb18"));
     }
     else if (this.isDestino()) {
+      // Reverte para a cor vermelho caso o no corresponder ao roteador
+      // de destino
       no.setStroke(Color.web("#d60b18"));
     }
     else {
+      // Para os demais casos, a cor sera revertida para preto
       no.setStroke(Color.BLACK);
-    }
+    } // Fim do bloco if/else if/else
   }
 
   /*
