@@ -1131,10 +1131,13 @@ public class TelaPrincipalController implements Initializable {
       definirOrigemDestino(event, circulo);
     });
 
+    // Cria a label correspondente a distancia do no, obtida durante
+    // o calculo do caminho mais curto
     Label distancia = new Label("(" + nome + ", ?)");
     distancia.setFont(Font.font("VCR OSD Mono", 13));
     distancia.setTextFill(Color.BLACK);
 
+    // Seta a posicao da distancia com base no centro do circulo
     distancia.setLayoutX(circulo.getCenterX() + 18);
     distancia.setLayoutY(circulo.getCenterY() + 25);
 
