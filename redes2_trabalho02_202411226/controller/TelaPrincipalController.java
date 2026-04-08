@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 07/04/2026
+* Ultima alteracao.: 08/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -77,6 +77,7 @@ public class TelaPrincipalController implements Initializable {
 	private Roteador origem;
   private Roteador destino;
   private String modelo;
+  private ArrayList<Label> pesosArestas;
   private ArrayList<Roteador> roteadores;
   private HashMap<String, Circle> nosCriados = new HashMap<>();
   private Map<String, double[]> posicaoCirculos = new HashMap<>();
@@ -99,8 +100,9 @@ public class TelaPrincipalController implements Initializable {
     // Carrega a label de modelo para os resultados
     modelo = lblResultados.getText();
 
-    // Carrega a ArrayList que armazenara os roteadores
+    // Carrega as ArrayLists que armazenarao os roteadores e os pesos das arestas, respectivamente
     roteadores = new ArrayList<>();
+    pesosArestas = new ArrayList<>();
 
     // Carrega a instancia volatil do controller
     controller = this;
@@ -248,82 +250,126 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void calcularCaminhoMaisCurto(Pacote p) {
+    // Inicio do bloco Thread
     Thread calculo = new Thread(() -> {
       // Define a distancia da origem
       origem.setDistancia(0);
       Platform.runLater(() -> alterarDistancia(origem));
 
-      // Carrega a ArrayList contendo roteadores abertos
+      // Carrega a ArrayList contendo os roteadores a serem visitados
+      // ao longo do algoritmo
       ArrayList<Roteador> abertos = new ArrayList<>();
+
+      // O roteador de origem eh adicionado na lista de roteadores propensos
+      // a visita
       abertos.add(origem);
 
+      // Inicio do bloco while
+      // Enquanto ainda houver roteadores a serem visitados
       while (!abertos.isEmpty()) {
+        // Obtem o primeiro roteador contido na lista
         Roteador atual = abertos.get(0);
 
+        // Inicio do bloco for
         for (Roteador r : abertos) {
+          // Inicio do bloco if
           if (r.getDistancia() < atual.getDistancia()) {
+            // Altera o no ativo caso for obtido um roteador cuja distancia
+            // seja menor que a do no atual  
             final Roteador rAtivo = atual;
             Platform.runLater(() -> rAtivo.resetarNo());
             atual = r;
-          }
-        }
+          } // Fim do bloco if
+        } // Fim do bloco for
 
+        // Remove o no ativo da lista de roteadores abertos
+        // e define ele como permanente
         abertos.remove(atual);
         atual.setPermanente();
 
+        // Guarda o no ativo em uma constante
         final Roteador rAtivo = atual;
 
+        // Inicio do bloco Platform.runLater
         Platform.runLater(() -> {
+          // Marca o no como ativo e altera o seu rotulo na interface
           rAtivo.marcarNoAtivo();
           alterarNoAtivo(rAtivo);
           alterarRotulo(rAtivo, "PERM.");
+
+          // Atualiza o roteador na lista de roteadores e nos seus vizinhos
           atualizarRoteador(rAtivo);
           alterarRoteadorNosVizinhos(rAtivo);
-        });
+        }); // Fim do bloco Platform.runLater
 
+        // Inicio do bloco if
         if (atual.getAntecessor() != null) {
+          // Obtem a aresta e a marca como intermediaria (candidata para o caminho final)
+          // caso o no ativo possuir algum antecessor definido anteriormente
           final Aresta a = obterAresta(atual, atual.getAntecessor());
 
+          // Inicio do bloco Platform.runLater
           Platform.runLater(() -> {
             a.setIntermediario(true);
             a.marcarIntermediario();
-          });
-        }
+          }); // Fim do bloco Platform.runLater
+        } // Fim do bloco if
 
+        // O processo eh posto para dormir por 500 ms
         dormir(500);
-
+ 
+        // Inicio do bloco for
+        // Visitamos todos os vizinhos do no ativo
         for (Roteador v : atual.getVizinhos()) {
+          // Obtem a aresta e a marca para sinalizar que ela esta sendo visitada
           Aresta a = obterAresta(atual, v);
           Platform.runLater(() -> a.marcarVisitando());
+
+          // Poe o processo para dormir por 400 ms
           dormir(400);
+
+          // Calcula a nova distancia entre o no atual e o vizinho visitado
           int novaDistancia = atual.getDistancia() + a.getPeso();
 
+          // Inicio do bloco if
           if (!v.isPermanente() && (novaDistancia < v.getDistancia())) {
+            // Altera a distancia e o antecessor do vizinho caso ele nao for
+            // permanente e a nova distancia calculada for menor que a distancia anterior
             v.setDistancia(novaDistancia);
             v.setAntecessor(atual);
 
+            // Adiciona o vizinho na lista de roteadores abertos para visita
+            // caso ele nao se encontrar nela
             if (!abertos.contains(v)) abertos.add(v);
 
+            // Inicio do bloco Platform.runLater
             Platform.runLater(() -> {
+              // Altera a distancia do vizinho na interface e o atualiza 
+              // na lista de roteadores e nos seus vizinhos
               alterarDistancia(v);
               atualizarRoteador(v);
               alterarRoteadorNosVizinhos(v);
-            });
-          }
+            }); // Fim do bloco Platform.runLater
+          } // Fim do bloco if
 
+          // Reseta a linha da aresta para a sua cor original e poe o processo para dormir por 400 ms
           Platform.runLater(() -> a.resetarLinha());
           dormir(400);
-        }
+        } // Fim do bloco for
 
+        // Reseta o contorno do no ativo e poe o processo para dormir por 300 ms
         Platform.runLater(() -> rAtivo.resetarNo());
         dormir(300);
-      }
+      } // Fim do bloco while
 
       dormir(1000);
       montarCaminhoFinal(p);
-    });
+    }); // Fim do bloco Thread
 
+    // Garante que a Thread seja interrompida caso o programa for fechado
     calculo.setDaemon(true);
+
+    // Inicia a Thread
     calculo.start();
   }
 
@@ -336,38 +382,58 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void montarCaminhoFinal(Pacote p) {
+    // Esvazia o texto do no ativo
     Platform.runLater(() -> lblNoAtivo.setText(""));
+
+    // Marca as arestas que fazem parte do caminho final
     marcarArestasPermanentes();
 
+    // Inicio do bloco for
     for (Roteador r : roteadores) {
+      // Reseta o contorno de cada no na interface
       r.resetarNo();
-    }
+    } // Fim do bloco for
 
+    // Inicio do bloco for
     for (Aresta a : arestasExistentes.values()) {
+      // Inicio do bloco if
+      // Se a aresta nao for permanente (nao fizer parte do caminho final)
       if (!a.isPermanente()) {
+        // Desmarca a aresta como intermediaria caso ela tiver sido marcada anteriormente
         if (a.isIntermediario()) a.setIntermediario(false);
-        a.resetarLinha();
-      }
-    }
 
+        // Reseta a cor da linha da aresta
+        a.resetarLinha();
+      } // Fim do bloco if
+    } // Fim do bloco for
+
+    // Poe o processo para dormir por 500 ms
     dormir(500);
 
+    // Comecamos pelo destino
     Roteador passo = destino;
 
+    // Inicio do bloco while
+    // Enquanto houver algum passo no caminho
     while (passo != null) {
+      // Adiciona o roteador no caminho do pacote e o concatena na interface
       p.adicionarRoteadorAoCaminho(passo);
       final Roteador rPasso = passo;
       Platform.runLater(() -> concatenarCaminho(rPasso));
 
+      // Inicio do bloco if
       if (passo.getAntecessor() != null) {
+        // Obtem a aresta do roteador com o seu antecessor e marca como permanente
         Aresta a = obterAresta(passo, passo.getAntecessor());
         Platform.runLater(() -> a.marcarPermanente());
-      }
+      } // Fim do bloco if
 
+      // Obtem o antecessor do roteador atual e poe o processo para dormir por 800 ms
       passo = passo.getAntecessor();
       dormir(800);
-    }
+    } // Fim do bloco while
 
+    // Libera o pacote depois que o caminho for montado
     p.liberar();
   }
 
@@ -419,19 +485,23 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void dormir(long valor) {
+    // Inicio do bloco try/catch
     try {
+      // O processo eh posto para dormir por um certo tempo 
+      // (determinado pelo valor passado como parametro)
       Thread.sleep(valor);
     }
     catch (InterruptedException e) {
+      // Em caso de excecao, o processo eh interrompido
       Thread.currentThread().interrupt();
-    }
+    } // Fim do bloco try/catch
   }
 
   /*
    * ***************************************************************
    * Metodo: alterarNoAtivo
-   * Funcao: exibe o no ativo atual na label
-   * Parametros: Roteador r - roteador a ser marcado como no ativo
+   * Funcao: exibe o nome do no ativo atual na label
+   * Parametros: Roteador r - roteador marcado como no ativo
    * Retorno: void
    ****************************************************************/
 
@@ -448,14 +518,19 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void alterarDistancia(Roteador r) {
+    // Inicio do bloco for
     for (Map.Entry<String, Label> entrada : distancias.entrySet()) {
+      // Inicio do bloco if
       if (entrada.getKey().equals(r.getNome())) {
+        // Altera a label de distancia correspondente ao nome do roteador
         Label d = entrada.getValue();
         String modelo = ("(" + r.getNome() + ", " + r.getDistancia() + ")");
         d.setText(modelo);
+
+        // Interrompe o laco
         break;
-      }
-    }
+      } // Fim do bloco if
+    } // Fim do bloco for
   }
 
   /*
@@ -468,14 +543,22 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void alterarRotulo(Roteador r, String rotulo) {
+    // Inicio do bloco for
     for (Map.Entry<String, Label> entrada : rotulos.entrySet()) {
+      // Inicio do bloco if
       if (entrada.getKey().equals(r.getNome())) {
+        // Atualiza a label do rotulo cuja chave seja correspondente ao nome do roteador
         Label rotuloNo = entrada.getValue();
         rotuloNo.setText(rotulo);
+
+        // Marca a cor do rotulo como branco (caso o roteador for provisorio) ou como verde
+        // (caso o roteador for permanente)
         rotuloNo.setTextFill((rotulo.equals("PERM.")) ? Color.web("#1fdb18") : Color.WHITE);
+
+        // Interrompe o laco
         break;
-      }
-    }
+      } // Fim do bloco if
+    } // Fim do bloco for
   }
 
   /*
@@ -488,17 +571,23 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void marcarArestasPermanentes() {
+    // Comecamos pelo destino
     Roteador passo = destino;
 
+    // Inicio do bloco for
     while (passo != null) {
+      // Inicio do bloco if
       if (passo.getAntecessor() != null) {
+        // Obtem-se a aresta do roteador atual com o seu antecessor
+        // e a marca como permanente caso o roteador atual tiver um antecessor
         Aresta a = obterAresta(passo, passo.getAntecessor());
         a.setIntermediario(false);
         a.setPermanente(true);
-      }
+      } // Fim do bloco if
 
+      // Obtem-se o antecessor do roteador atual
       passo = passo.getAntecessor();
-    }
+    } // Fim do bloco for
   }
 
   /*
@@ -836,11 +925,20 @@ public class TelaPrincipalController implements Initializable {
       } // Fim do bloco for
 
       // Inicio do bloco for
-      for (Map.Entry<String, Aresta> entrada : arestasExistentes.entrySet()) {
+      for (Aresta a : arestasExistentes.values()) {
         // Remove as arestas presentes na topologia da subrede
-        Aresta a = entrada.getValue();
         subrede.getChildren().remove(a.getLinha());
       } // Fim do bloco for
+
+      for (Label p : pesosArestas) {
+        subrede.getChildren().remove(p);
+      }
+
+      for (Label d : distancias.values()) {
+        subrede.getChildren().remove(d);
+      }
+
+      listaNos.getChildren().clear();
 
       // Inicio do bloco for
       for (Roteador r : roteadores) {
@@ -854,6 +952,9 @@ public class TelaPrincipalController implements Initializable {
       posicaoCirculos.clear();
       arestasExistentes.clear();
       labels.clear();
+      distancias.clear();
+      rotulos.clear();
+      pesosArestas.clear();
 
       // Reconfigura a sub rede
       configurarSubrede();
@@ -1138,6 +1239,7 @@ public class TelaPrincipalController implements Initializable {
       lblPeso.setTranslateX(-7);
       lblPeso.setTranslateY(-7);
 
+      pesosArestas.add(lblPeso);
       subrede.getChildren().add(lblPeso);
     } // Fim do bloco if
   }

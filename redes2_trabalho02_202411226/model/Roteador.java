@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 01/04/2026
+* Ultima alteracao.: 08/04/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -53,7 +53,7 @@ public class Roteador {
    * Metodo: definirPosicao
    * Funcao: define a posicao do roteador nos eixos X e Y (posX e posY)
    * Parametros: double x - posicao no eixo X
-                 double y - posicao no eixo y
+                 double y - posicao no eixo Y
    * Retorno: void
    ****************************************************************/
 
@@ -103,9 +103,26 @@ public class Roteador {
     } // Fim do bloco for
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: marcarNoAtivo
+   * Funcao: marca o no com o contorno azul caso ele for o no ativo
+             durante o calculo do algoritmo de Dijkstra
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   public void marcarNoAtivo() {
     no.setStroke(Color.web("#2d4180"));
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: resetarNo
+   * Funcao: marca o no cor a cor do contorno anterior
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   public void resetarNo() {
     if (this.isOrigem()) {
