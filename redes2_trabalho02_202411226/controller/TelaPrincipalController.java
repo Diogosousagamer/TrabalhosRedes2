@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 08/04/2026
+* Ultima alteracao.: 09/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -192,8 +192,9 @@ public class TelaPrincipalController implements Initializable {
       alterarRoteadorNosVizinhos(destino);
       lblDestino.setText(destino.getNome());
 
-      // Oculta a label de selecao
+      // Oculta a label de selecao e exibe a label que mostrara o caminho completo
       lblSelecao.setVisible(false);
+      lblCaminho.setVisible(true);
 
       // Impede que o botao seja clicado
       btnAlterarRede.setDisable(true);
@@ -551,9 +552,9 @@ public class TelaPrincipalController implements Initializable {
         Label rotuloNo = entrada.getValue();
         rotuloNo.setText(rotulo);
 
-        // Marca a cor do rotulo como branco (caso o roteador for provisorio) ou como verde
+        // Marca a cor do rotulo como branco (caso o roteador for provisorio) ou como amarelo
         // (caso o roteador for permanente)
-        rotuloNo.setTextFill((rotulo.equals("PERM.")) ? Color.web("#1fdb18") : Color.WHITE);
+        rotuloNo.setTextFill((rotulo.equals("PERM.")) ? Color.web("#f5e940") : Color.WHITE);
 
         // Interrompe o laco
         break;
@@ -671,13 +672,14 @@ public class TelaPrincipalController implements Initializable {
     // Oculta o painel de interrupcao
     painelInterrupcao.setVisible(false);
 
-    // Exibe a Label de selecao
-    lblSelecao.setVisible(true);
-
     // Reinicia as Labels de origem, destino e caminho
     lblOrigem.setText("");
     lblDestino.setText("");
     lblCaminho.setText("");
+
+    // Exibe a Label de selecao depois de ocultar a Label do caminho
+    lblCaminho.setVisible(false);
+    lblSelecao.setVisible(true);
 
     // Ativa o menu de alteracao da rede
     btnAlterarRede.setDisable(false);

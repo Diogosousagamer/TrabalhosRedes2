@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 08/04/2026
+* Ultima alteracao.: 09/04/2026
 * Nome.............: Caminho Mais Curto (Principal)
 * Funcao...........: Este trabalho tem como objetivo simular o roteamento de pacotes dentro da camada de rede 
                      atraves do algoritmo do caminho mais curto.

@@ -26,6 +26,11 @@
             <Cursor fx:constant="HAND" />
          </cursor>
       </Button>
+      <Label fx:id="lblCaminho" alignment="CENTER" contentDisplay="CENTER" layoutX="146.0" layoutY="18.0" prefHeight="22.0" prefWidth="332.0" textAlignment="CENTER">
+         <font>
+            <Font name="VCR OSD Mono" size="14.0" />
+         </font>
+      </Label>
       <Label fx:id="lblSelecao" layoutX="154.0" layoutY="14.0" prefHeight="29.0" prefWidth="332.0" text="SELECIONE A ORIGEM E O DESTINO:">
          <font>
             <Font name="VCR OSD Mono" size="18.0" />
@@ -52,39 +57,34 @@
             </Label>
          </children>
       </AnchorPane>
-      <AnchorPane layoutX="504.0" layoutY="14.0" prefHeight="110.0" prefWidth="182.0" style="-fx-background-color: rgba(0, 0, 0, 0.3); -fx-background-radius: 8px; -fx-border-color: #ffffff; -fx-border-width: 2px; -fx-border-radius: 8px;">
+      <AnchorPane layoutX="504.0" layoutY="14.0" prefHeight="87.0" prefWidth="182.0" style="-fx-background-color: rgba(0, 0, 0, 0.3); -fx-background-radius: 8px; -fx-border-color: #ffffff; -fx-border-width: 2px; -fx-border-radius: 8px;">
          <children>
-            <Label layoutX="23.0" layoutY="14.0" text="ORIGEM:" textFill="WHITE">
+            <Label layoutX="26.0" layoutY="14.0" text="ORIGEM:" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="lblOrigem" layoutX="93.0" layoutY="14.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+            <Label fx:id="lblOrigem" layoutX="96.0" layoutY="14.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label layoutX="22.0" layoutY="36.0" text="DESTINO:" textFill="WHITE">
+            <Label layoutX="25.0" layoutY="36.0" text="DESTINO:" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="lblDestino" layoutX="93.0" layoutY="36.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+            <Label fx:id="lblDestino" layoutX="96.0" layoutY="36.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="lblCaminho" alignment="CENTER" contentDisplay="CENTER" layoutX="26.0" layoutY="75.0" prefHeight="22.0" prefWidth="135.0" textAlignment="CENTER" textFill="WHITE">
+            <Label layoutX="25.0" layoutY="57.0" text="NÓ ATIVO:" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
             </Label>
-            <Label layoutX="22.0" layoutY="57.0" text="NÓ ATIVO:" textFill="WHITE">
-               <font>
-                  <Font name="VCR OSD Mono" size="14.0" />
-               </font>
-            </Label>
-            <Label fx:id="lblNoAtivo" layoutX="97.0" layoutY="57.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+            <Label fx:id="lblNoAtivo" layoutX="100.0" layoutY="57.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
                <font>
                   <Font name="VCR OSD Mono" size="14.0" />
                </font>
