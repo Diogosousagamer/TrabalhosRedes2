@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 11/04/2026
-* Ultima alteracao.: 11/04/2026
+* Ultima alteracao.: 14/04/2026
 * Nome.............: Vetor A Distancia (Principal)
 * Funcao...........: Este trabalho tem como objetivo simular o roteamento de pacotes dentro da camada de rede 
                      atraves do algoritmo de vetor a distancia.
@@ -17,6 +17,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.scene.text.Font;
 import javafx.application.Application;
+import controller.*;
 
 public class Principal extends Application {
 
@@ -30,8 +31,11 @@ public class Principal extends Application {
 
 	@Override 
 	public void start(Stage stage) throws IOException {
+		// Carrega os controllers para que eles sejam compilados corretamente
+		TelaMenuController TelaMenuController = new TelaMenuController();
+
 		// Carrega o arquivo FXML para gerar uma nova cena (tela)
-		Parent root = FXMLLoader.load(getClass().getResource("/view/TelaPrincipal.fxml"));
+		Parent root = FXMLLoader.load(getClass().getResource("/view/TelaMenu.fxml"));
 		Scene scene = new Scene(root);
 
 		// Carrega a fonte
