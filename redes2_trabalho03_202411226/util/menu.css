@@ -4,11 +4,11 @@
 	-fx-padding: 5px;
 	-fx-font-family: 'VCR OSD Mono';
 	-fx-font-size: 17px;
-	-fx-text-fill: #39a457;
+	-fx-text-fill: #20c113;
 }
 
 .botao:hover {
 	-fx-background-color: #c7c8c9;
 	-fx-font-size: 17px;
-	-fx-text-fill: black;
+	-fx-text-fill: #39a457;
 }

@@ -1,16 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="subrede" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
    <children>
       <ImageView fitHeight="500.0" fitWidth="700.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../img/Trilha.png" />
          </image>
       </ImageView>
+      <Button fx:id="btnVoltar" layoutX="30.0" layoutY="26.0" mnemonicParsing="false" onAction="#voltar" prefHeight="31.0" prefWidth="32.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="&lt;-">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button fx:id="btnAlterarRede" layoutX="617.0" layoutY="425.0" mnemonicParsing="false" onAction="#alterarRede" prefHeight="59.0" prefWidth="60.0" styleClass="redondo" stylesheets="@../util/trilha.css">
+         <graphic>
+            <ImageView fitHeight="51.0" fitWidth="81.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/Rede.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <AnchorPane fx:id="painelAlterarRede" prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">
+         <children>
+            <Button id="fechar" fx:id="btnFechar" layoutX="641.0" layoutY="22.0" mnemonicParsing="false" onAction="#fechar" prefHeight="35.0" prefWidth="35.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="X" textFill="WHITE">
+               <font>
+                  <Font size="17.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <AnchorPane layoutX="24.0" layoutY="35.0" prefHeight="431.0" prefWidth="652.0" style="-fx-background-color: gray; -fx-background-radius: 200px;">
+               <children>
+                  <Label alignment="CENTER" contentDisplay="CENTER" layoutX="194.0" layoutY="24.0" prefHeight="27.0" prefWidth="261.0" text="ALTERE A SUB-REDE" textAlignment="CENTER" textFill="WHITE">
+                     <font>
+                        <Font name="VCR OSD Mono" size="25.0" />
+                     </font>
+                  </Label>
+                  <TextArea fx:id="txtBackbone" layoutX="81.0" layoutY="71.0" prefHeight="293.0" prefWidth="332.0" style="-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 8px;" styleClass="caixaDeTexto" stylesheets="@../util/trilha.css">
+                     <font>
+                        <Font name="VCR OSD Mono" size="15.0" />
+                     </font>
+                  </TextArea>
+                  <Label layoutX="443.0" layoutY="71.0" text="INSTRUÇÕES:" textFill="WHITE">
+                     <font>
+                        <Font name="VCR OSD Mono" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="88.0" prefHeight="70.0" prefWidth="168.0" text="A primeira linha do arquivo corresponde à quantidade de nós a serem exibidos." textFill="WHITE" wrapText="true">
+                     <font>
+                        <Font name="VCR OSD Mono" size="13.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="160.0" prefHeight="125.0" prefWidth="168.0" text="As demais linhas correspondem às arestas (linhas de comunicação) do grafo da sub-rede. Insira a aresta conforme o seguinte formato:" textFill="WHITE" wrapText="true">
+                     <font>
+                        <Font name="VCR OSD Mono" size="13.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="285.0" prefHeight="35.0" prefWidth="168.0" text="NO1,NO2,RETARDO_IDA,RETARDO_VOLTA" textFill="WHITE" wrapText="true">
+                     <font>
+                        <Font name="VCR OSD Mono" size="14.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="btnAplicar" alignment="CENTER" contentDisplay="CENTER" layoutX="447.0" layoutY="326.0" mnemonicParsing="false" onAction="#aplicar" prefHeight="36.0" prefWidth="135.0" styleClass="botao" stylesheets="@../util/trilha.css" text="APLICAR" textAlignment="CENTER" textFill="#20c113">
+                     <font>
+                        <Font name="VCR OSD Mono" size="17.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+      <Label fx:id="lblSelecao" layoutX="150.0" layoutY="16.0" prefHeight="29.0" prefWidth="332.0" text="SELECIONE A ORIGEM E O DESTINO:" textFill="WHITE">
+         <font>
+            <Font name="VCR OSD Mono" size="18.0" />
+         </font>
+      </Label>
+      <Label layoutX="541.0" layoutY="26.0" text="ORIGEM:" textFill="WHITE">
+         <font>
+            <Font name="VCR OSD Mono" size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="lblOrigem" layoutX="611.0" layoutY="26.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+         <font>
+            <Font name="VCR OSD Mono" size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="540.0" layoutY="48.0" text="DESTINO:" textFill="WHITE">
+         <font>
+            <Font name="VCR OSD Mono" size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="lblDestino" layoutX="611.0" layoutY="48.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+         <font>
+            <Font name="VCR OSD Mono" size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="lblCaminho" layoutX="150.0" layoutY="16.0" prefHeight="29.0" prefWidth="332.0" textFill="WHITE" visible="false">
+         <font>
+            <Font name="VCR OSD Mono" size="18.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
