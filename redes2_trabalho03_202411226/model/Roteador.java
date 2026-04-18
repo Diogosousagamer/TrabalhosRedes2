@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 16/04/2026
+* Ultima alteracao.: 18/04/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -20,6 +20,7 @@ public class Roteador {
 	private double posX;
   private double posY;
 	private ArrayList<Roteador> vizinhos;
+  private TabelaRoteamento tabela;
 	private String nome;
 	private boolean origem;
 	private boolean destino;
@@ -41,9 +42,18 @@ public class Roteador {
 		destino = false;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: definirPosicao
+   * Funcao: define a posicao do roteador nos eixos X e Y
+   * Parametros: double x - posicao no eixo X
+                 double y - posicao no eixo Y
+   * Retorno: void
+   ****************************************************************/
+
 	public void definirPosicao(double x, double y) {
-		posX = x;
-		posY = y;
+		this.posX = x;
+		this.posY = y;
 	}
 
 	/*
@@ -85,6 +95,14 @@ public class Roteador {
         break;
       } // Fim do bloco if
     } // Fim do bloco for
+  }
+
+  public void modificarEntrada(String destino, String saida, long retardo) {
+    tabela.alterarEntrada(new EntradaTabela(destino, saida, retardo));
+  }
+
+  public void resetarEntradas() {
+    tabela.redefinirEntradas();
   }
 
   /*
@@ -253,5 +271,13 @@ public class Roteador {
 
   public boolean isDestino() {
     return destino;
+  }
+
+  public void setTabela(TabelaRoteamento tabela) {
+    this.tabela = tabela;
+  }
+
+  public TabelaRoteamento getTabela() {
+    return tabela;
   }
 }

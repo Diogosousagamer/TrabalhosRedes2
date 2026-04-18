@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 16/04/2026
+* Ultima alteracao.: 18/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -11,18 +11,22 @@
 package controller;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.lang.Thread;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -34,7 +38,13 @@ import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
@@ -47,21 +57,27 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import model.Roteador;
 import model.Aresta;
+import model.Roteador;
+import model.TabelaRoteamento;
+import model.EntradaTabela;
 
 public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
 	@FXML private AnchorPane painelAlterarRede;
 	@FXML private AnchorPane subrede;
+  @FXML private AnchorPane visaoTabelas;
 	@FXML private Button btnAlterarRede;
   @FXML private Button btnAplicar;
-  @FXML private Button btnFechar;
+  @FXML private Button btnExibirTabelas;
+  @FXML private Button btnFecharAlterarRede;
+  @FXML private Button btnFecharTabela;
 	@FXML private Button btnVoltar;
 	@FXML private Label lblCaminho;
 	@FXML private Label lblDestino;
 	@FXML private Label lblOrigem;
 	@FXML private Label lblSelecao;
+  @FXML private TabPane painelTabela;
 	@FXML private TextArea txtBackbone;
 
 	// Variaveis e instancias
@@ -185,14 +201,80 @@ public class TelaPrincipalController implements Initializable {
       lblSelecao.setVisible(false);
       lblCaminho.setVisible(true);
 
-      // Impede que o botao seja clicado
+      // Impede que a rede seja alterada durante a simulacao
       btnAlterarRede.setDisable(true);
+
+      for (Aresta a : arestasExistentes.values()) {
+        Line l = a.getLinha();
+        l.setMouseTransparent(true);
+      }
     }
     else if (existeOrigem() && existeDestino()) {
       // Interrompe o metodo se uma origem e um destino ja tiverem
       // sido definidos
       return;
     } // Fim do bloco if/else if/else if
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: ocultarAresta
+   * Funcao: oculta a aresta da sub rede, desabilitando-a quando o usuario
+             clicar na linha
+   * Parametros: MouseEvent event - evento gerado ao clicar no circulo
+                 Aresta a - aresta na qual o usuario clicou
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void ocultarAresta(MouseEvent event, Aresta a) {
+    Roteador r1 = a.getR1();
+    Roteador r2 = a.getR2();
+
+    String nome1 = r1.getNome();
+    String nome2 = r2.getNome();
+    String ida = Long.toString(a.getIda());
+    String volta = Long.toString(a.getVolta());
+
+    String linha = nome1 + "," + nome2 + "," + ida + "," + volta;
+
+    File backbone = new File("backbone.txt");
+    ArrayList<String> linhasRestantes = new ArrayList<>();
+
+    try {
+      if (backbone.exists()) {
+        Files.lines(backbone.toPath()).forEach(l -> {
+          if (!l.trim().equals(linha)) {
+            linhasRestantes.add(l);
+          }
+        });
+      }
+
+      Files.write(backbone.toPath(), linhasRestantes);
+      removerSubrede();
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @FXML
+  private void exibirTabelas(ActionEvent event) {
+    visaoTabelas.toFront();
+    visaoTabelas.setVisible(true);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: fecharTabela
+   * Funcao: oculta o painel das tabelas de roteamento
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void fecharTabela(ActionEvent event) {
+    visaoTabelas.setVisible(false);
   }
 
 	/*
@@ -240,14 +322,14 @@ public class TelaPrincipalController implements Initializable {
 
   /*
    * ***************************************************************
-   * Metodo: fechar
+   * Metodo: fecharAlterarRede
    * Funcao: oculta o painel de alteracao da sub rede
    * Parametros: ActionEvent event - evento gerado ao clicar no botao
    * Retorno: void
    ****************************************************************/
 
   @FXML
-  private void fechar(ActionEvent event) {
+  private void fecharAlterarRede(ActionEvent event) {
     painelAlterarRede.setVisible(false);
   }
 
@@ -347,6 +429,8 @@ public class TelaPrincipalController implements Initializable {
         // Desenha a aresta se nenhum dos roteadores for nulo
         if (r1 != null && r2 != null) gerarAresta(r1, r2, ida, volta);
       } // Fim do bloco while
+
+      criarTabelas();
     }
     catch (IOException e) {
       // Em caso de excecao, ela sera exibida no terminal
@@ -400,6 +484,8 @@ public class TelaPrincipalController implements Initializable {
         // Esvazia os roteadores
         r = null;
       } // Fim do bloco for
+
+      painelTabela.getTabs().clear();
 
       // Esvazia as listas e os HashMaps
       roteadores.clear();
@@ -645,6 +731,7 @@ public class TelaPrincipalController implements Initializable {
       Line linha = new Line(r1.getNo().getCenterX(), r1.getNo().getCenterY(), r2.getNo().getCenterX(), r2.getNo().getCenterY());
       linha.setStroke(Color.WHITE);
       linha.setStrokeWidth(1.0);
+      linha.setCursor(Cursor.HAND);
 
       // Adiciona a linha na tela da sub rede
       subrede.getChildren().add(linha);
@@ -663,6 +750,12 @@ public class TelaPrincipalController implements Initializable {
 
       // Cria uma nova instancia de aresta
       Aresta aresta = new Aresta(linha, r1, r2, idaLong, voltaLong);
+
+      linha.setOnMouseClicked(event -> {
+        ocultarAresta(event, aresta);
+      });
+
+      aresta.setLinha(linha);
 
       // Coloca a aresta dentro do HashMap
       arestasExistentes.put(idConexao, aresta);
@@ -689,6 +782,65 @@ public class TelaPrincipalController implements Initializable {
 
       subrede.getChildren().add(lblTempo);
     } // Fim do bloco if
+  }
+
+  private void criarTabelas() {
+    for (Roteador r : roteadores) {
+      Tab t = new Tab(r.getNome());
+      painelTabela.getTabs().add(t);
+
+      TableView<EntradaTabela> tabela = new TableView<>();
+
+      tabela.getStyleClass().add("table-view");
+      String css = getClass().getResource("/util/trilha.css").toExternalForm();
+      tabela.getStylesheets().add(css);
+      
+      TableColumn<EntradaTabela, String> destino = new TableColumn<>("Para");
+      destino.setCellValueFactory(new PropertyValueFactory<>("destino"));
+      centralizarColuna(destino);
+
+      TableColumn<EntradaTabela, String> saida = new TableColumn<>("Saida");
+      saida.setCellValueFactory(new PropertyValueFactory<>("linhaSaida"));
+      centralizarColuna(saida);
+
+      TableColumn<EntradaTabela, Long> retardo = new TableColumn<>("Retardo");
+      retardo.setCellValueFactory(new PropertyValueFactory<>("retardo"));
+      centralizarColuna(retardo);
+
+      tabela.getColumns().addAll(destino, saida, retardo);
+      tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+      t.setContent(tabela);
+
+      ArrayList<EntradaTabela> entradas = new ArrayList<>();
+
+      for (Roteador rot : roteadores) {
+        entradas.add(new EntradaTabela(rot.getNome(), "-", 0));
+      }
+
+      TabelaRoteamento tab = new TabelaRoteamento(r.getNome(), tabela, entradas);
+      tab.atualizarTabela();
+
+      r.setTabela(tab);
+      atualizarRoteador(r);
+      alterarRoteadorNosVizinhos(r);
+    }
+  }
+
+  private <S, T> void centralizarColuna(TableColumn<S, T> coluna) {
+    coluna.setCellFactory(tc -> new TableCell<S, T>() {
+      @Override
+      protected void updateItem(T item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (item == null || empty) {
+          setText(null);
+        } 
+        else {
+          setText(item.toString());
+          setStyle("-fx-alignment: CENTER;");
+        }
+      }
+    });
   }
 
   /*

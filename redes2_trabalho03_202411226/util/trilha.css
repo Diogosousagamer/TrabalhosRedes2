@@ -50,6 +50,42 @@
 	-fx-background-color: transparent;
 }
 
-.scroll-pane .viewport {
+.scrollpane .viewport {
 	-fx-background-color: transparent;
+}
+
+.painelTabela .tab-header-area .tab-header-background {
+	-fx-background-color: transparent;
+}
+
+.painelTabela .tab {
+	-fx-background-color: #ffffff;
+	-fx-padding: 5px;
+	-fx-margin: 5px;
+}
+
+.painelTabela .tab .tab-label {
+	-fx-font-family: 'VCR OSD Mono';
+	-fx-font-size: 14px;
+	-fx-text-fill: #20c113;
+}
+
+.painelTabela .tab:hover {
+	-fx-background-color: #20c113;
+	-fx-cursor: hand;
+}
+
+.painelTabela .tab:hover .tab-label {
+	-fx-text-fill: white;
+}
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-font-family: 'VCR OSD Mono';
+    -fx-font-size: 14px;
+}
+
+.table-view .column-header {
+	-fx-background-color: #20c113;
+	-fx-text-fill: white;
 }

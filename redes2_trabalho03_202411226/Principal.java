@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 11/04/2026
-* Ultima alteracao.: 16/04/2026
+* Ultima alteracao.: 18/04/2026
 * Nome.............: Vetor A Distancia (Principal)
 * Funcao...........: Este trabalho tem como objetivo simular o roteamento de pacotes dentro da camada de rede 
                      atraves do algoritmo de vetor a distancia.

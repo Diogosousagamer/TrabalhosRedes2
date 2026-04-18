@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 16/04/2026
+* Ultima alteracao.: 18/04/2026
 * Nome.............: Aresta
 * Funcao...........: Classe que gerencia as operacoes de cada aresta.
                      
@@ -34,5 +34,37 @@ public class Aresta {
 
 	public Line getLinha() {
 		return linha;
+	}
+
+	public void setR1(Roteador r1) {
+		this.r1 = r1;
+	}
+
+	public Roteador getR1() {
+		return r1;
+	}
+
+	public void setR2(Roteador r2) {
+		this.r2 = r2;
+	}
+
+	public Roteador getR2() {
+		return r2;
+	}
+
+	public void setIda(long ida) {
+		this.tempoIda = ida;
+	}
+
+	public long getIda() {
+		return tempoIda;
+	}
+
+	public void setVolta(long volta) {
+		this.tempoVolta = volta;
+	}
+
+	public long getVolta() {
+		return tempoVolta;
 	}
 }
