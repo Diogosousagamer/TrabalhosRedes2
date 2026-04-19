@@ -58,9 +58,10 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.Aresta;
+import model.EntradaTabela;
+import model.Pacote;
 import model.Roteador;
 import model.TabelaRoteamento;
-import model.EntradaTabela;
 
 public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
@@ -136,6 +137,48 @@ public class TelaPrincipalController implements Initializable {
 		stage.setScene(scene);
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: ocultarAresta
+   * Funcao: oculta a aresta da sub rede, desabilitando-a quando o usuario
+             clicar na linha
+   * Parametros: MouseEvent event - evento gerado ao clicar no circulo
+                 Aresta a - aresta na qual o usuario clicou
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void ocultarAresta(MouseEvent event, Aresta a) {
+    Roteador r1 = a.getR1();
+    Roteador r2 = a.getR2();
+
+    String nome1 = r1.getNome();
+    String nome2 = r2.getNome();
+    String ida = Long.toString(a.getIda());
+    String volta = Long.toString(a.getVolta());
+
+    String linha = nome1 + "," + nome2 + "," + ida + "," + volta;
+
+    File backbone = new File("backbone.txt");
+    ArrayList<String> linhasRestantes = new ArrayList<>();
+
+    try {
+      if (backbone.exists()) {
+        Files.lines(backbone.toPath()).forEach(l -> {
+          if (!l.trim().equals(linha)) {
+            linhasRestantes.add(l);
+          }
+        });
+      }
+
+      Files.write(backbone.toPath(), linhasRestantes);
+      removerSubrede();
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
 	/*
    * ***************************************************************
    * Metodo: definirOrigemDestino
@@ -208,6 +251,8 @@ public class TelaPrincipalController implements Initializable {
         Line l = a.getLinha();
         l.setMouseTransparent(true);
       }
+
+      if (origem != null) iniciarSimulacao();
     }
     else if (existeOrigem() && existeDestino()) {
       // Interrompe o metodo se uma origem e um destino ja tiverem
@@ -216,50 +261,45 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco if/else if/else if
   }
 
+  private void iniciarSimulacao() {
+    Platform.runLater(() -> {
+      Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
+
+      ImageView envelope = new ImageView(mail);
+      envelope.setFitWidth(41);
+      envelope.setFitHeight(98);
+      envelope.setPreserveRatio(true);
+      subrede.getChildren().add(envelope);
+
+      Pacote p = new Pacote(envelope, origem, destino);
+      p.setDaemon(true);
+      p.start();
+
+      // calcularVetorDistancia(p);
+    });
+  }
+
+  private void calcularVetorDistancia(Pacote p) {
+    Thread vetorDistancia = new Thread(() -> {
+
+    });
+
+    vetorDistancia.setDaemon(true);
+    vetorDistancia.start();
+  }
+
   /*
    * ***************************************************************
-   * Metodo: ocultarAresta
-   * Funcao: oculta a aresta da sub rede, desabilitando-a quando o usuario
-             clicar na linha
-   * Parametros: MouseEvent event - evento gerado ao clicar no circulo
-                 Aresta a - aresta na qual o usuario clicou
+   * Metodo: exibirTabelas
+   * Funcao: exibe o painel das tabelas de roteamento
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
    * Retorno: void
    ****************************************************************/
 
   @FXML
-  private void ocultarAresta(MouseEvent event, Aresta a) {
-    Roteador r1 = a.getR1();
-    Roteador r2 = a.getR2();
-
-    String nome1 = r1.getNome();
-    String nome2 = r2.getNome();
-    String ida = Long.toString(a.getIda());
-    String volta = Long.toString(a.getVolta());
-
-    String linha = nome1 + "," + nome2 + "," + ida + "," + volta;
-
-    File backbone = new File("backbone.txt");
-    ArrayList<String> linhasRestantes = new ArrayList<>();
-
-    try {
-      if (backbone.exists()) {
-        Files.lines(backbone.toPath()).forEach(l -> {
-          if (!l.trim().equals(linha)) {
-            linhasRestantes.add(l);
-          }
-        });
-      }
-
-      Files.write(backbone.toPath(), linhasRestantes);
-      removerSubrede();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  @FXML
   private void exibirTabelas(ActionEvent event) {
+    // Exibe o painel das tabelas de roteamento acima da sub rede (porque a sub rede
+    // eh criada via codigo, acima dos demais componentes)
     visaoTabelas.toFront();
     visaoTabelas.setVisible(true);
   }
@@ -730,7 +770,7 @@ public class TelaPrincipalController implements Initializable {
       // A linha e desenhada entre os nos de cada roteador
       Line linha = new Line(r1.getNo().getCenterX(), r1.getNo().getCenterY(), r2.getNo().getCenterX(), r2.getNo().getCenterY());
       linha.setStroke(Color.WHITE);
-      linha.setStrokeWidth(1.0);
+      linha.setStrokeWidth(3.0);
       linha.setCursor(Cursor.HAND);
 
       // Adiciona a linha na tela da sub rede
@@ -761,7 +801,7 @@ public class TelaPrincipalController implements Initializable {
       arestasExistentes.put(idConexao, aresta);
 
       // Gera as labels de ida e volta da aresta
-      Label lblTempo = new Label(ida + " ms;" + volta + " ms");
+      Label lblTempo = new Label(ida + ";" + volta);
       lblTempo.setFont(Font.font("VCR OSD Mono", 11));
       lblTempo.setTextFill(Color.WHITE);
 

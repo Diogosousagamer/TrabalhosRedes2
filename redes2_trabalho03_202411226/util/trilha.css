@@ -75,7 +75,15 @@
 	-fx-cursor: hand;
 }
 
+.painelTabela .tab:selected {
+	-fx-background-color: #20c113;
+}
+
 .painelTabela .tab:hover .tab-label {
+	-fx-text-fill: white;
+}
+
+.painelTabela .tab:selected .tab-label {
 	-fx-text-fill: white;
 }
 

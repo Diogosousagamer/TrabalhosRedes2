@@ -97,6 +97,10 @@ public class Roteador {
     } // Fim do bloco for
   }
 
+  public void calcularPing(Roteador r1, Roteador r2) {
+    tabela.ping(r1, r2);
+  }
+
   public void modificarEntrada(String destino, String saida, long retardo) {
     tabela.alterarEntrada(new EntradaTabela(destino, saida, retardo));
   }
