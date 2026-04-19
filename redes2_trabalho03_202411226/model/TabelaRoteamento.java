@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 18/04/2026
+* Ultima alteracao.: 19/04/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
