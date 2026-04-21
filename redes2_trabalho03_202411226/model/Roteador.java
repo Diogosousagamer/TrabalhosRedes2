@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 19/04/2026
+* Ultima alteracao.: 21/04/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -10,6 +10,10 @@
 
 package model;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -24,6 +28,8 @@ public class Roteador {
 	private String nome;
 	private boolean origem;
 	private boolean destino;
+  private long distancia;
+  private Roteador antecessor;
 
   /*
    * ***************************************************************
@@ -40,6 +46,7 @@ public class Roteador {
 		vizinhos = new ArrayList<>();
 		origem = false;
 		destino = false;
+    distancia = Integer.MAX_VALUE;
 	}
 
   /*
@@ -97,13 +104,107 @@ public class Roteador {
     } // Fim do bloco for
   }
 
-  public void calcularPing(Roteador r1, Roteador r2) {
-    tabela.ping(r1, r2);
+  /*
+   * ***************************************************************
+   * Metodo: marcarVisitando
+   * Funcao: marca o no do roteador com um contorno azul escuro para sinalizar
+             que ele esta sendo visitado
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void marcarVisitando() {
+    no.setStroke(Color.web("#3d7996"));
   }
 
-  public void modificarEntrada(String destino, String saida, long retardo) {
-    tabela.alterarEntrada(new EntradaTabela(destino, saida, retardo));
+  /*
+   * ***************************************************************
+   * Metodo: resetarNo
+   * Funcao: marca o no cor a cor do contorno anterior
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void resetarNo() {
+    // Inicio do bloco if/else if/else
+    if (this.isOrigem()) {
+      // Reverte para a cor verde caso o no corresponder ao roteador
+      // de origem
+      no.setStroke(Color.web("#1fdb18"));
+    }
+    else if (this.isDestino()) {
+      // Reverte para a cor vermelho caso o no corresponder ao roteador
+      // de destino
+      no.setStroke(Color.web("#d60b18"));
+    }
+    else {
+      // Para os demais casos, a cor sera revertida para preto
+      no.setStroke(Color.BLACK);
+    } // Fim do bloco if/else if/else
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: ping
+   * Funcao: retorna o retardo de um caminho entre dois roteadores
+   * Parametros: Roteador r1 - roteador de partida
+                 Roteador r2 - roteador de destino
+   * Retorno: long
+   ****************************************************************/
+
+  public long ping(Roteador r1, Roteador r2) {
+    long distancia = 0;
+
+    try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
+      String linha = "";
+
+      while ((linha = br.readLine()) != null) {
+        String[] partes = linha.split(",");
+
+        if (partes.length < 4) continue;
+
+        String nome1 = partes[0];
+        String nome2 = partes[1];
+
+        if (nome1.equals(r1.getNome()) && nome2.equals(r2.getNome())) {
+          distancia = Long.parseLong(partes[2]);
+          break;
+        }
+        else if (nome1.equals(r2.getNome()) && nome2.equals(r1.getNome())) {
+          distancia = Long.parseLong(partes[3]);
+          break;
+        }
+      }
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return distancia;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: modificarEntrada
+   * Funcao: modifica uma certa entrada na tabela de roteamento
+   * Parametros: String destino - linha de destino
+                 String saida - linha de saida
+                 long retardo - retardo do caminho a ser percorrido
+                                ate o destino
+   * Retorno: void
+   ****************************************************************/
+
+  public void modificarEntrada(String destino, String saida, long retardo) {
+    tabela.alterarEntrada(new EntradaTabela(destino, saida, Long.toString(retardo)));
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: resetarEntradas
+   * Funcao: redefine as entradas apos a finalizacao do algoritmo
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   public void resetarEntradas() {
     tabela.redefinirEntradas();
@@ -277,11 +378,76 @@ public class Roteador {
     return destino;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: setTabela
+   * Funcao: define a tabela de roteamento do roteador
+   * Parametros: TabelaRoteamento tabela - tabela a ser definida
+   * Retorno: void
+   ****************************************************************/
+
   public void setTabela(TabelaRoteamento tabela) {
     this.tabela = tabela;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: getTabela
+   * Funcao: retorna a tabela de roteamento do roteador
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: TabelaRoteamento
+   ****************************************************************/
+
   public TabelaRoteamento getTabela() {
     return tabela;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: setDistancia
+   * Funcao: define a distancia do roteador dentro do caminho
+   * Parametros: long distancia - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setDistancia(int distancia) {
+    this.distancia = distancia;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: getDistancia
+   * Funcao: retorna a distancia atual do roteador dentro do caminho
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: long
+   ****************************************************************/
+
+  public long getDistancia() {
+    return distancia;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: setAntecessor
+   * Funcao: define o antecessor desse roteador para que o caminho
+             final seja montado
+   * Parametros: Roteador a - valor a ser definido 
+   * Retorno: void
+   ****************************************************************/
+
+  public void setAntecessor(Roteador a) {
+    this.antecessor = a;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: getAntecessor
+   * Funcao: retorna o antecessor atual do roteador
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: Roteador
+   ****************************************************************/
+
+  public Roteador getAntecessor() {
+    return antecessor;
   }
 }

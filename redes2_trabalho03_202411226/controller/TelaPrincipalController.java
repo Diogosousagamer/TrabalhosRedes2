@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 19/04/2026
+* Ultima alteracao.: 21/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -139,10 +139,38 @@ public class TelaPrincipalController implements Initializable {
 
   /*
    * ***************************************************************
+   * Metodo: hoverAresta
+   * Funcao: altera a cor da aresta quando o mouse esta selecionando a linha
+   * Parametros: MouseEvent event - evento gerado ao aproximar o mouse da linha
+                 Line l - linha correspondente a aresta onde o mouse se posicionou
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void hoverAresta(MouseEvent event, Line l) {
+    l.setStroke(Color.web("#9da1ad"));
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: exitAresta
+   * Funcao: redefine a cor da aresta ao retirar a aresta do alcance do mouse
+   * Parametros: MouseEvent event - evento gerado ao sair da linha
+                 Line l - linha correspondente a aresta da qual o mouse saiu de alcance
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void exitAresta(MouseEvent event, Line l) {
+    l.setStroke(Color.WHITE);
+  }
+
+  /*
+   * ***************************************************************
    * Metodo: ocultarAresta
    * Funcao: oculta a aresta da sub rede, desabilitando-a quando o usuario
              clicar na linha
-   * Parametros: MouseEvent event - evento gerado ao clicar no circulo
+   * Parametros: MouseEvent event - evento gerado ao clicar na linha
                  Aresta a - aresta na qual o usuario clicou
    * Retorno: void
    ****************************************************************/
@@ -247,11 +275,14 @@ public class TelaPrincipalController implements Initializable {
       // Impede que a rede seja alterada durante a simulacao
       btnAlterarRede.setDisable(true);
 
+      // Inicio do bloco for
       for (Aresta a : arestasExistentes.values()) {
+        // Impede que as arestas sejam removidas durante a simulacao
         Line l = a.getLinha();
         l.setMouseTransparent(true);
-      }
+      } // Fim do bloco for
 
+      // Inicia a simulacao se a origem nao for nula
       if (origem != null) iniciarSimulacao();
     }
     else if (existeOrigem() && existeDestino()) {
@@ -261,31 +292,198 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco if/else if/else if
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: inciarSimulacao
+   * Funcao: inicia a simulacao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   private void iniciarSimulacao() {
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Inicializa uma nova imagem representando o pacote
       Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
 
+      // Configura a imagem do pacote e a adiciona na sub rede
       ImageView envelope = new ImageView(mail);
       envelope.setFitWidth(41);
       envelope.setFitHeight(98);
       envelope.setPreserveRatio(true);
       subrede.getChildren().add(envelope);
 
+      // Inicializa uma nova Thread correspondente ao pacote
       Pacote p = new Pacote(envelope, origem, destino);
       p.setDaemon(true);
       p.start();
 
-      // calcularVetorDistancia(p);
-    });
+      // Submete o pacote para calcular o trajeto da origem ate o destino
+      // atraves do algoritmo por vetor de distancia
+      calcularVetorDistancia(p);
+    }); // Fim do bloco Platform.runLater
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: calcularVetorDistancia
+   * Funcao: calcula o caminho mais curto a ser percorrido pelo pacote
+             da origem ate o destino atraves do algoritmo por vetor de distancia
+   * Parametros: Pacote p - pacote cujo caminho sera montado
+   * Retorno: void
+   ****************************************************************/
 
   private void calcularVetorDistancia(Pacote p) {
     Thread vetorDistancia = new Thread(() -> {
+      Platform.runLater(() -> {
+        origem.setDistancia(0);
+        alterarDistancia(origem);
+        atualizarRoteador(origem);
+        alterarRoteadorNosVizinhos(origem);
+      });
 
+      definirValoresIniciais();
+      dormir(300);
+
+      ArrayList<Roteador> abertos = new ArrayList<>();
+      abertos.add(origem);
+
+      while (!abertos.isEmpty()) {
+        Roteador atual = abertos.get(0);
+      }
+
+      obterCaminhoFinal(p);
     });
 
     vetorDistancia.setDaemon(true);
     vetorDistancia.start();
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: montarCaminhoFinal
+   * Funcao: monta o caminho final a ser percorrido pelo pacote
+   * Parametros: Pacote p - pacote cujo caminho sera montado
+   * Retorno: void
+   ****************************************************************/
+
+  private void obterCaminhoFinal(Pacote p) {
+
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: definirValoresIniciais
+   * Funcao: cada roteador preenche suas tabelas com os retardos de seus
+             vizinhos diretos
+   * Parametros: Pacote p - pacote cujo caminho sera montado
+   * Retorno: void
+   ****************************************************************/
+
+  private void definirValoresIniciais() {
+    for (Roteador r : roteadores) {
+      Platform.runLater(() -> r.marcarVisitando());
+      dormir(500);
+
+      ArrayList<Roteador> vizinhos = r.getVizinhos();
+
+      for (Roteador v : vizinhos) {
+        final Aresta a = obterAresta(r, v);
+        final long distancia = r.ping(r, v);
+        final String vizinho = v.getNome();
+
+        Platform.runLater(() -> {
+          a.marcarVisitando();
+          r.modificarEntrada(vizinho, vizinho, distancia);
+        });
+
+        dormir(800);
+        a.resetarLinha();
+      }
+
+      r.resetarNo();
+      atualizarRoteador(r);
+      alterarRoteadorNosVizinhos(r);
+    }
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: obterAresta
+   * Funcao: obtem uma aresta especifica dentro do grafo
+   * Parametros: Roteador r1 - primeiro roteador
+                 Roteador r2 - segundo roteador
+   * Retorno: Aresta
+   ****************************************************************/
+
+  private Aresta obterAresta(Roteador r1, Roteador r2) {
+    // Obtem a id da aresta e retona a aresta correspondente dentro do HashMap
+    String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+    return arestasExistentes.get(id);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: dormir
+   * Funcao: poe o processo para dormir
+   * Parametros: long valor - valor de sono
+   * Retorno: void
+   ****************************************************************/
+
+  private void dormir(long valor) {
+    // Inicio do bloco try/catch
+    try {
+      // O processo eh posto para dormir por um certo tempo 
+      // (determinado pelo valor passado como parametro)
+      Thread.sleep(valor);
+    }
+    catch (InterruptedException e) {
+      // Em caso de excecao, o processo eh interrompido
+      Thread.currentThread().interrupt();
+    } // Fim do bloco try/catch
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: alterarDistancia
+   * Funcao: altera a distancia do no visitado
+   * Parametros: Roteador r - roteador cuja distancia sera alterada
+   * Retorno: void
+   ****************************************************************/
+
+  private void alterarDistancia(Roteador r) {
+    // Inicio do bloco for
+    for (Map.Entry<String, Label> entrada : distancias.entrySet()) {
+      // Inicio do bloco if
+      if (entrada.getKey().equals(r.getNome())) {
+        // Altera a label de distancia correspondente ao nome do roteador
+        Label d = entrada.getValue();
+        String modelo = ("(" + r.getNome() + ", " + r.getDistancia() + ")");
+        d.setText(modelo);
+
+        // Interrompe o laco
+        break;
+      } // Fim do bloco if
+    } // Fim do bloco for
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: concatenarCaminho
+   * Funcao: monta o caminho a ser percorrido na Label
+   * Parametros: Roteador r - roteador a ser adicionado no caminho
+   * Retorno: void
+   ****************************************************************/
+
+  private void concatenarCaminho(Roteador r) {
+    // Obtemos o texto atual
+    String textoAtual = lblCaminho.getText();
+
+    // Gera um novo trecho (a seta e adicionada se o roteador nao corresponder a origem)
+    String novoTrecho = (r.isOrigem()) ? r.getNome() : " -> " + r.getNome();
+
+    // Exibe o novo trecho no inicio junto com o texto anterior
+    lblCaminho.setText(novoTrecho + textoAtual);
   }
 
   /*
@@ -795,6 +993,14 @@ public class TelaPrincipalController implements Initializable {
         ocultarAresta(event, aresta);
       });
 
+      linha.setOnMouseEntered(event -> {
+        hoverAresta(event, linha);
+      });
+
+      linha.setOnMouseExited(event -> {
+        exitAresta(event, linha);
+      });
+
       aresta.setLinha(linha);
 
       // Coloca a aresta dentro do HashMap
@@ -824,7 +1030,16 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco if
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: criarTabelas
+   * Funcao: cria as tabelas de roteamento para cada roteador
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   private void criarTabelas() {
+    // Inicio do bloco for
     for (Roteador r : roteadores) {
       Tab t = new Tab(r.getNome());
       painelTabela.getTabs().add(t);
@@ -843,7 +1058,7 @@ public class TelaPrincipalController implements Initializable {
       saida.setCellValueFactory(new PropertyValueFactory<>("linhaSaida"));
       centralizarColuna(saida);
 
-      TableColumn<EntradaTabela, Long> retardo = new TableColumn<>("Retardo");
+      TableColumn<EntradaTabela, String> retardo = new TableColumn<>("Retardo");
       retardo.setCellValueFactory(new PropertyValueFactory<>("retardo"));
       centralizarColuna(retardo);
 
@@ -854,7 +1069,7 @@ public class TelaPrincipalController implements Initializable {
       ArrayList<EntradaTabela> entradas = new ArrayList<>();
 
       for (Roteador rot : roteadores) {
-        entradas.add(new EntradaTabela(rot.getNome(), "-", 0));
+        entradas.add(new EntradaTabela(rot.getNome(), "-", "-"));
       }
 
       TabelaRoteamento tab = new TabelaRoteamento(r.getNome(), tabela, entradas);
@@ -863,8 +1078,16 @@ public class TelaPrincipalController implements Initializable {
       r.setTabela(tab);
       atualizarRoteador(r);
       alterarRoteadorNosVizinhos(r);
-    }
+    } // Fim do bloco for
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: centralizarColuna
+   * Funcao: centraliza o campo de texto de uma coluna
+   * Parametros: TableColumn<S,T> coluna - coluna a ser centralizada
+   * Retorno: void
+   ****************************************************************/
 
   private <S, T> void centralizarColuna(TableColumn<S, T> coluna) {
     coluna.setCellFactory(tc -> new TableCell<S, T>() {

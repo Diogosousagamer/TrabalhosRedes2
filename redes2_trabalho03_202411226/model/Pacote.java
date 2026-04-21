@@ -30,7 +30,7 @@ public class Pacote extends Thread {
 	/*
    * ***************************************************************
    * Metodo: Pacote
-   * Funcao: inicializa uma nova instancia da classe Pacote (V1 do algoritmo de inundacao)
+   * Funcao: inicializa uma nova instancia da classe Pacote
    * Parametros: ImageView envelope - imagem do pacote
                  Roteador origem - roteador do qual se originou
                  Roteador destino - roteador para o qual o pacote sera encaminhado
@@ -75,6 +75,7 @@ public class Pacote extends Thread {
    ****************************************************************/
 
 	private void definirPosicao() {
+		// Inicio do bloco Platform.runLater
 		Platform.runLater(() -> {
 			envelope.setLayoutX(origem.getPosX());
 			envelope.setLayoutY(origem.getPosY());
@@ -83,7 +84,7 @@ public class Pacote extends Thread {
 			// nos contadores de posicao
 			posX = envelope.getLayoutX();
 			posY = envelope.getLayoutY();
-		});
+		}); // Fim do bloco Platform.runLater
 	}
 
 	/*
