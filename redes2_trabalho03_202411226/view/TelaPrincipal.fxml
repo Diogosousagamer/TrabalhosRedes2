@@ -11,104 +11,97 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="subrede" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
    <children>
-      <ImageView fitHeight="500.0" fitWidth="770.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../img/Trilha.png" />
-         </image>
-      </ImageView>
-      <Button fx:id="btnVoltar" layoutX="30.0" layoutY="26.0" mnemonicParsing="false" onAction="#voltar" prefHeight="31.0" prefWidth="32.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="&lt;-">
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-      </Button>
-      <Label fx:id="lblSelecao" layoutX="150.0" layoutY="16.0" prefHeight="29.0" prefWidth="332.0" text="SELECIONE A ORIGEM E O DESTINO:" textFill="WHITE">
-         <font>
-            <Font name="VCR OSD Mono" size="18.0" />
-         </font>
-      </Label>
-      <Label layoutX="541.0" layoutY="26.0" text="ORIGEM:" textFill="WHITE">
-         <font>
-            <Font name="VCR OSD Mono" size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="lblOrigem" layoutX="611.0" layoutY="26.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
-         <font>
-            <Font name="VCR OSD Mono" size="14.0" />
-         </font>
-      </Label>
-      <Label layoutX="540.0" layoutY="48.0" text="DESTINO:" textFill="WHITE">
-         <font>
-            <Font name="VCR OSD Mono" size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="lblDestino" layoutX="611.0" layoutY="48.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
-         <font>
-            <Font name="VCR OSD Mono" size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="lblCaminho" layoutX="150.0" layoutY="16.0" prefHeight="29.0" prefWidth="332.0" textFill="WHITE" visible="false">
-         <font>
-            <Font name="VCR OSD Mono" size="18.0" />
-         </font>
-      </Label>
-      <Button fx:id="btnExibirTabelas" layoutX="543.0" layoutY="425.0" mnemonicParsing="false" onAction="#exibirTabelas" styleClass="redondo" stylesheets="@../util/trilha.css">
-         <graphic>
-            <ImageView fitHeight="51.0" fitWidth="81.0" pickOnBounds="true" preserveRatio="true">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-               <image>
-                  <Image url="@../img/Tabela.png" />
-               </image>
-            </ImageView>
-         </graphic>
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-      </Button>
-      <Button fx:id="btnAlterarRede" layoutX="617.0" layoutY="425.0" mnemonicParsing="false" onAction="#alterarRede" prefHeight="59.0" prefWidth="60.0" styleClass="redondo" stylesheets="@../util/trilha.css">
-         <graphic>
-            <ImageView fitHeight="51.0" fitWidth="81.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../img/Rede.png" />
-               </image>
-            </ImageView>
-         </graphic>
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-      </Button>
-      <AnchorPane fx:id="visaoTabelas" layoutX="350.0" layoutY="25.0" prefHeight="451.0" prefWidth="332.0" style="-fx-background-color: #067d2a; -fx-background-radius: 8px;" visible="false">
+      <AnchorPane fx:id="subrede" prefHeight="500.0" prefWidth="700.0">
          <children>
-            <Label fx:id="lblSelecao1" alignment="CENTER" contentDisplay="CENTER" layoutX="40.0" layoutY="14.0" prefHeight="29.0" prefWidth="237.0" text="TABELAS DE ROTEAMENTO:" textAlignment="CENTER" textFill="WHITE">
-               <font>
-                  <Font name="VCR OSD Mono" size="18.0" />
-               </font>
-            </Label>
-            <Button id="fechar" fx:id="btnFecharTabela" layoutX="283.0" layoutY="11.0" mnemonicParsing="false" onAction="#fecharTabela" prefHeight="35.0" prefWidth="35.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="X" textFill="WHITE">
-               <font>
-                  <Font size="17.0" />
-               </font>
+            <ImageView fitHeight="500.0" fitWidth="770.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/Trilha.png" />
+               </image>
+            </ImageView>
+            <Button fx:id="btnVoltar" layoutX="44.0" layoutY="16.0" mnemonicParsing="false" onAction="#voltar" prefHeight="31.0" prefWidth="32.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="&lt;-">
                <cursor>
                   <Cursor fx:constant="HAND" />
                </cursor>
             </Button>
-            <ScrollPane layoutX="9.0" layoutY="52.0" prefHeight="385.0" prefWidth="315.0" styleClass="scrollpane" stylesheets="@../util/trilha.css">
+            <Label fx:id="lblSelecao" layoutX="147.0" layoutY="17.0" prefHeight="29.0" prefWidth="332.0" text="SELECIONE A ORIGEM E O DESTINO:" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="18.0" />
+               </font>
+            </Label>
+            <Label layoutX="536.0" layoutY="38.0" text="ORIGEM:" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="lblOrigem" layoutX="599.0" layoutY="38.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="14.0" />
+               </font>
+            </Label>
+            <Label layoutX="536.0" layoutY="67.0" text="DESTINO:" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="lblDestino" layoutX="605.0" layoutY="66.0" prefHeight="16.0" prefWidth="58.0" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="lblCaminho" layoutX="147.0" layoutY="17.0" prefHeight="29.0" prefWidth="332.0" textFill="WHITE" visible="false">
+               <font>
+                  <Font name="VCR OSD Mono" size="18.0" />
+               </font>
+            </Label>
+            <Button fx:id="btnReiniciar" layoutX="555.0" layoutY="425.0" mnemonicParsing="false" onAction="#reiniciar" prefHeight="59.0" prefWidth="60.0" styleClass="redondo" stylesheets="@../util/trilha.css" visible="false">
+               <graphic>
+                  <ImageView fitHeight="51.0" fitWidth="81.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/Restart.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <Button fx:id="btnAlterarRede" layoutX="625.0" layoutY="425.0" mnemonicParsing="false" onAction="#alterarRede" prefHeight="59.0" prefWidth="60.0" styleClass="redondo" stylesheets="@../util/trilha.css">
+               <graphic>
+                  <ImageView fitHeight="51.0" fitWidth="81.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/Rede.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="700.0" prefHeight="500.0" prefWidth="300.0" style="-fx-background-color: #067d2a;">
+         <children>
+            <Label fx:id="lblSelecao1" alignment="CENTER" contentDisplay="CENTER" layoutX="36.0" layoutY="14.0" prefHeight="29.0" prefWidth="237.0" text="TABELAS DE ROTEAMENTO:" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font name="VCR OSD Mono" size="18.0" />
+               </font>
+            </Label>
+            <ScrollPane layoutX="8.0" layoutY="58.0" prefHeight="425.0" prefWidth="284.0" styleClass="scrollpane" stylesheets="@../util/trilha.css">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="382.0" prefWidth="309.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="382.0" prefWidth="290.0">
                      <children>
-                        <TabPane fx:id="painelTabela" prefHeight="390.0" prefWidth="309.0" styleClass="painelTabela" stylesheets="@../util/trilha.css" tabClosingPolicy="UNAVAILABLE" />
+                        <TabPane fx:id="painelTabela" prefHeight="425.0" prefWidth="290.0" styleClass="painelTabela" stylesheets="@../util/trilha.css" tabClosingPolicy="UNAVAILABLE" />
                      </children>
                   </AnchorPane>
               </content>
             </ScrollPane>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="painelAlterarRede" prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">
+      <AnchorPane fx:id="painelAlterarRede" prefHeight="500.0" prefWidth="1000.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">
          <children>
-            <AnchorPane layoutX="24.0" layoutY="41.0" prefHeight="431.0" prefWidth="652.0" style="-fx-background-color: gray; -fx-background-radius: 200px;">
+            <AnchorPane layoutX="174.0" layoutY="35.0" prefHeight="431.0" prefWidth="652.0" style="-fx-background-color: gray; -fx-background-radius: 200px;">
                <children>
                   <Label alignment="CENTER" contentDisplay="CENTER" layoutX="194.0" layoutY="24.0" prefHeight="27.0" prefWidth="261.0" text="ALTERE A SUB-REDE" textAlignment="CENTER" textFill="WHITE">
                      <font>
@@ -150,7 +143,7 @@
                   </Button>
                </children>
             </AnchorPane>
-            <Button id="fechar" fx:id="btnFecharAlterarRede" layoutX="646.0" layoutY="14.0" mnemonicParsing="false" onAction="#fecharAlterarRede" prefHeight="35.0" prefWidth="35.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="X" textFill="WHITE">
+            <Button id="fechar" fx:id="btnFecharAlterarRede" layoutX="914.0" layoutY="18.0" mnemonicParsing="false" onAction="#fecharAlterarRede" prefHeight="35.0" prefWidth="35.0" styleClass="redondo" stylesheets="@../util/trilha.css" text="X" textFill="WHITE">
                <font>
                   <Font size="17.0" />
                </font>

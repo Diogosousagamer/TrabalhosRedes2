@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 19/04/2026
-* Ultima alteracao.: 19/04/2026
+* Ultima alteracao.: 25/04/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -75,15 +75,16 @@ public class Pacote extends Thread {
    ****************************************************************/
 
 	private void definirPosicao() {
+		// Armazena as posicoes iniciais da imagem nos eixos X e Y
+		// nos contadores de posicao
+		posX = origem.getPosX();
+		posY = origem.getPosY();
+
 		// Inicio do bloco Platform.runLater
 		Platform.runLater(() -> {
-			envelope.setLayoutX(origem.getPosX());
-			envelope.setLayoutY(origem.getPosY());
-
-			// Armazena as posicoes iniciais da imagem nos eixos X e Y
-			// nos contadores de posicao
-			posX = envelope.getLayoutX();
-			posY = envelope.getLayoutY();
+			// Define a posicao da imagem
+			envelope.setLayoutX(posX);
+			envelope.setLayoutY(posY);
 		}); // Fim do bloco Platform.runLater
 	}
 
@@ -124,7 +125,7 @@ public class Pacote extends Thread {
 		} // Fim do bloco while
 
     // Interrompe a simulacao apos o fim do while
-		// TelaPrincipalController.controller.interromper(this);
+		TelaPrincipalController.controller.interromper(this);
 	}
 
   /*
@@ -245,6 +246,7 @@ public class Pacote extends Thread {
 
 	public void liberar() {
 		liberado = true;
+		envelope.setVisible(true);
 	}
 
   /*

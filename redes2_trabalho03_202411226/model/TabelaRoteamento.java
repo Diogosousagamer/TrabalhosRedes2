@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 21/04/2026
+* Ultima alteracao.: 24/04/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -10,7 +10,9 @@
 
 package model;
 
+import controller.TelaPrincipalController;
 import java.util.ArrayList;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
@@ -31,10 +33,66 @@ public class TabelaRoteamento {
    * Retorno: nenhum
    ****************************************************************/
 
-	public TabelaRoteamento(String nome, TableView<EntradaTabela> tabela, ArrayList<EntradaTabela> entradas) {
+	public TabelaRoteamento(String nome, TableView<EntradaTabela> tabela) {
 		this.nome = nome;
 		this.tabela = tabela;
-		this.entradas = entradas;
+		entradas = new ArrayList<>();
+	}
+
+	public boolean processarVetor(Roteador receptor, Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
+		boolean mudou = false;
+		long custoParaVizinho = receptor.ping(emissor);
+
+		for (EntradaTabela e : entradasEmissor) {
+			String destino = e.getDestino();
+
+			if (destino.equals(this.getNome())) continue;
+
+      String retardoEmissor = e.getRetardo().trim();
+
+      long custoEntrada = (retardoEmissor.equals("-")) ? 0 : Long.parseLong(retardoEmissor);
+			long custoViaVizinho = custoParaVizinho + custoEntrada;
+
+			EntradaTabela entradaLocal = this.obterEntrada(destino);
+
+			if (entradaLocal != null) {
+				String retardoLocal = entradaLocal.getRetardo().trim();
+
+				long distanciaLocal = (retardoLocal.equals("-")) ? Integer.MAX_VALUE : Long.parseLong(retardoLocal);
+				boolean viaMesmoVizinho = entradaLocal.getLinhaSaida().equals(emissor.getNome());
+
+				if (custoViaVizinho < distanciaLocal || viaMesmoVizinho) {
+					if (distanciaLocal != custoViaVizinho || !viaMesmoVizinho) {
+						entradaLocal.setRetardo(Long.toString(custoViaVizinho));
+						entradaLocal.setLinhaSaida(emissor.getNome());
+						alterarEntrada(entradaLocal);
+
+						Roteador entrada = entradaLocal.getRoteadorDestino();
+						Aresta a = TelaPrincipalController.controller.obterAresta(emissor, entrada);
+
+            if (entrada != null && a != null) {
+            	entrada.setDistancia(custoViaVizinho);
+							entrada.setAntecessor(emissor);
+
+							Platform.runLater(() -> {
+								TelaPrincipalController.controller.alterarDistancia(entrada);
+								TelaPrincipalController.controller.atualizarRoteador(entrada);
+								TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
+							});
+            }
+
+						mudou = true;
+					}
+				}
+			}
+		}
+
+		return mudou;
+	}
+
+	public void inserirEntrada(EntradaTabela e) {
+		entradas.add(e);
+		atualizarTabela();
 	}
 
   /*
@@ -46,9 +104,11 @@ public class TabelaRoteamento {
    ****************************************************************/
 
 	public void atualizarTabela() {
-		// Converte a lista de entradas em uma lista observavel para que ela possa ser inserida na tabela
-		ObservableList<EntradaTabela> dados = FXCollections.observableArrayList(entradas);
-		tabela.setItems(dados);
+		Platform.runLater(() -> {
+			// Converte a lista de entradas em uma lista observavel para que ela possa ser inserida na tabela
+			ObservableList<EntradaTabela> dados = FXCollections.observableArrayList(entradas);
+			tabela.setItems(dados);
+		});
 	}
 
 	/*
@@ -101,11 +161,31 @@ public class TabelaRoteamento {
    ****************************************************************/
 
 	public void redefinirEntradas() {
-		for (EntradaTabela e : entradas) {
-			e.setLinhaSaida("-");
-			e.setRetardo("-");
-		}
-
+		entradas.clear();
 		atualizarTabela();
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setTabela(TableView<EntradaTabela> tabela) {
+		this.tabela = tabela;
+	}
+
+	public TableView<EntradaTabela> getTabela() {
+		return tabela;
+	}
+
+	public void setEntradas(ArrayList<EntradaTabela> entradas) {
+		this.entradas = entradas;
+	}
+
+	public ArrayList<EntradaTabela> getEntradas() {
+		return entradas;
 	}
 }

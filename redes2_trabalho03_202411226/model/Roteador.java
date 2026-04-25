@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 21/04/2026
+* Ultima alteracao.: 24/04/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -143,44 +143,8 @@ public class Roteador {
     } // Fim do bloco if/else if/else
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: ping
-   * Funcao: retorna o retardo de um caminho entre dois roteadores
-   * Parametros: Roteador r1 - roteador de partida
-                 Roteador r2 - roteador de destino
-   * Retorno: long
-   ****************************************************************/
-
-  public long ping(Roteador r1, Roteador r2) {
-    long distancia = 0;
-
-    try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
-      String linha = "";
-
-      while ((linha = br.readLine()) != null) {
-        String[] partes = linha.split(",");
-
-        if (partes.length < 4) continue;
-
-        String nome1 = partes[0];
-        String nome2 = partes[1];
-
-        if (nome1.equals(r1.getNome()) && nome2.equals(r2.getNome())) {
-          distancia = Long.parseLong(partes[2]);
-          break;
-        }
-        else if (nome1.equals(r2.getNome()) && nome2.equals(r1.getNome())) {
-          distancia = Long.parseLong(partes[3]);
-          break;
-        }
-      }
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    return distancia;
+  public void inserirEntrada(EntradaTabela e) {
+    tabela.inserirEntrada(e);
   }
 
   /*
@@ -194,8 +158,51 @@ public class Roteador {
    * Retorno: void
    ****************************************************************/
 
-  public void modificarEntrada(String destino, String saida, long retardo) {
-    tabela.alterarEntrada(new EntradaTabela(destino, saida, Long.toString(retardo)));
+  public void modificarEntrada(Roteador rDestino, String destino, String saida, long retardo) {
+    tabela.alterarEntrada(new EntradaTabela(rDestino, destino, saida, Long.toString(retardo)));
+  }
+
+  public boolean processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
+    return tabela.processarVetor(this, emissor, entradasEmissor);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: ping
+   * Funcao: retorna o retardo de um caminho entre dois roteadores
+   * Parametros: Roteador destino - roteador de destino
+   * Retorno: long
+   ****************************************************************/
+
+  public long ping(Roteador destino) {
+    long distancia = 0;
+
+    try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
+      String linha = "";
+
+      while ((linha = br.readLine()) != null) {
+        String[] partes = linha.split(",");
+
+        if (partes.length < 4) continue;
+
+        String nome1 = partes[0];
+        String nome2 = partes[1];
+
+        if (nome1.equals(this.getNome()) && nome2.equals(destino.getNome())) {
+          distancia = Long.parseLong(partes[2]);
+          break;
+        }
+        else if (nome1.equals(destino.getNome()) && nome2.equals(this.getNome())) {
+          distancia = Long.parseLong(partes[3]);
+          break;
+        }
+      }
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return distancia;
   }
 
   /*
@@ -410,7 +417,7 @@ public class Roteador {
    * Retorno: void
    ****************************************************************/
 
-  public void setDistancia(int distancia) {
+  public void setDistancia(long distancia) {
     this.distancia = distancia;
   }
 

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 21/04/2026
+* Ultima alteracao.: 23/04/2026
 * Nome.............: EntradaTabela
 * Funcao...........: Classe que gerencia as operacoes de cada entrada das tabelas de roteamento.
                      
@@ -12,6 +12,7 @@ package model;
 
 public class EntradaTabela {
 	// Variaveis e instancias
+  private Roteador roteadorDestino;
 	private String destino;
 	private String linhaSaida;
 	private String retardo;
@@ -20,17 +21,27 @@ public class EntradaTabela {
    * ***************************************************************
    * Metodo: EntradaTabela
    * Funcao: inicializa uma nova instancia da classe EntradaTabela
-   * Parametros: String destino - linha de destino
+   * Parametros: Roteador roteadorDestino - roteador de destino
+                 String destino - linha de destino
                  String linhaSaida - linha de saida
                  String retardo - retardo do caminho percorrido ate o destino
    * Retorno: nenhum
    ****************************************************************/
 
-	public EntradaTabela(String destino, String linhaSaida, String retardo) {
+	public EntradaTabela(Roteador roteadorDestino, String destino, String linhaSaida, String retardo) {
+    this.roteadorDestino = roteadorDestino;
 		this.destino = destino;
 		this.linhaSaida = linhaSaida;
 		this.retardo = retardo;
 	}
+
+  public void setRoteadorDestino(Roteador roteadorDestino) {
+    this.roteadorDestino = roteadorDestino;
+  }
+
+  public Roteador getRoteadorDestino() {
+    return roteadorDestino;
+  }
 
   /*
    * ***************************************************************

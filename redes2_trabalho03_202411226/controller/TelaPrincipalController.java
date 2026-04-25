@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 21/04/2026
+* Ultima alteracao.: 25/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -58,6 +58,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.Aresta;
+import model.Echo;
 import model.EntradaTabela;
 import model.Pacote;
 import model.Roteador;
@@ -67,12 +68,10 @@ public class TelaPrincipalController implements Initializable {
 	// Componentes da interface
 	@FXML private AnchorPane painelAlterarRede;
 	@FXML private AnchorPane subrede;
-  @FXML private AnchorPane visaoTabelas;
 	@FXML private Button btnAlterarRede;
   @FXML private Button btnAplicar;
-  @FXML private Button btnExibirTabelas;
   @FXML private Button btnFecharAlterarRede;
-  @FXML private Button btnFecharTabela;
+  @FXML private Button btnReiniciar;
 	@FXML private Button btnVoltar;
 	@FXML private Label lblCaminho;
 	@FXML private Label lblDestino;
@@ -311,6 +310,7 @@ public class TelaPrincipalController implements Initializable {
       envelope.setFitWidth(41);
       envelope.setFitHeight(98);
       envelope.setPreserveRatio(true);
+      envelope.setVisible(false);
       subrede.getChildren().add(envelope);
 
       // Inicializa uma nova Thread correspondente ao pacote
@@ -349,7 +349,49 @@ public class TelaPrincipalController implements Initializable {
       abertos.add(origem);
 
       while (!abertos.isEmpty()) {
-        Roteador atual = abertos.get(0);
+        Roteador atual = abertos.remove(0);
+
+        final Roteador rAtual = atual;
+
+        Platform.runLater(() -> {
+          alternarTabela(rAtual.getNome());
+          rAtual.marcarVisitando();
+        });
+
+        dormir(600);
+
+        ArrayList<Roteador> vizinhos = atual.getVizinhos();
+
+        if (vizinhos != null) {
+          for (Roteador v : vizinhos) {
+            Platform.runLater(() -> enviarSolicitacao(atual, v));
+            dormir(400);
+
+            Aresta a = obterAresta(atual, v);
+            Platform.runLater(() -> a.marcarVisitando());
+
+            ArrayList<EntradaTabela> entradasAtual = atual.getTabela().getEntradas();
+            boolean mudou = v.processarVetor(atual, entradasAtual);
+
+            dormir(800);
+
+            if (mudou) {
+              if (!abertos.contains(v)) {
+                abertos.add(v);
+              }
+
+              Platform.runLater(() -> {
+                atualizarRoteador(v);
+                alterarRoteadorNosVizinhos(v);
+              });
+            }
+
+            Platform.runLater(() -> a.resetarLinha());
+            dormir(300);
+          }
+
+          Platform.runLater(() -> rAtual.resetarNo());
+        }
       }
 
       obterCaminhoFinal(p);
@@ -359,16 +401,56 @@ public class TelaPrincipalController implements Initializable {
     vetorDistancia.start();
   }
 
+  private void enviarSolicitacao(Roteador origem, Roteador destino) {
+    Platform.runLater(() -> {
+      Image echo = new Image(getClass().getResource("/img/Echo.png").toExternalForm());
+
+      ImageView request = new ImageView(echo);
+      request.setFitWidth(21);
+      request.setFitHeight(61);
+      request.setPreserveRatio(true);
+      subrede.getChildren().add(request);
+
+      Echo e = new Echo(origem, destino, request);
+      e.setDaemon(true);
+      e.start();
+    }); 
+  }
+
+  public void removerSolicitacao(Echo e) {
+    Platform.runLater(() -> {
+      e.interrupt();
+      ImageView envelope = e.getEnvelope();
+      subrede.getChildren().remove(envelope);
+    });
+  }
+
   /*
    * ***************************************************************
-   * Metodo: montarCaminhoFinal
+   * Metodo: obterCaminhoFinal
    * Funcao: monta o caminho final a ser percorrido pelo pacote
    * Parametros: Pacote p - pacote cujo caminho sera montado
    * Retorno: void
    ****************************************************************/
 
   private void obterCaminhoFinal(Pacote p) {
+    Roteador passo = destino;
 
+    while (passo != null) {
+      p.adicionarRoteadorAoCaminho(passo);
+      final Roteador rPasso = passo;
+      Platform.runLater(() -> concatenarCaminho(rPasso));
+
+      if (passo.getAntecessor() != null) {
+        Aresta a = obterAresta(passo, passo.getAntecessor());
+        Platform.runLater(() -> a.marcarPermanente());
+      }
+
+      passo = passo.getAntecessor();
+      dormir(500);
+    }
+
+    p.liberar();
   }
 
   /*
@@ -385,20 +467,30 @@ public class TelaPrincipalController implements Initializable {
       Platform.runLater(() -> r.marcarVisitando());
       dormir(500);
 
+      Platform.runLater(() -> alternarTabela(r.getNome()));
+      dormir(300);
+
+      for (Roteador rot : roteadores) {
+        Platform.runLater(() -> r.inserirEntrada(new EntradaTabela(rot, rot.getNome(), "-", "-")));
+        dormir(500);
+      }
+
       ArrayList<Roteador> vizinhos = r.getVizinhos();
 
-      for (Roteador v : vizinhos) {
-        final Aresta a = obterAresta(r, v);
-        final long distancia = r.ping(r, v);
-        final String vizinho = v.getNome();
+      if (vizinhos != null) {
+        for (Roteador v : vizinhos) {
+          final Aresta a = obterAresta(r, v);
+          final long distancia = r.ping(v);
+          final String vizinho = v.getNome();
 
-        Platform.runLater(() -> {
-          a.marcarVisitando();
-          r.modificarEntrada(vizinho, vizinho, distancia);
-        });
+          Platform.runLater(() -> {
+            a.marcarVisitando();
+            r.modificarEntrada(v, vizinho, vizinho, distancia);
+          });
 
-        dormir(800);
-        a.resetarLinha();
+          dormir(800);
+          a.resetarLinha();
+        }
       }
 
       r.resetarNo();
@@ -416,7 +508,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: Aresta
    ****************************************************************/
 
-  private Aresta obterAresta(Roteador r1, Roteador r2) {
+  public Aresta obterAresta(Roteador r1, Roteador r2) {
     // Obtem a id da aresta e retona a aresta correspondente dentro do HashMap
     String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
     return arestasExistentes.get(id);
@@ -430,7 +522,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  private void dormir(long valor) {
+  public void dormir(long valor) {
     // Inicio do bloco try/catch
     try {
       // O processo eh posto para dormir por um certo tempo 
@@ -443,6 +535,15 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco try/catch
   }
 
+  private void alternarTabela(String nomeRoteador) {
+    for (Tab t : painelTabela.getTabs()) {
+      if (t.getText().equals(nomeRoteador)) {
+        painelTabela.getSelectionModel().select(t);
+        break;
+      }
+    }
+  }
+
   /*
    * ***************************************************************
    * Metodo: alterarDistancia
@@ -451,7 +552,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  private void alterarDistancia(Roteador r) {
+  public void alterarDistancia(Roteador r) {
     // Inicio do bloco for
     for (Map.Entry<String, Label> entrada : distancias.entrySet()) {
       // Inicio do bloco if
@@ -486,33 +587,66 @@ public class TelaPrincipalController implements Initializable {
     lblCaminho.setText(novoTrecho + textoAtual);
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: exibirTabelas
-   * Funcao: exibe o painel das tabelas de roteamento
-   * Parametros: ActionEvent event - evento gerado ao clicar no botao
-   * Retorno: void
-   ****************************************************************/
+  public void interromper(Pacote p) {
+    p.interrupt();
+    final Pacote pacote = p;
 
-  @FXML
-  private void exibirTabelas(ActionEvent event) {
-    // Exibe o painel das tabelas de roteamento acima da sub rede (porque a sub rede
-    // eh criada via codigo, acima dos demais componentes)
-    visaoTabelas.toFront();
-    visaoTabelas.setVisible(true);
+    Platform.runLater(() -> {
+      ImageView envelope = p.getEnvelope();
+      subrede.getChildren().remove(envelope);
+      btnReiniciar.setVisible(true);
+    });
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: fecharTabela
-   * Funcao: oculta o painel das tabelas de roteamento
-   * Parametros: ActionEvent event - evento gerado ao clicar no botao
-   * Retorno: void
-   ****************************************************************/
-
   @FXML
-  private void fecharTabela(ActionEvent event) {
-    visaoTabelas.setVisible(false);
+  private void reiniciar(ActionEvent event) {
+    Platform.runLater(() -> {
+      btnReiniciar.setVisible(false);
+      btnAlterarRede.setDisable(false);
+
+      lblOrigem.setText("");
+      lblDestino.setText("");
+
+      lblCaminho.setText("");
+      lblCaminho.setVisible(false);
+      lblSelecao.setVisible(true);
+
+      for (Roteador r : roteadores) {
+        if (r.isOrigem()) r.setOrigem(false);
+        if (r.isDestino()) r.setDestino(false);
+
+        Circle c = r.getNo();
+        c.setMouseTransparent(false);
+
+        r.resetarNo();
+        r.resetarEntradas();
+
+        r.setDistancia(Integer.MAX_VALUE);
+        r.setAntecessor(null);
+
+        atualizarRoteador(r);
+        alterarRoteadorNosVizinhos(r);
+      }
+
+      for (Aresta a : arestasExistentes.values()) {
+        a.resetarLinha();
+        Line l = a.getLinha();
+        l.setMouseTransparent(false);
+      }
+
+      // Inicio do bloco for
+      for (Map.Entry<String, Label> entrada : distancias.entrySet()) {
+        // Reseta as distancias de cada no
+        Label d = entrada.getValue();
+        String modelo = "(" + entrada.getKey() + ", ?)";
+        d.setText(modelo);
+      } // Fim do bloco for
+
+      origem = null;
+      destino = null;
+
+      painelTabela.getSelectionModel().select(0);
+    });
   }
 
 	/*
@@ -1066,14 +1200,7 @@ public class TelaPrincipalController implements Initializable {
       tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
       t.setContent(tabela);
 
-      ArrayList<EntradaTabela> entradas = new ArrayList<>();
-
-      for (Roteador rot : roteadores) {
-        entradas.add(new EntradaTabela(rot.getNome(), "-", "-"));
-      }
-
-      TabelaRoteamento tab = new TabelaRoteamento(r.getNome(), tabela, entradas);
-      tab.atualizarTabela();
+      TabelaRoteamento tab = new TabelaRoteamento(r.getNome(), tabela);
 
       r.setTabela(tab);
       atualizarRoteador(r);
@@ -1156,7 +1283,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  private void atualizarRoteador(Roteador r) {
+  public void atualizarRoteador(Roteador r) {
     // Inicio do bloco for
     // Realiza-se uma busca pela lista de roteadores
     for (int i = 0; i < roteadores.size(); i++) {
@@ -1183,7 +1310,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  private void alterarRoteadorNosVizinhos(Roteador r) {
+  public void alterarRoteadorNosVizinhos(Roteador r) {
     // Inicio do bloco for
     // Percorremos cada roteador existente na lista de roteadores
     for (int i = 0; i < roteadores.size(); i++) {
