@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 24/04/2026
+* Ultima alteracao.: 26/04/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -50,7 +50,7 @@ public class TabelaRoteamento {
 
       String retardoEmissor = e.getRetardo().trim();
 
-      long custoEntrada = (retardoEmissor.equals("-")) ? 0 : Long.parseLong(retardoEmissor);
+      long custoEntrada = (retardoEmissor.equals("-")) ? Integer.MAX_VALUE : Long.parseLong(retardoEmissor);
 			long custoViaVizinho = custoParaVizinho + custoEntrada;
 
 			EntradaTabela entradaLocal = this.obterEntrada(destino);
@@ -71,11 +71,8 @@ public class TabelaRoteamento {
 						Aresta a = TelaPrincipalController.controller.obterAresta(emissor, entrada);
 
             if (entrada != null && a != null) {
-            	entrada.setDistancia(custoViaVizinho);
-							entrada.setAntecessor(emissor);
-
 							Platform.runLater(() -> {
-								TelaPrincipalController.controller.alterarDistancia(entrada);
+								TelaPrincipalController.controller.alterarDistancia(entrada, entradaLocal.getRetardo());
 								TelaPrincipalController.controller.atualizarRoteador(entrada);
 								TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
 							});
@@ -108,6 +105,7 @@ public class TabelaRoteamento {
 			// Converte a lista de entradas em uma lista observavel para que ela possa ser inserida na tabela
 			ObservableList<EntradaTabela> dados = FXCollections.observableArrayList(entradas);
 			tabela.setItems(dados);
+			tabela.refresh();
 		});
 	}
 

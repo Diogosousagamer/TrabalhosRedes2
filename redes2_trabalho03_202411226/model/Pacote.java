@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 19/04/2026
-* Ultima alteracao.: 25/04/2026
+* Ultima alteracao.: 26/04/2026
 * Nome.............: Pacote
 * Funcao...........: Thread que gerencia as operacoes de cada pacote.
                      
@@ -202,13 +202,13 @@ public class Pacote extends Thread {
 	/*
    * ***************************************************************
    * Metodo: adicionarRoteadorAoCaminho
-   * Funcao: adiciona um roteador no inicio do caminho a ser percorrido
+   * Funcao: adiciona um roteador no caminho a ser percorrido
    * Parametros: Roteador r - roteador a ser adicionado
    * Retorno: void
    ****************************************************************/
 
 	public void adicionarRoteadorAoCaminho(Roteador r) {
-		caminho.add(0, r);
+		caminho.add(r);
 	}
 
 	/*

@@ -92,8 +92,8 @@ public class Echo extends Thread {
 
       // Inicio do bloco try/catch
 			try {
-				// A Thread e posta para dormir por 16 ms
-				Thread.sleep(16);
+				// A Thread e posta para dormir por 10 ms
+				Thread.sleep(10);
 			}
 			catch (InterruptedException e) {
 				// Em caso de excecao, a Thread e interrompida

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 25/04/2026
+* Ultima alteracao.: 26/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -82,6 +82,7 @@ public class TelaPrincipalController implements Initializable {
 
 	// Variaveis e instancias
 	public static volatile TelaPrincipalController controller;
+  private boolean echo;
 	private int quantidadeNos;
 	private Roteador origem;
   private Roteador destino;
@@ -336,8 +337,7 @@ public class TelaPrincipalController implements Initializable {
   private void calcularVetorDistancia(Pacote p) {
     Thread vetorDistancia = new Thread(() -> {
       Platform.runLater(() -> {
-        origem.setDistancia(0);
-        alterarDistancia(origem);
+        alterarDistancia(origem, Long.toString(0));
         atualizarRoteador(origem);
         alterarRoteadorNosVizinhos(origem);
       });
@@ -349,6 +349,7 @@ public class TelaPrincipalController implements Initializable {
       abertos.add(origem);
 
       while (!abertos.isEmpty()) {
+        imprimirRoteadoresAbertos(abertos);
         Roteador atual = abertos.remove(0);
 
         final Roteador rAtual = atual;
@@ -364,8 +365,8 @@ public class TelaPrincipalController implements Initializable {
 
         if (vizinhos != null) {
           for (Roteador v : vizinhos) {
-            Platform.runLater(() -> enviarSolicitacao(atual, v));
-            dormir(400);
+            enviarSolicitacao(atual, v);
+            while (echo) dormir(200);
 
             Aresta a = obterAresta(atual, v);
             Platform.runLater(() -> a.marcarVisitando());
@@ -402,6 +403,8 @@ public class TelaPrincipalController implements Initializable {
   }
 
   private void enviarSolicitacao(Roteador origem, Roteador destino) {
+    this.echo = true;
+
     Platform.runLater(() -> {
       Image echo = new Image(getClass().getResource("/img/Echo.png").toExternalForm());
 
@@ -418,6 +421,8 @@ public class TelaPrincipalController implements Initializable {
   }
 
   public void removerSolicitacao(Echo e) {
+    this.echo = false;
+
     Platform.runLater(() -> {
       e.interrupt();
       ImageView envelope = e.getEnvelope();
@@ -434,20 +439,28 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void obterCaminhoFinal(Pacote p) {
-    Roteador passo = destino;
+    Roteador passo = origem;
+    concatenarCaminho(passo);
+    
+    while (!passo.getNome().equals(destino.getNome())) {
+      TabelaRoteamento tabela = passo.getTabela();
+      EntradaTabela entradaDestino = tabela.obterEntrada(destino.getNome());
+      String linhaSaida = entradaDestino.getLinhaSaida();
+      Roteador saida = obterRoteador(linhaSaida);
+      Aresta a = obterAresta(passo, saida);
 
-    while (passo != null) {
-      p.adicionarRoteadorAoCaminho(passo);
       final Roteador rPasso = passo;
-      Platform.runLater(() -> concatenarCaminho(rPasso));
 
-      if (passo.getAntecessor() != null) {
-        Aresta a = obterAresta(passo, passo.getAntecessor());
-        Platform.runLater(() -> a.marcarPermanente());
+      if (a != null) {
+        Platform.runLater(() -> {
+          p.adicionarRoteadorAoCaminho(saida);
+          concatenarCaminho(rPasso);
+          a.marcarPermanente();
+        });
+
+        passo = saida;
+        dormir(400); 
       }
-
-      passo = passo.getAntecessor();
-      dormir(500);
     }
 
     p.liberar();
@@ -498,6 +511,16 @@ public class TelaPrincipalController implements Initializable {
       alterarRoteadorNosVizinhos(r);
     }
   }
+
+  private void imprimirRoteadoresAbertos(ArrayList<Roteador> abertos) {
+    String listaAbertos = "";
+
+    for (Roteador r : abertos) {
+      listaAbertos += r.getNome() + " ";
+    }
+
+    System.out.println("Abertos: " + listaAbertos);
+  } 
 
   /*
    * ***************************************************************
@@ -552,14 +575,14 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  public void alterarDistancia(Roteador r) {
+  public void alterarDistancia(Roteador r, String distancia) {
     // Inicio do bloco for
     for (Map.Entry<String, Label> entrada : distancias.entrySet()) {
       // Inicio do bloco if
       if (entrada.getKey().equals(r.getNome())) {
         // Altera a label de distancia correspondente ao nome do roteador
         Label d = entrada.getValue();
-        String modelo = ("(" + r.getNome() + ", " + r.getDistancia() + ")");
+        String modelo = ("(" + r.getNome() + ", " + distancia + ")");
         d.setText(modelo);
 
         // Interrompe o laco
@@ -580,8 +603,8 @@ public class TelaPrincipalController implements Initializable {
     // Obtemos o texto atual
     String textoAtual = lblCaminho.getText();
 
-    // Gera um novo trecho (a seta e adicionada se o roteador nao corresponder a origem)
-    String novoTrecho = (r.isOrigem()) ? r.getNome() : " -> " + r.getNome();
+    // Gera um novo trecho (a seta e adicionada se o roteador nao corresponder ao destino)
+    String novoTrecho = (!r.isDestino()) ? r.getNome() + " -> " : r.getNome();
 
     // Exibe o novo trecho no inicio junto com o texto anterior
     lblCaminho.setText(novoTrecho + textoAtual);
@@ -589,7 +612,6 @@ public class TelaPrincipalController implements Initializable {
 
   public void interromper(Pacote p) {
     p.interrupt();
-    final Pacote pacote = p;
 
     Platform.runLater(() -> {
       ImageView envelope = p.getEnvelope();
@@ -620,9 +642,6 @@ public class TelaPrincipalController implements Initializable {
 
         r.resetarNo();
         r.resetarEntradas();
-
-        r.setDistancia(Integer.MAX_VALUE);
-        r.setAntecessor(null);
 
         atualizarRoteador(r);
         alterarRoteadorNosVizinhos(r);

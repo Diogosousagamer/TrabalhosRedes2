@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 24/04/2026
+* Ultima alteracao.: 26/04/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -28,8 +28,6 @@ public class Roteador {
 	private String nome;
 	private boolean origem;
 	private boolean destino;
-  private long distancia;
-  private Roteador antecessor;
 
   /*
    * ***************************************************************
@@ -46,7 +44,6 @@ public class Roteador {
 		vizinhos = new ArrayList<>();
 		origem = false;
 		destino = false;
-    distancia = Integer.MAX_VALUE;
 	}
 
   /*
@@ -407,54 +404,5 @@ public class Roteador {
 
   public TabelaRoteamento getTabela() {
     return tabela;
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: setDistancia
-   * Funcao: define a distancia do roteador dentro do caminho
-   * Parametros: long distancia - valor a ser definido
-   * Retorno: void
-   ****************************************************************/
-
-  public void setDistancia(long distancia) {
-    this.distancia = distancia;
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: getDistancia
-   * Funcao: retorna a distancia atual do roteador dentro do caminho
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: long
-   ****************************************************************/
-
-  public long getDistancia() {
-    return distancia;
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: setAntecessor
-   * Funcao: define o antecessor desse roteador para que o caminho
-             final seja montado
-   * Parametros: Roteador a - valor a ser definido 
-   * Retorno: void
-   ****************************************************************/
-
-  public void setAntecessor(Roteador a) {
-    this.antecessor = a;
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: getAntecessor
-   * Funcao: retorna o antecessor atual do roteador
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: Roteador
-   ****************************************************************/
-
-  public Roteador getAntecessor() {
-    return antecessor;
   }
 }
