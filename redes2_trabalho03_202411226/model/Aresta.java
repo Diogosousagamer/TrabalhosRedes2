@@ -31,7 +31,7 @@ public class Aresta {
 
 	/*
    * ***************************************************************
-   * Metodo: marcarPermanente
+   * Metodo: marcarParteCaminho
    * Funcao: marca a linha da aresta com a cor verde
              para sinalizar que ela faz parte do caminho
              a ser percorrido pelo pacote
@@ -39,22 +39,9 @@ public class Aresta {
    * Retorno: void
    ****************************************************************/
 
-	public void marcarPermanente() {
+	public void marcarParteCaminho() {
 		linha.setStroke(Color.web("#9da1ad"));
 	}
-
-	/*
-   * ***************************************************************
-   * Metodo: marcarVisitando
-   * Funcao: marca a linha da aresta com a cor vermelha para sinalizar
-             que ela esta sendo visitada
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: void
-   ****************************************************************/
-
-  public void marcarVisitando() {
-    linha.setStroke(Color.web("#3d7996"));
-  }
 
   /*
    * ***************************************************************

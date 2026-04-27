@@ -2,30 +2,36 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 26/04/2026
+* Ultima alteracao.: 27/04/2026
 * Nome.............: Roteador
-* Funcao...........: Classe que gerencia as operacoes de cada roteador.
+* Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
 *************************************************************** */
 
 package model;
 
+import controller.TelaPrincipalController;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.Thread;
 import java.util.ArrayList;
+import javafx.application.Platform;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class Roteador {
+public class Roteador extends Thread {
 	// Variaveis e instancias
 	private Circle no;
 	private double posX;
   private double posY;
 	private ArrayList<Roteador> vizinhos;
+  private ArrayList<Roteador> listaRoteadores;
   private TabelaRoteamento tabela;
+  private boolean tabelaCompleta;
 	private String nome;
+  private boolean echo;
 	private boolean origem;
 	private boolean destino;
 
@@ -42,9 +48,36 @@ public class Roteador {
 		this.no = no;
 		this.nome = nome;
 		vizinhos = new ArrayList<>();
+    listaRoteadores = new ArrayList<>();
+    tabelaCompleta = false;
 		origem = false;
 		destino = false;
 	}
+
+  @Override
+  public void run() {
+    Platform.runLater(() -> definirEntradasIniciais());
+    dormir(1000);
+
+    int maxIteracoes = listaRoteadores.size();
+
+    for (int i = 0; i < maxIteracoes; i++) {
+      for (Roteador v : vizinhos) {
+        TelaPrincipalController.controller.enviarSolicitacao(this, v);
+        while (this.echo) dormir(100);
+
+        ArrayList<EntradaTabela> entradasVizinho = v.getTabela().getEntradas();
+        processarVetor(v, entradasVizinho);
+        dormir(500);
+      }
+    }
+
+    this.tabelaCompleta = true;
+  }
+
+  private void definirEntradasIniciais() {
+    tabela.definirEntradasIniciais(listaRoteadores);
+  }
 
   /*
    * ***************************************************************
@@ -69,7 +102,33 @@ public class Roteador {
    ****************************************************************/
 
   public void adicionarVizinho(Roteador v) {
-    vizinhos.add(v);
+    // Adiciona o roteador na lista de vizinhos apenas se ele nao estiver presente
+    // para evitar problemas de redundancia
+    if (!vizinhos.contains(v)) vizinhos.add(v);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: removerVizinho
+   * Funcao: remove um vizinho da lista de vizinhos
+   * Parametros: Roteador v - roteador vizinho a ser removido
+   * Retorno: void
+   ****************************************************************/
+
+  public void removerVizinho(Roteador v) {
+    // Inicio do bloco for
+    for (int i = 0; i < vizinhos.size(); i++) {
+      // Obtem o vizinho no instante atual
+      Roteador atual = vizinhos.get(i); 
+      
+      // Inicio do bloco if
+      if (atual.getNome().equals(v.getNome())) {
+        // Remove o vizinho caso ele for encontrado na lista de vizinhos
+        // e interrompe o laco
+        vizinhos.remove(v);
+        break;
+      }
+    } // Fim do bloco for
   }
 
   /*
@@ -101,43 +160,26 @@ public class Roteador {
     } // Fim do bloco for
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: marcarVisitando
-   * Funcao: marca o no do roteador com um contorno azul escuro para sinalizar
-             que ele esta sendo visitado
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: void
-   ****************************************************************/
+  private Roteador buscarDestino() {
+    for (Roteador r : listaRoteadores) {
+      if (r.isDestino()) {
+        return r;
+      }
+    }
 
-  public void marcarVisitando() {
-    no.setStroke(Color.web("#3d7996"));
+    return null;
   }
 
   /*
    * ***************************************************************
    * Metodo: resetarNo
-   * Funcao: marca o no cor a cor do contorno anterior
+   * Funcao: marca o contorno do no com a cor padrao (preto)
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
   public void resetarNo() {
-    // Inicio do bloco if/else if/else
-    if (this.isOrigem()) {
-      // Reverte para a cor verde caso o no corresponder ao roteador
-      // de origem
-      no.setStroke(Color.web("#1fdb18"));
-    }
-    else if (this.isDestino()) {
-      // Reverte para a cor vermelho caso o no corresponder ao roteador
-      // de destino
-      no.setStroke(Color.web("#d60b18"));
-    }
-    else {
-      // Para os demais casos, a cor sera revertida para preto
-      no.setStroke(Color.BLACK);
-    } // Fim do bloco if/else if/else
+    no.setStroke(Color.BLACK);
   }
 
   public void inserirEntrada(EntradaTabela e) {
@@ -159,8 +201,8 @@ public class Roteador {
     tabela.alterarEntrada(new EntradaTabela(rDestino, destino, saida, Long.toString(retardo)));
   }
 
-  public boolean processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
-    return tabela.processarVetor(this, emissor, entradasEmissor);
+  private void processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
+    tabela.processarVetor(emissor, entradasEmissor);
   }
 
   /*
@@ -212,6 +254,15 @@ public class Roteador {
 
   public void resetarEntradas() {
     tabela.redefinirEntradas();
+  }
+
+  private void dormir(long valor) {
+    try {
+      Thread.sleep(valor);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   /*
@@ -404,5 +455,45 @@ public class Roteador {
 
   public TabelaRoteamento getTabela() {
     return tabela;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: setListaRoteadores
+   * Funcao: define a lista de roteadores da sub rede
+   * Parametros: ArrayList<Roteadores> tabela - tabela a ser definida
+   * Retorno: void
+   ****************************************************************/
+
+  public void setListaRoteadores(ArrayList<Roteador> lr) {
+    this.listaRoteadores = lr;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: getListaRoteadores
+   * Funcao: retorna a lista de roteadores da sub rede
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: ArrayList<Roteador>
+   ****************************************************************/
+
+  public ArrayList<Roteador> getListaRoteadores() {
+    return listaRoteadores;
+  }
+
+  public void setEcho(boolean echo) {
+    this.echo = echo;
+  }
+
+  public boolean getEcho() {
+    return echo;
+  }
+
+  public void setTabelaCompleta(boolean tabelaCompleta) {
+    this.tabelaCompleta = tabelaCompleta;
+  }
+
+  public boolean getTabelaCompleta() {
+    return tabelaCompleta;
   }
 }

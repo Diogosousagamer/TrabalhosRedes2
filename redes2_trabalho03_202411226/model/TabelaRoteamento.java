@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 26/04/2026
+* Ultima alteracao.: 27/04/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -19,6 +19,7 @@ import javafx.scene.control.TableView;
 
 public class TabelaRoteamento {
 	// Variaveis e instancias
+	private Roteador r;
 	private String nome;
 	private TableView<EntradaTabela> tabela;
 	private ArrayList<EntradaTabela> entradas;
@@ -33,15 +34,45 @@ public class TabelaRoteamento {
    * Retorno: nenhum
    ****************************************************************/
 
-	public TabelaRoteamento(String nome, TableView<EntradaTabela> tabela) {
+	public TabelaRoteamento(Roteador r, String nome, TableView<EntradaTabela> tabela) {
+		this.r = r;
 		this.nome = nome;
 		this.tabela = tabela;
 		entradas = new ArrayList<>();
 	}
 
-	public boolean processarVetor(Roteador receptor, Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
-		boolean mudou = false;
-		long custoParaVizinho = receptor.ping(emissor);
+	public void definirEntradasIniciais(ArrayList<Roteador> roteadores) {
+		for (Roteador rot : roteadores) {
+      r.inserirEntrada(new EntradaTabela(rot, rot.getNome(), "-", "-"));
+    }
+
+    ArrayList<Roteador> vizinhos = r.getVizinhos();
+
+    if (vizinhos != null) {
+      for (Roteador v : vizinhos) {
+        final long distancia = r.ping(v);
+        final String vizinho = v.getNome();
+      	Platform.runLater(() -> r.modificarEntrada(v, vizinho, vizinho, distancia));
+      }
+    }
+
+    Platform.runLater(() -> {
+    	TelaPrincipalController.controller.atualizarRoteador(r);
+    	TelaPrincipalController.controller.alterarRoteadorNosVizinhos(r);
+    });
+	}
+
+	private void dormir(long valor) {
+		try {
+			Thread.sleep(valor);
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	public void processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
+		long custoParaVizinho = r.ping(emissor);
 
 		for (EntradaTabela e : entradasEmissor) {
 			String destino = e.getDestino();
@@ -50,8 +81,8 @@ public class TabelaRoteamento {
 
       String retardoEmissor = e.getRetardo().trim();
 
-      long custoEntrada = (retardoEmissor.equals("-")) ? Integer.MAX_VALUE : Long.parseLong(retardoEmissor);
-			long custoViaVizinho = custoParaVizinho + custoEntrada;
+      long custoEntrada = (retardoEmissor.equals("-")) ? 0 : Long.parseLong(retardoEmissor);
+			long custoViaVizinho = (custoEntrada == 0) ? custoParaVizinho : custoParaVizinho + custoEntrada;
 
 			EntradaTabela entradaLocal = this.obterEntrada(destino);
 
@@ -60,31 +91,24 @@ public class TabelaRoteamento {
 
 				long distanciaLocal = (retardoLocal.equals("-")) ? Integer.MAX_VALUE : Long.parseLong(retardoLocal);
 				boolean viaMesmoVizinho = entradaLocal.getLinhaSaida().equals(emissor.getNome());
+				Roteador entrada = entradaLocal.getRoteadorDestino();
+				Aresta a = TelaPrincipalController.controller.obterAresta(emissor, entrada);
 
-				if (custoViaVizinho < distanciaLocal || viaMesmoVizinho) {
+				if ((entrada != null && a != null) && (custoViaVizinho < distanciaLocal || viaMesmoVizinho)) {
 					if (distanciaLocal != custoViaVizinho || !viaMesmoVizinho) {
 						entradaLocal.setRetardo(Long.toString(custoViaVizinho));
 						entradaLocal.setLinhaSaida(emissor.getNome());
 						alterarEntrada(entradaLocal);
 
-						Roteador entrada = entradaLocal.getRoteadorDestino();
-						Aresta a = TelaPrincipalController.controller.obterAresta(emissor, entrada);
-
-            if (entrada != null && a != null) {
-							Platform.runLater(() -> {
-								TelaPrincipalController.controller.alterarDistancia(entrada, entradaLocal.getRetardo());
-								TelaPrincipalController.controller.atualizarRoteador(entrada);
-								TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
-							});
-            }
-
-						mudou = true;
+						Platform.runLater(() -> {
+							TelaPrincipalController.controller.alterarDistancia(entrada, entradaLocal.getRetardo());
+							TelaPrincipalController.controller.atualizarRoteador(entrada);
+							TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
+						});
 					}
 				}
 			}
 		}
-
-		return mudou;
 	}
 
 	public void inserirEntrada(EntradaTabela e) {
@@ -161,6 +185,14 @@ public class TabelaRoteamento {
 	public void redefinirEntradas() {
 		entradas.clear();
 		atualizarTabela();
+	}
+
+	public void setRoteador(Roteador r) {
+		this.r = r;
+	}
+
+	public Roteador getRoteador() {
+		return r;
 	}
 
 	public void setNome(String nome) {

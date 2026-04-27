@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 26/04/2026
+* Ultima alteracao.: 27/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -81,8 +81,10 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private TextArea txtBackbone;
 
 	// Variaveis e instancias
+  private Pacote p;
 	public static volatile TelaPrincipalController controller;
-  private boolean echo;
+  private boolean simulacaoAtiva;
+  public static volatile boolean convergiu;
 	private int quantidadeNos;
 	private Roteador origem;
   private Roteador destino;
@@ -106,6 +108,9 @@ public class TelaPrincipalController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
+    // A simulacao comeca inativa
+    simulacaoAtiva = false;
+
     // Carrega as ArrayLists que armazenarao os roteadores e os tempos de ida e volta das arestas, respectivamente
     roteadores = new ArrayList<>();
     tempoArestas = new ArrayList<>();
@@ -177,19 +182,32 @@ public class TelaPrincipalController implements Initializable {
 
   @FXML
   private void ocultarAresta(MouseEvent event, Aresta a) {
+    // Obtem os roteadores ligados pela aresta
     Roteador r1 = a.getR1();
     Roteador r2 = a.getR2();
 
+    // Inicio do bloco if
+    if (!simulacaoAtiva) {
+      // Os roteadores param de se tornar vizinhos caso a simulacao estiver ativa
+      // (isso porque os roteadores nao serao reescritos)
+      r1.removerVizinho(r2);
+      r2.removerVizinho(r1);
+    } // Fim do bloco if
+
+    // Obtem o nome dos roteadores, bem como o tempo de ida e volta da aresta
     String nome1 = r1.getNome();
     String nome2 = r2.getNome();
     String ida = Long.toString(a.getIda());
     String volta = Long.toString(a.getVolta());
 
+    // Remonta a linha correspondente a aresta com base na formatacao do backbone
     String linha = nome1 + "," + nome2 + "," + ida + "," + volta;
 
+    // Acessa o backbone e cria uma ArrayList para armazenar as linhas que sobrarem do backbone
     File backbone = new File("backbone.txt");
     ArrayList<String> linhasRestantes = new ArrayList<>();
 
+    // Inicio do bloco try/catch
     try {
       if (backbone.exists()) {
         Files.lines(backbone.toPath()).forEach(l -> {
@@ -204,7 +222,7 @@ public class TelaPrincipalController implements Initializable {
     }
     catch (IOException e) {
       e.printStackTrace();
-    }
+    } // Fim do bloco try/catch
   }
 
 	/*
@@ -275,13 +293,6 @@ public class TelaPrincipalController implements Initializable {
       // Impede que a rede seja alterada durante a simulacao
       btnAlterarRede.setDisable(true);
 
-      // Inicio do bloco for
-      for (Aresta a : arestasExistentes.values()) {
-        // Impede que as arestas sejam removidas durante a simulacao
-        Line l = a.getLinha();
-        l.setMouseTransparent(true);
-      } // Fim do bloco for
-
       // Inicia a simulacao se a origem nao for nula
       if (origem != null) iniciarSimulacao();
     }
@@ -301,6 +312,8 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void iniciarSimulacao() {
+    simulacaoAtiva = true;
+
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       // Inicializa uma nova imagem representando o pacote
@@ -315,95 +328,51 @@ public class TelaPrincipalController implements Initializable {
       subrede.getChildren().add(envelope);
 
       // Inicializa uma nova Thread correspondente ao pacote
-      Pacote p = new Pacote(envelope, origem, destino);
+      p = new Pacote(envelope, origem, destino);
       p.setDaemon(true);
       p.start();
 
       // Submete o pacote para calcular o trajeto da origem ate o destino
       // atraves do algoritmo por vetor de distancia
-      calcularVetorDistancia(p);
+      iniciarVetorDistancia();
     }); // Fim do bloco Platform.runLater
   }
 
   /*
    * ***************************************************************
-   * Metodo: calcularVetorDistancia
-   * Funcao: calcula o caminho mais curto a ser percorrido pelo pacote
-             da origem ate o destino atraves do algoritmo por vetor de distancia
+   * Metodo: iniciarVetorDistancia
+   * Funcao: inicia o calculo do caminho da origem ate o destino 
+             atraves do algoritmo por vetor de distancia
    * Parametros: Pacote p - pacote cujo caminho sera montado
    * Retorno: void
    ****************************************************************/
 
-  private void calcularVetorDistancia(Pacote p) {
-    Thread vetorDistancia = new Thread(() -> {
-      Platform.runLater(() -> {
-        alterarDistancia(origem, Long.toString(0));
-        atualizarRoteador(origem);
-        alterarRoteadorNosVizinhos(origem);
-      });
+  private void iniciarVetorDistancia() {
+    for (Roteador r : roteadores) {
+      r.setListaRoteadores(roteadores);
+      r.setDaemon(true);
+      r.start();
+    }
 
-      definirValoresIniciais();
-      dormir(300);
-
-      ArrayList<Roteador> abertos = new ArrayList<>();
-      abertos.add(origem);
-
-      while (!abertos.isEmpty()) {
-        imprimirRoteadoresAbertos(abertos);
-        Roteador atual = abertos.remove(0);
-
-        final Roteador rAtual = atual;
-
-        Platform.runLater(() -> {
-          alternarTabela(rAtual.getNome());
-          rAtual.marcarVisitando();
-        });
-
-        dormir(600);
-
-        ArrayList<Roteador> vizinhos = atual.getVizinhos();
-
-        if (vizinhos != null) {
-          for (Roteador v : vizinhos) {
-            enviarSolicitacao(atual, v);
-            while (echo) dormir(200);
-
-            Aresta a = obterAresta(atual, v);
-            Platform.runLater(() -> a.marcarVisitando());
-
-            ArrayList<EntradaTabela> entradasAtual = atual.getTabela().getEntradas();
-            boolean mudou = v.processarVetor(atual, entradasAtual);
-
-            dormir(800);
-
-            if (mudou) {
-              if (!abertos.contains(v)) {
-                abertos.add(v);
-              }
-
-              Platform.runLater(() -> {
-                atualizarRoteador(v);
-                alterarRoteadorNosVizinhos(v);
-              });
-            }
-
-            Platform.runLater(() -> a.resetarLinha());
-            dormir(300);
-          }
-
-          Platform.runLater(() -> rAtual.resetarNo());
+    Thread pausa = new Thread(() -> {
+      while (!verificarTabelasCompletas()) {
+        try {
+          Thread.sleep(200);
+        }
+        catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
         }
       }
 
-      obterCaminhoFinal(p);
+      Platform.runLater(() -> obterCaminhoFinal());
     });
 
-    vetorDistancia.setDaemon(true);
-    vetorDistancia.start();
+    pausa.setDaemon(true);
+    pausa.start();
   }
 
-  private void enviarSolicitacao(Roteador origem, Roteador destino) {
-    this.echo = true;
+  public void enviarSolicitacao(Roteador origem, Roteador destino) {
+    origem.setEcho(true);
 
     Platform.runLater(() -> {
       Image echo = new Image(getClass().getResource("/img/Echo.png").toExternalForm());
@@ -421,13 +390,23 @@ public class TelaPrincipalController implements Initializable {
   }
 
   public void removerSolicitacao(Echo e) {
-    this.echo = false;
+    Roteador origemEcho = e.getOrigem();
+    Roteador r = obterRoteador(origemEcho.getNome());
+    r.setEcho(false);
 
     Platform.runLater(() -> {
       e.interrupt();
       ImageView envelope = e.getEnvelope();
       subrede.getChildren().remove(envelope);
     });
+  }
+
+  private boolean verificarTabelasCompletas() {
+    for (Roteador r : roteadores) {
+      if (!r.getTabelaCompleta()) return false;
+    }
+
+    return true;
   }
 
   /*
@@ -438,89 +417,68 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  private void obterCaminhoFinal(Pacote p) {
+  private void obterCaminhoFinal() {
     Roteador passo = origem;
+    int passos = roteadores.size();
+    int contador = 0;
+
     concatenarCaminho(passo);
     
-    while (!passo.getNome().equals(destino.getNome())) {
+    while (passo != null && !passo.getNome().equals(destino.getNome())) {
+      if (contador > passos) {
+        erroCicloCaminho();
+        break;
+      }
+
       TabelaRoteamento tabela = passo.getTabela();
       EntradaTabela entradaDestino = tabela.obterEntrada(destino.getNome());
-      String linhaSaida = entradaDestino.getLinhaSaida();
-      Roteador saida = obterRoteador(linhaSaida);
-      Aresta a = obterAresta(passo, saida);
 
+      if (entradaDestino == null || entradaDestino.getLinhaSaida().equals("-")) {
+        erroRota(passo);
+        break;
+      }
+
+      String linhaSaida = entradaDestino.getLinhaSaida().trim();
+      Roteador saida = obterRoteador(linhaSaida);
+
+      if (saida == null) {
+        erroRota(passo);
+        break;
+      }
+
+      Aresta a = obterAresta(passo, saida);
       final Roteador rPasso = passo;
+      final Roteador rSaida = saida;
 
       if (a != null) {
         Platform.runLater(() -> {
-          p.adicionarRoteadorAoCaminho(saida);
+          this.p.adicionarRoteadorAoCaminho(rSaida);
           concatenarCaminho(rPasso);
-          a.marcarPermanente();
+          a.marcarParteCaminho();
         });
 
         passo = saida;
-        dormir(400); 
+        contador++;
+        dormir(500);
+      }
+      else {
+        erroRota(passo);
+        break;
       }
     }
 
     p.liberar();
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: definirValoresIniciais
-   * Funcao: cada roteador preenche suas tabelas com os retardos de seus
-             vizinhos diretos
-   * Parametros: Pacote p - pacote cujo caminho sera montado
-   * Retorno: void
-   ****************************************************************/
-
-  private void definirValoresIniciais() {
-    for (Roteador r : roteadores) {
-      Platform.runLater(() -> r.marcarVisitando());
-      dormir(500);
-
-      Platform.runLater(() -> alternarTabela(r.getNome()));
-      dormir(300);
-
-      for (Roteador rot : roteadores) {
-        Platform.runLater(() -> r.inserirEntrada(new EntradaTabela(rot, rot.getNome(), "-", "-")));
-        dormir(500);
-      }
-
-      ArrayList<Roteador> vizinhos = r.getVizinhos();
-
-      if (vizinhos != null) {
-        for (Roteador v : vizinhos) {
-          final Aresta a = obterAresta(r, v);
-          final long distancia = r.ping(v);
-          final String vizinho = v.getNome();
-
-          Platform.runLater(() -> {
-            a.marcarVisitando();
-            r.modificarEntrada(v, vizinho, vizinho, distancia);
-          });
-
-          dormir(800);
-          a.resetarLinha();
-        }
-      }
-
-      r.resetarNo();
-      atualizarRoteador(r);
-      alterarRoteadorNosVizinhos(r);
-    }
+  private void erroCicloCaminho() {
+    System.out.println("Ciclo encontrado ou caminho inacessível!");
+    TelaPrincipalController.controller.interromper(this.p);
   }
 
-  private void imprimirRoteadoresAbertos(ArrayList<Roteador> abertos) {
-    String listaAbertos = "";
-
-    for (Roteador r : abertos) {
-      listaAbertos += r.getNome() + " ";
-    }
-
-    System.out.println("Abertos: " + listaAbertos);
-  } 
+  private void erroRota(Roteador passo) {
+    System.out.println("Nenhuma rota encontrada para o destino em: " + passo.getNome());
+    TelaPrincipalController.controller.interromper(this.p);
+  }
 
   /*
    * ***************************************************************
@@ -556,15 +514,6 @@ public class TelaPrincipalController implements Initializable {
       // Em caso de excecao, o processo eh interrompido
       Thread.currentThread().interrupt();
     } // Fim do bloco try/catch
-  }
-
-  private void alternarTabela(String nomeRoteador) {
-    for (Tab t : painelTabela.getTabs()) {
-      if (t.getText().equals(nomeRoteador)) {
-        painelTabela.getSelectionModel().select(t);
-        break;
-      }
-    }
   }
 
   /*
@@ -607,7 +556,7 @@ public class TelaPrincipalController implements Initializable {
     String novoTrecho = (!r.isDestino()) ? r.getNome() + " -> " : r.getNome();
 
     // Exibe o novo trecho no inicio junto com o texto anterior
-    lblCaminho.setText(novoTrecho + textoAtual);
+    lblCaminho.setText(textoAtual + novoTrecho);
   }
 
   public void interromper(Pacote p) {
@@ -623,6 +572,8 @@ public class TelaPrincipalController implements Initializable {
   @FXML
   private void reiniciar(ActionEvent event) {
     Platform.runLater(() -> {
+      p = null;
+
       btnReiniciar.setVisible(false);
       btnAlterarRede.setDisable(false);
 
@@ -634,6 +585,8 @@ public class TelaPrincipalController implements Initializable {
       lblSelecao.setVisible(true);
 
       for (Roteador r : roteadores) {
+        r.interrupt();
+
         if (r.isOrigem()) r.setOrigem(false);
         if (r.isDestino()) r.setDestino(false);
 
@@ -649,8 +602,6 @@ public class TelaPrincipalController implements Initializable {
 
       for (Aresta a : arestasExistentes.values()) {
         a.resetarLinha();
-        Line l = a.getLinha();
-        l.setMouseTransparent(false);
       }
 
       // Inicio do bloco for
@@ -774,28 +725,33 @@ public class TelaPrincipalController implements Initializable {
       quantidadeNos = Integer.parseInt(linha.trim());
 
       // Calcula a posicao dos nos
-      calcularPosicaoNos(quantidadeNos);
+      if (!simulacaoAtiva) calcularPosicaoNos(quantidadeNos);
 
       // Gera as labels de cada no
-      gerarLabels(quantidadeNos);
+      if (!simulacaoAtiva) gerarLabels(quantidadeNos);
 
-      // Inicio do bloco for
-      // O laco continua sendo executado ate que atinja a quantidade de nos
-      // presentes no grafo da sub rede
-      for (int i = 0; i < quantidadeNos; i++) {
-        // Gera o rotulo de acordo com o indice
-        String nome = gerarNome(i);
+      if (!simulacaoAtiva) {
+        // Inicio do bloco for
+        // O laco continua sendo executado ate que atinja a quantidade de nos
+        // presentes no grafo da sub rede
+        for (int i = 0; i < quantidadeNos; i++) {
+          // Gera o rotulo de acordo com o indice
+          String nome = gerarNome(i);
 
-        // Cria o no correspondente ao rotulo gerado
-        Circle c = criarNo(nome);
+          // Cria o no correspondente ao rotulo gerado
+          Circle c = criarNo(nome);
 
-        // Cria uma nova instancia do roteador
-        Roteador r = criarRoteador(c, nome);
-      } // Fim do bloco for
+          // Cria uma nova instancia do roteador
+          Roteador r = criarRoteador(c, nome);
+        } // Fim do bloco for
+      }
 
-      // Calcula as posicoes das labels e dos roteadores
-      calcularPosicaoLabels(quantidadeNos);
-      calcularPosicaoRoteadores(quantidadeNos);
+      // Inicio do bloco if
+      if (!simulacaoAtiva) {
+        // Calcula as posicoes das labels e dos roteadores, exceto quando a simulacao estiver ativa
+        calcularPosicaoLabels(quantidadeNos);
+        calcularPosicaoRoteadores(quantidadeNos);
+      } // Fim do bloco if
 
       // Inicio do bloco while
       // Enquanto ainda houver linhas presentes no arquivo
@@ -821,7 +777,7 @@ public class TelaPrincipalController implements Initializable {
         if (r1 != null && r2 != null) gerarAresta(r1, r2, ida, volta);
       } // Fim do bloco while
 
-      criarTabelas();
+      if (!simulacaoAtiva) criarTabelas();
     }
     catch (IOException e) {
       // Em caso de excecao, ela sera exibida no terminal
@@ -847,11 +803,6 @@ public class TelaPrincipalController implements Initializable {
         subrede.getChildren().remove(entrada.getValue());
       } // Fim do bloco for
 
-      // Inicio do bloco for  
-      for (Map.Entry<String, Label> entrada : labels.entrySet()) {
-        subrede.getChildren().remove(entrada.getValue());
-      } // Fim do bloco for
-
       // Inicio do bloco for
       for (Aresta a : arestasExistentes.values()) {
         // Remove as arestas presentes na topologia da subrede
@@ -864,27 +815,37 @@ public class TelaPrincipalController implements Initializable {
         subrede.getChildren().remove(t);
       } // Fim do bloco for
 
-      // Inicio do bloco for
-      for (Label d : distancias.values()) {
-        // Remove as distancias de cada no
-        subrede.getChildren().remove(d);
-      } // Fim do bloco for
+      // Inicio do bloco if
+      // Se a simulacao nao estiver ativa
+      if (!simulacaoAtiva) {
+        // Inicio do bloco for  
+        for (Map.Entry<String, Label> entrada : labels.entrySet()) {
+          subrede.getChildren().remove(entrada.getValue());
+        } // Fim do bloco for
 
-      // Inicio do bloco for
-      for (Roteador r : roteadores) {
-        // Esvazia os roteadores
-        r = null;
-      } // Fim do bloco for
+        // Inicio do bloco for
+        for (Label d : distancias.values()) {
+          // Remove as distancias de cada no
+          subrede.getChildren().remove(d);
+        } // Fim do bloco for
 
-      painelTabela.getTabs().clear();
+        // Inicio do bloco for
+        for (Roteador r : roteadores) {
+          // Esvazia os roteadores
+          r = null;
+        } // Fim do bloco for
 
-      // Esvazia as listas e os HashMaps
-      roteadores.clear();
-      nosCriados.clear();
-      posicaoCirculos.clear();
-      arestasExistentes.clear();
-      labels.clear();
-      distancias.clear();
+        // Remove as tabelas
+        painelTabela.getTabs().clear();
+      } // Fim do bloco if
+
+      // Esvazia as listas e os HashMaps (alguns nao esvaziam caso a simulacao estiver ativa)
+      if (!simulacaoAtiva) roteadores.clear();
+      if (!simulacaoAtiva) nosCriados.clear();
+      if (!simulacaoAtiva) posicaoCirculos.clear();
+      if (!simulacaoAtiva) arestasExistentes.clear();
+      if (!simulacaoAtiva) labels.clear();
+      if (!simulacaoAtiva) distancias.clear();
       tempoArestas.clear();
 
       // Reconfigura a sub rede
@@ -1219,7 +1180,7 @@ public class TelaPrincipalController implements Initializable {
       tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
       t.setContent(tabela);
 
-      TabelaRoteamento tab = new TabelaRoteamento(r.getNome(), tabela);
+      TabelaRoteamento tab = new TabelaRoteamento(r, r.getNome(), tabela);
 
       r.setTabela(tab);
       atualizarRoteador(r);
@@ -1279,7 +1240,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: Roteador
    ****************************************************************/
 
-  private Roteador obterRoteador(String nome) {
+  public Roteador obterRoteador(String nome) {
     // Inicio do bloco for
     // Realiza-se uma busca na lista de roteadores
     for (Roteador r : roteadores) {
@@ -1319,6 +1280,10 @@ public class TelaPrincipalController implements Initializable {
         break;
       } // Fim do bloco if
     } // Fim do bloco for
+
+    for (Roteador rot : roteadores) {
+      rot.setListaRoteadores(roteadores);
+    }
   }
 
   /*
