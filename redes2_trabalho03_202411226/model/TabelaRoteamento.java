@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 27/04/2026
+* Ultima alteracao.: 28/04/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -12,6 +12,7 @@ package model;
 
 import controller.TelaPrincipalController;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -46,9 +47,9 @@ public class TabelaRoteamento {
       r.inserirEntrada(new EntradaTabela(rot, rot.getNome(), "-", "-"));
     }
 
-    ArrayList<Roteador> vizinhos = r.getVizinhos();
+    CopyOnWriteArrayList<Roteador> vizinhos = new CopyOnWriteArrayList<>(r.getVizinhos());
 
-    if (vizinhos != null) {
+    if (!vizinhos.isEmpty()) {
       for (Roteador v : vizinhos) {
         final long distancia = r.ping(v);
         final String vizinho = v.getNome();
@@ -101,7 +102,6 @@ public class TabelaRoteamento {
 						alterarEntrada(entradaLocal);
 
 						Platform.runLater(() -> {
-							TelaPrincipalController.controller.alterarDistancia(entrada, entradaLocal.getRetardo());
 							TelaPrincipalController.controller.atualizarRoteador(entrada);
 							TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
 						});
