@@ -95,7 +95,7 @@ public class TelaPrincipalController implements Initializable {
   private String modelo;
   private CopyOnWriteArrayList<Echo> echos;
   private ArrayList<Label> tempoArestas;
-  private ArrayList<Roteador> roteadores;
+  private CopyOnWriteArrayList<Roteador> roteadores;
   private HashMap<String, Circle> nosCriados = new HashMap<>();
   private Map<String, double[]> posicaoCirculos = new HashMap<>();
   private HashMap<String, Aresta> arestasExistentes = new HashMap<>();
@@ -116,7 +116,7 @@ public class TelaPrincipalController implements Initializable {
     simulacaoAtiva = false;
 
     // Carrega as ArrayLists que armazenarao os roteadores, os tempos de ida e volta das arestas, e 
-    roteadores = new ArrayList<>();
+    roteadores = new CopyOnWriteArrayList<>();
     tempoArestas = new ArrayList<>();
     echos = new CopyOnWriteArrayList<>();
 
@@ -941,6 +941,9 @@ public class TelaPrincipalController implements Initializable {
         if (r1 != null && r2 != null) gerarAresta(r1, r2, ida, volta);
       } // Fim do bloco while
 
+      // Joga os roteadores para a frente da sub rede
+      jogarRoteadoresParaFrente();
+
       // Inicio do bloco if
       if (!simulacaoAtiva || alterouSubRede) {
         // Marca a flag de alteracao na sub rede como falsa
@@ -1415,6 +1418,28 @@ public class TelaPrincipalController implements Initializable {
         } // Fim do bloco if/else
       }
     });
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: jogarRoteadoresParaFrente
+   * Funcao: posiciona os roteadores acima das arestas
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void jogarRoteadoresParaFrente() {
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      // Joga os nos dos roteadores para frente
+      c.toFront();
+    } // Fim do bloco for
+
+    // Inicio do bloco for
+    for (Label l : labels.values()) {
+      // Joga as labels dos roteadores para frente
+      l.toFront();
+    } // Fim do bloco for
   }
 
   /*

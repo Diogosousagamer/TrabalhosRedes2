@@ -28,7 +28,7 @@ public class Roteador extends Thread {
 	private double posX;
   private double posY;
 	private CopyOnWriteArrayList<Roteador> vizinhos;
-  private ArrayList<Roteador> listaRoteadores;
+  private CopyOnWriteArrayList<Roteador> listaRoteadores;
   private TabelaRoteamento tabela;
   private boolean tabelaCompleta;
 	private String nome;
@@ -49,7 +49,7 @@ public class Roteador extends Thread {
 		this.no = no;
 		this.nome = nome;
 		vizinhos = new CopyOnWriteArrayList<>();
-    listaRoteadores = new ArrayList<>();
+    listaRoteadores = new CopyOnWriteArrayList<>();
     tabelaCompleta = false;
 		origem = false;
 		destino = false;
@@ -509,11 +509,11 @@ public class Roteador extends Thread {
    * ***************************************************************
    * Metodo: setListaRoteadores
    * Funcao: define a lista de roteadores da sub rede
-   * Parametros: ArrayList<Roteadores> tabela - tabela a ser definida
+   * Parametros: CopyOnWriteArrayList<Roteadores> tabela - tabela a ser definida
    * Retorno: void
    ****************************************************************/
 
-  public void setListaRoteadores(ArrayList<Roteador> lr) {
+  public void setListaRoteadores(CopyOnWriteArrayList<Roteador> lr) {
     this.listaRoteadores = lr;
   }
 
@@ -522,10 +522,10 @@ public class Roteador extends Thread {
    * Metodo: getListaRoteadores
    * Funcao: retorna a lista de roteadores da sub rede
    * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: ArrayList<Roteador>
+   * Retorno: CopyOnWriteArrayList<Roteador>
    ****************************************************************/
 
-  public ArrayList<Roteador> getListaRoteadores() {
+  public CopyOnWriteArrayList<Roteador> getListaRoteadores() {
     return listaRoteadores;
   }
 

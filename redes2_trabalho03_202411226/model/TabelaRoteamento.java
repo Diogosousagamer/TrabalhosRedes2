@@ -43,11 +43,11 @@ public class TabelaRoteamento {
    * ***************************************************************
    * Metodo: definirEntradasIniciais
    * Funcao: carrega as entradas iniciais dentro da tabela
-   * Parametros: ArrayList<Roteador> roteadores - lista de roteadores
+   * Parametros: CopyOnWriteArrayList<Roteador> roteadores - lista de roteadores
    * Retorno: void
    ****************************************************************/
 
-	public void definirEntradasIniciais(ArrayList<Roteador> roteadores) {
+	public void definirEntradasIniciais(CopyOnWriteArrayList<Roteador> roteadores) {
 		// Inicio do bloco for
 		for (Roteador rot : roteadores) {
 			// Insere a entrada correspondente ao roteador
