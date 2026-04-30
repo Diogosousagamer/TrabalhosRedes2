@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 25/04/2026
-* Ultima alteracao.: 25/04/2026
+* Ultima alteracao.: 28/04/2026
 * Nome.............: Echo
 * Funcao...........: Thread que gerencia as operacoes de cada pacote de solicitacao enviados
                      entre os roteadores.
@@ -24,18 +24,50 @@ public class Echo extends Thread {
 	private double posX;
 	private double posY;
 
+  /*
+   * ***************************************************************
+   * Metodo: Echo
+   * Funcao: inicializa uma nova instancia da classe Echo
+   * Parametros: Roteador origem - roteador do qual o pacote de solicitacao se originou
+                 Roteador destino - roteador para o qual o pacote de solicitacao sera encaminhado
+	               ImageView envelope - imagem do pacote de solicitacao
+   * Retorno: nenhum
+   ****************************************************************/
+
 	public Echo(Roteador origem, Roteador destino, ImageView envelope) {
 		this.origem = origem;
 		this.destino = destino;
 		this.envelope = envelope;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: run
+   * Funcao: metodo que executa as operacoes da Thread enquanto ela
+             estiver ativa
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   @Override
 	public void run() {
+		// Define a posicao
 		definirPosicao();
+
+		// Se movimenta ate o destino
 		movimentar(this.destino);
+
+		// Remove o pacote de solicitacao da subrede
 		TelaPrincipalController.controller.removerSolicitacao(this);
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: definirPosicao
+   * Funcao: define a posicao do pacote de solicitacao na sub rede
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: nenhum
+   ****************************************************************/
 
 	private void definirPosicao() {
 		// Armazena as posicoes iniciais da imagem nos eixos X e Y
@@ -50,6 +82,15 @@ public class Echo extends Thread {
 			envelope.setLayoutY(posY);
 		}); // Fim do bloco Platform.runLater
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: movimentar
+   * Funcao: movimenta o pacote de solicitacao para o roteador de destino
+   * Parametros: Roteador r - roteador para o qual o pacote de solicitacao 
+                              sera encaminhado
+   * Retorno: void
+   ****************************************************************/
 
 	private void movimentar(Roteador r) {
 		// Obtem-se a posicao (X e Y) do roteador de destino

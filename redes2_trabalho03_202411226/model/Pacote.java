@@ -69,7 +69,7 @@ public class Pacote extends Thread {
 	/*
    * ***************************************************************
    * Metodo: definirPosicao
-   * Funcao: define o valor inicial dos contadores de posicao
+   * Funcao: define a posicao do pacote na sub rede
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: nenhum
    ****************************************************************/

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 28/04/2026
+* Ultima alteracao.: 30/04/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -70,9 +71,11 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private AnchorPane subrede;
 	@FXML private Button btnAlterarRede;
   @FXML private Button btnAplicar;
+  @FXML private Button btnEnviarPacote;
   @FXML private Button btnFecharAlterarRede;
   @FXML private Button btnReiniciar;
 	@FXML private Button btnVoltar;
+  @FXML private Label lblAviso;
 	@FXML private Label lblCaminho;
 	@FXML private Label lblDestino;
 	@FXML private Label lblOrigem;
@@ -84,11 +87,13 @@ public class TelaPrincipalController implements Initializable {
   private Pacote p;
 	public static volatile TelaPrincipalController controller;
   private boolean simulacaoAtiva;
+  private boolean alterouSubRede;
   public static volatile boolean convergiu;
 	private int quantidadeNos;
 	private Roteador origem;
   private Roteador destino;
   private String modelo;
+  private CopyOnWriteArrayList<Echo> echos;
   private ArrayList<Label> tempoArestas;
   private ArrayList<Roteador> roteadores;
   private HashMap<String, Circle> nosCriados = new HashMap<>();
@@ -110,9 +115,10 @@ public class TelaPrincipalController implements Initializable {
     // A simulacao comeca inativa
     simulacaoAtiva = false;
 
-    // Carrega as ArrayLists que armazenarao os roteadores e os tempos de ida e volta das arestas, respectivamente
+    // Carrega as ArrayLists que armazenarao os roteadores, os tempos de ida e volta das arestas, e 
     roteadores = new ArrayList<>();
     tempoArestas = new ArrayList<>();
+    echos = new CopyOnWriteArrayList<>();
 
     // Carrega a instancia volatil do controller
     controller = this;
@@ -208,18 +214,25 @@ public class TelaPrincipalController implements Initializable {
 
     // Inicio do bloco try/catch
     try {
+      // Inicio do bloco if
       if (backbone.exists()) {
         Files.lines(backbone.toPath()).forEach(l -> {
+          // Inicio do bloco if
           if (!l.trim().equals(linha)) {
+            // Adiciona apenas as linhas que nao correspondem a aresta a ser removida
             linhasRestantes.add(l);
-          }
+          } // Fim do bloco if
         });
-      }
+      } // Fim do bloco if
 
+      // Escreve as linhas restantes no arquivo
       Files.write(backbone.toPath(), linhasRestantes);
+
+      // Remove a sub rede para que ela possa ser reconfigurada
       removerSubrede();
     }
     catch (IOException e) {
+      // Em caso de excecao, ela eh exibida no terminal
       e.printStackTrace();
     } // Fim do bloco try/catch
   }
@@ -241,6 +254,9 @@ public class TelaPrincipalController implements Initializable {
 
     // Interrompe o metodo se o circulo nao tiver um rotulo correspondente
     if (nome == null) return;
+
+    // Impede que a rede seja alterada durante a simulacao
+    btnAlterarRede.setDisable(true);
 
     // Inicio do bloco if/else if/else if
     // Se um roteador ainda nao tiver sido definido como origem
@@ -289,11 +305,8 @@ public class TelaPrincipalController implements Initializable {
       lblSelecao.setVisible(false);
       lblCaminho.setVisible(true);
 
-      // Impede que a rede seja alterada durante a simulacao
-      btnAlterarRede.setDisable(true);
-
-      // Inicia a simulacao se a origem nao for nula
-      if (origem != null) iniciarSimulacao();
+      // Cria o pacote para ser enviado caso a origem nao for nula
+      if (origem != null) criarPacote();
     }
     else if (existeOrigem() && existeDestino()) {
       // Interrompe o metodo se uma origem e um destino ja tiverem
@@ -304,15 +317,57 @@ public class TelaPrincipalController implements Initializable {
 
   /*
    * ***************************************************************
-   * Metodo: inciarSimulacao
-   * Funcao: inicia a simulacao
+   * Metodo: enviarPacote
+   * Funcao: configura a sub rede para que o pacote seja enviado
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void enviarPacote(ActionEvent event) {
+    // Inicio do bloco if
+    if (!verificarTabelasCompletas()) {
+      // Thread que exibe um aviso caso as tabelas nao estiverem completas
+      Thread aviso = new Thread(() -> {
+        lblAviso.setVisible(true);
+        dormir(2000);
+        lblAviso.setVisible(false);
+      });
+
+      // Inicia a Thread, garantindo que as operacoes sejam encerradas
+      // caso o programa for fechado
+      aviso.setDaemon(true);
+      aviso.start();
+
+      // Sai do metodo
+      return;
+    } // Fim do bloco if
+
+    // Inicio do bloco for
+    for (Aresta a : arestasExistentes.values()) {
+      // Impede que a aresta seja removida durante a selecao
+      Line l = a.getLinha();
+      l.setMouseTransparent(true);
+    } // Fim do bloco for
+
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      c.setMouseTransparent(false);
+    } // Fim do bloco for
+
+    // Exibe a selecao
+    lblSelecao.setVisible(true);
+  } 
+
+  /*
+   * ***************************************************************
+   * Metodo: criarPacote
+   * Funcao: cria o pacote a ser transportado na sub rede
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
-  private void iniciarSimulacao() {
-    simulacaoAtiva = true;
-
+  private void criarPacote() {
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       // Inicializa uma nova imagem representando o pacote
@@ -331,22 +386,30 @@ public class TelaPrincipalController implements Initializable {
       p.setDaemon(true);
       p.start();
 
-      // Submete o pacote para calcular o trajeto da origem ate o destino
-      // atraves do algoritmo por vetor de distancia
-      iniciarVetorDistancia();
+      // Obtem o caminho final do pacote
+      obterCaminhoFinal();
     }); // Fim do bloco Platform.runLater
   }
 
   /*
    * ***************************************************************
-   * Metodo: iniciarVetorDistancia
-   * Funcao: inicia o calculo do caminho da origem ate o destino 
-             atraves do algoritmo por vetor de distancia
-   * Parametros: Pacote p - pacote cujo caminho sera montado
+   * Metodo: iniciarRoteadores
+   * Funcao: inicializa os roteadores para calcularem o roteamento
+             por vetor de distancia
+   * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
-  private void iniciarVetorDistancia() {
+  private void iniciarRoteadores() {
+    // Marca a simulacao como ativa
+    simulacaoAtiva = true;
+
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      // Impede que os circulos sejam clicados
+      c.setMouseTransparent(true);
+    } // Fim do bloco for
+
     // Inicio do bloco for
     for (Roteador r : roteadores) {
       // Inicia a operacao dos roteadores passando a lista completa
@@ -372,8 +435,8 @@ public class TelaPrincipalController implements Initializable {
         } // Fim do bloco try/catch
       } // Fim do bloco while
 
-      // Obtem o caminho final depois que todas as tabelas estiverem completas
-      Platform.runLater(() -> obterCaminhoFinal());
+      // Encerra a simulacao caso elas estiverem completas
+      simulacaoAtiva = false;
     }); // Fim do bloco Thread
 
     // Inicia a Thread, com a garantia de que ela seja encerrada
@@ -409,6 +472,9 @@ public class TelaPrincipalController implements Initializable {
       Echo e = new Echo(origem, destino, request);
       e.setDaemon(true);
       e.start();
+
+      // Adiciona o pacote de solicitacao na lista
+      echos.add(e);
     }); // Fim do bloco Platform.runLater
   }
 
@@ -421,15 +487,21 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public void removerSolicitacao(Echo e) {
+    // Destrava o roteador que deu origem ao pacote de solicitacao
     Roteador origemEcho = e.getOrigem();
     Roteador r = obterRoteador(origemEcho.getNome());
     r.setEcho(false);
 
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Interrompe a Thread e remove a imagem da sub rede
       e.interrupt();
       ImageView envelope = e.getEnvelope();
       subrede.getChildren().remove(envelope);
-    });
+
+      // Remove o pacote de solicitacao da lista
+      if (echos.contains(e)) echos.remove(e);
+    }); // Fim do bloco Platform.runLater
   }
 
   /*
@@ -460,55 +532,93 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void obterCaminhoFinal() {
+    // Comeca pela origem
     Roteador passo = origem;
-    int passos = roteadores.size();
-    int contador = 0;
 
-    concatenarCaminho(passo);
+    // Quantidade maxima de iteracoes
+    int passos = roteadores.size();
+
+    // Contador de iteracoes
+    int contador = 0;
     
+    // Inicio do bloco while
+    // Enquanto o passo for nulo e nao corresponder ao destino
     while (passo != null && !passo.getNome().equals(destino.getNome())) {
+      // Inicio do bloco if
       if (contador > passos) {
+        // Interrompe a montagem do caminho em caso de formacao de ciclo
         erroCicloCaminho();
         break;
-      }
+      } // Fim do bloco if
 
+      // Obtem a tabela de roteamento do roteador para rastrear a linha referente ao destino
       TabelaRoteamento tabela = passo.getTabela();
       EntradaTabela entradaDestino = tabela.obterEntrada(destino.getNome());
 
+      // Inicio do bloco if
       if (entradaDestino == null || entradaDestino.getLinhaSaida().equals("-")) {
+        // Interrompe a montagem do caminho caso nao encontrar uma linha de saida para este destino
         erroRota(passo);
         break;
-      }
+      } // Fim do bloco if
 
+      // Obtem a linha de saida (direta ou indireta) para o destino
       String linhaSaida = entradaDestino.getLinhaSaida().trim();
       Roteador saida = obterRoteador(linhaSaida);
 
+      // Inicio do bloco if
       if (saida == null) {
+        // Interrompe a montagem do caminho caso o roteador da linha de saida nao for encontrado
         erroRota(passo);
         break;
-      }
+      } // Fim do bloco if
 
+      // Obtem-se a aresta do caminho
       Aresta a = obterAresta(passo, saida);
+
+      // Armazena o roteador atual e o roteador de saida em constantes
       final Roteador rPasso = passo;
       final Roteador rSaida = saida;
 
+      // Inicio do bloco if/else
+      // Se a aresta nao for nula
       if (a != null) {
+        // Inicio do bloco Platform.runLater
         Platform.runLater(() -> {
+          // Adiciona o roteador ao caminho, concatena a label de caminho 
+          // e marca a aresta a ser percorrida
           this.p.adicionarRoteadorAoCaminho(rSaida);
           concatenarCaminho(rPasso);
           a.marcarParteCaminho();
-        });
+        }); // Fim do bloco Platform.runLater
 
-        passo = saida;
-        contador++;
+        // Coloca o processo para dormir por 500 ms
         dormir(500);
+
+        // O roteador a ser visitado sera a linha de saida obtida
+        passo = saida;
+
+        // Incrementa o contador de iteracoes
+        contador++;
+
+        // Inicio do bloco if
+        if (passo.getNome().equals(destino.getNome())) {
+          // Concatena o passo atual no caminho caso ele for o destino
+          final Roteador passoFinal = passo;
+          Platform.runLater(() -> concatenarCaminho(passoFinal));
+
+          // Coloca o processo para dormir por 500 ms
+          dormir(500);
+        } // Fim do bloco if
       }
       else {
+        // Interrompe a montagem do caminho e emite um erro caso a aresta for nula
         erroRota(passo);
         break;
-      }
-    }
+      } // Fim do bloco if/else
+    } // Fim do bloco while
 
+    // Libera o pacote para percorrer o caminho
     p.liberar();
   }
 
@@ -550,7 +660,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: Aresta
    ****************************************************************/
 
-  public Aresta obterAresta(Roteador r1, Roteador r2) {
+  private Aresta obterAresta(Roteador r1, Roteador r2) {
     // Obtem a id da aresta e retona a aresta correspondente dentro do HashMap
     String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
     return arestasExistentes.get(id);
@@ -564,7 +674,7 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: void
    ****************************************************************/
 
-  public void dormir(long valor) {
+  private void dormir(long valor) {
     // Inicio do bloco try/catch
     try {
       // O processo eh posto para dormir por um certo tempo 
@@ -605,13 +715,18 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public void interromper(Pacote p) {
+    // Interrompe o pacote
     p.interrupt();
 
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Remove a imagem do pacote
       ImageView envelope = p.getEnvelope();
       subrede.getChildren().remove(envelope);
+
+      // Exibe o botao para reiniciar a topologia
       btnReiniciar.setVisible(true);
-    });
+    }); // Fim do bloco Platform.runLater
   }
 
   /*
@@ -624,44 +739,63 @@ public class TelaPrincipalController implements Initializable {
 
   @FXML
   private void reiniciar(ActionEvent event) {
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Anula o pacote
       p = null;
 
+      // Oculta o botao de reinicio e exibe o botao para alterar a topologia
       btnReiniciar.setVisible(false);
       btnAlterarRede.setDisable(false);
 
+      // Oculta a origem e o destino na Label
       lblOrigem.setText("");
       lblDestino.setText("");
 
+      // Oculta o caminho percorrido
       lblCaminho.setText("");
       lblCaminho.setVisible(false);
-      lblSelecao.setVisible(true);
 
+      // Inicio do bloco for
       for (Roteador r : roteadores) {
+        // Interrompe a Thread
         r.interrupt();
 
+        // Desmarca o roteador como origem e/ou destino do percurso
         if (r.isOrigem()) r.setOrigem(false);
         if (r.isDestino()) r.setDestino(false);
 
+        // Permite que o no seja clicavel novamente
         Circle c = r.getNo();
         c.setMouseTransparent(false);
 
+        // Reseta a cor do no
         r.resetarNo();
-        r.resetarEntradas();
 
+        // Reseta as entradas da tabela e a desmarca como completa
+        r.resetarEntradas();
+        r.setTabelaCompleta(false);
+
+        // Atualiza o roteador na lista e nos vizinhos
         atualizarRoteador(r);
         alterarRoteadorNosVizinhos(r);
-      }
-
+      } // Fim do bloco for
+ 
+      // Inicio do bloco for
       for (Aresta a : arestasExistentes.values()) {
+        // Reseta as linhas apos a finalizacao do caminho
         a.resetarLinha();
-      }
+        Line l = a.getLinha();
+        l.setMouseTransparent(false);
+      } // Fim do bloco for
 
+      // Anula a origem e o destino
       origem = null;
       destino = null;
 
-      painelTabela.getSelectionModel().select(0);
-    });
+      // Remove a sub rede para iniciar a simulacao novamente
+      removerSubrede();
+    }); // Fim do bloco Platform.runLater
   }
 
 	/*
@@ -739,6 +873,9 @@ public class TelaPrincipalController implements Initializable {
       // Oculta o painel de modificacao da rede
       painelAlterarRede.setVisible(false);
 
+      // Marca que a sub rede foi alterada para reiniciar a simulacao
+      alterouSubRede = true;
+
       // Remove a sub rede para depois reconfigura-la
       removerSubrede();
     }
@@ -769,31 +906,13 @@ public class TelaPrincipalController implements Initializable {
       // Obtem-se a quantidade de nos a partir da primeira linha
       quantidadeNos = Integer.parseInt(linha.trim());
 
-      // Calcula a posicao dos nos
-      if (!simulacaoAtiva) calcularPosicaoNos(quantidadeNos);
-
-      // Gera as labels de cada no
-      if (!simulacaoAtiva) gerarLabels(quantidadeNos);
-
-      if (!simulacaoAtiva) {
-        // Inicio do bloco for
-        // O laco continua sendo executado ate que atinja a quantidade de nos
-        // presentes no grafo da sub rede
-        for (int i = 0; i < quantidadeNos; i++) {
-          // Gera o rotulo de acordo com o indice
-          String nome = gerarNome(i);
-
-          // Cria o no correspondente ao rotulo gerado
-          Circle c = criarNo(nome);
-
-          // Cria uma nova instancia do roteador
-          Roteador r = criarRoteador(c, nome);
-        } // Fim do bloco for
-      }
-
       // Inicio do bloco if
-      if (!simulacaoAtiva) {
-        // Calcula as posicoes das labels e dos roteadores, exceto quando a simulacao estiver ativa
+      if (!simulacaoAtiva || alterouSubRede) {
+        // Gera os nos, labels e roteadores se a simulacao nao estiver ativa e/ou a sub rede for alterada
+        // atraves do backbone
+        calcularPosicaoNos(quantidadeNos);
+        gerarLabels(quantidadeNos);
+        criarRoteadores();
         calcularPosicaoLabels(quantidadeNos);
         calcularPosicaoRoteadores(quantidadeNos);
       } // Fim do bloco if
@@ -822,7 +941,15 @@ public class TelaPrincipalController implements Initializable {
         if (r1 != null && r2 != null) gerarAresta(r1, r2, ida, volta);
       } // Fim do bloco while
 
-      if (!simulacaoAtiva) criarTabelas();
+      // Inicio do bloco if
+      if (!simulacaoAtiva || alterouSubRede) {
+        // Marca a flag de alteracao na sub rede como falsa
+        if (alterouSubRede) alterouSubRede = false;
+
+        // Cria as tabelas e inicia os roteadores
+        criarTabelas();
+        iniciarRoteadores();
+      } // Fim do bloco if
     }
     catch (IOException e) {
       // Em caso de excecao, ela sera exibida no terminal
@@ -855,8 +982,11 @@ public class TelaPrincipalController implements Initializable {
       } // Fim do bloco for
 
       // Inicio do bloco if
-      // Se a simulacao nao estiver ativa
-      if (!simulacaoAtiva) {
+      // Se a simulacao nao estiver ativa ou a sub rede tiver sido alterada
+      if (!simulacaoAtiva || alterouSubRede) {
+        // Desativa a simulacao caso a sub rede tiver sido alterada
+        if (simulacaoAtiva) simulacaoAtiva = false;
+
         // Inicio do bloco for
         for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
           // Remova os nos presentes na topologia da subrede
@@ -870,20 +1000,29 @@ public class TelaPrincipalController implements Initializable {
 
         // Inicio do bloco for
         for (Roteador r : roteadores) {
-          // Esvazia os roteadores
+          // Interrompe e anula os pacotes de solicitacao
+          r.interrupt();
           r = null;
         } // Fim do bloco for
 
-        // Remove as tabelas
+        // Inicio do bloco for
+        for (Echo e : echos) {
+          // Interrompe e anula os pacotes de solicitacao
+          e.interrupt();
+          e = null;
+        } // Fim do bloco for
+
+        // Esvazia os paineis, listas e HashMaps
         painelTabela.getTabs().clear();
+        roteadores.clear();
+        echos.clear();
+        nosCriados.clear();
+        posicaoCirculos.clear();
+        labels.clear();
       } // Fim do bloco if
 
-      // Esvazia as listas e os HashMaps (alguns nao esvaziam caso a simulacao estiver ativa)
-      if (!simulacaoAtiva) roteadores.clear();
-      if (!simulacaoAtiva) nosCriados.clear();
-      if (!simulacaoAtiva) posicaoCirculos.clear();
+      // Remove as arestas e o tempo das arestas
       arestasExistentes.clear();
-      if (!simulacaoAtiva) labels.clear();
       tempoArestas.clear();
 
       // Reconfigura a sub rede
@@ -1085,6 +1224,32 @@ public class TelaPrincipalController implements Initializable {
       labels.put(nome, label);
     } // Fim do bloco for
   }
+ 
+  /*
+   * ***************************************************************
+   * Metodo: criarRoteadores
+   * Funcao: cria os roteadores presentes na topologia da sub rede
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void criarRoteadores() {
+    // Inicio do bloco if
+    // Se a quantidade de nos presentes na rede nao for nula
+    if (quantidadeNos != 0) {
+      // Inicio do bloco for
+      for (int i = 0; i < quantidadeNos; i++) {
+        // Gera o rotulo de acordo com o indice
+        String nome = gerarNome(i);
+
+        // Cria o no correspondente ao rotulo gerado
+        Circle c = criarNo(nome);
+
+        // Cria uma nova instancia do roteador
+        Roteador r = criarRoteador(c, nome);
+      } // Fim do bloco for
+    } // Fim do bloco if
+  }
 
   /*
    * ***************************************************************
@@ -1216,7 +1381,7 @@ public class TelaPrincipalController implements Initializable {
       t.setContent(tabela);
 
       // Instancia a tabela de roteamento e a adiciona no roteador
-      TabelaRoteamento tab = new TabelaRoteamento(r, r.getNome(), tabela);
+      TabelaRoteamento tab = new TabelaRoteamento(r, tabela);
       r.setTabela(tab);
       atualizarRoteador(r);
       alterarRoteadorNosVizinhos(r);
@@ -1232,18 +1397,22 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private <S, T> void centralizarColuna(TableColumn<S, T> coluna) {
+    // Metodo responsavel por alinhar as celulas da coluna no centro
     coluna.setCellFactory(tc -> new TableCell<S, T>() {
       @Override
       protected void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
 
+        // Inicio do bloco if/else
         if (item == null || empty) {
+          // O texto fica nulo se o tipo de dado nao for informado
           setText(null);
         } 
         else {
+          // Caso contrario, converte o item em string e o alinha no centro
           setText(item.toString());
           setStyle("-fx-alignment: CENTER;");
-        }
+        } // Fim do bloco if/else
       }
     });
   }
@@ -1316,9 +1485,11 @@ public class TelaPrincipalController implements Initializable {
       } // Fim do bloco if
     } // Fim do bloco for
 
+    // Inicio do bloco for
     for (Roteador rot : roteadores) {
+      // Atualiza as listas de roteadores de cada roteador
       rot.setListaRoteadores(roteadores);
-    }
+    } // Fim do bloco for
   }
 
   /*

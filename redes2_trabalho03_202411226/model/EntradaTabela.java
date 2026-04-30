@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 23/04/2026
+* Ultima alteracao.: 29/04/2026
 * Nome.............: EntradaTabela
 * Funcao...........: Classe que gerencia as operacoes de cada entrada das tabelas de roteamento.
                      
@@ -35,9 +35,25 @@ public class EntradaTabela {
 		this.retardo = retardo;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: setRoteadorDestino
+   * Funcao: define o roteador da linha de destino
+   * Parametros: Roteador roteadorDestino - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
   public void setRoteadorDestino(Roteador roteadorDestino) {
     this.roteadorDestino = roteadorDestino;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: getRoteadorDestino
+   * Funcao: retorna o roteador da linha de destino
+   * Parametros: Roteador roteadorDestino - valor a ser definido
+   * Retorno: Roteador
+   ****************************************************************/
 
   public Roteador getRoteadorDestino() {
     return roteadorDestino;

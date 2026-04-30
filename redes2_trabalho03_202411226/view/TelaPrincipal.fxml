@@ -25,7 +25,7 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
             </Button>
-            <Label fx:id="lblSelecao" layoutX="147.0" layoutY="17.0" prefHeight="29.0" prefWidth="332.0" text="SELECIONE A ORIGEM E O DESTINO:" textFill="WHITE">
+            <Label fx:id="lblSelecao" layoutX="147.0" layoutY="17.0" prefHeight="29.0" prefWidth="332.0" text="SELECIONE A ORIGEM E O DESTINO:" textFill="WHITE" visible="false">
                <font>
                   <Font name="VCR OSD Mono" size="18.0" />
                </font>
@@ -53,6 +53,16 @@
             <Label fx:id="lblCaminho" layoutX="147.0" layoutY="17.0" prefHeight="29.0" prefWidth="332.0" textFill="WHITE" visible="false">
                <font>
                   <Font name="VCR OSD Mono" size="18.0" />
+               </font>
+            </Label>
+            <Button fx:id="btnEnviarPacote" layoutX="14.0" layoutY="370.0" mnemonicParsing="false" onAction="#enviarPacote" prefHeight="31.0" prefWidth="144.0" styleClass="botao" stylesheets="@../util/trilha.css" text="ENVIAR PACOTE">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <Label fx:id="lblAviso" layoutX="14.0" layoutY="417.0" prefHeight="36.0" prefWidth="192.0" text="Aguarde as tabelas ficarem completas..." textAlignment="JUSTIFY" textFill="WHITE" visible="false" wrapText="true">
+               <font>
+                  <Font name="VCR OSD Mono" size="12.0" />
                </font>
             </Label>
             <Button fx:id="btnReiniciar" layoutX="555.0" layoutY="425.0" mnemonicParsing="false" onAction="#reiniciar" prefHeight="59.0" prefWidth="60.0" styleClass="redondo" stylesheets="@../util/trilha.css" visible="false">

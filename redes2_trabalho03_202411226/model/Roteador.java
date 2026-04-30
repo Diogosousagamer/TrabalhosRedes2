@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 28/04/2026
+* Ultima alteracao.: 30/04/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -83,7 +83,6 @@ public class Roteador extends Thread {
         }
 
         processarVetor(v, entradasVizinho);
-        this.tabela.atualizarTabela();
         dormir(500);
       }
     }
@@ -222,6 +221,15 @@ public class Roteador extends Thread {
   public void modificarEntrada(Roteador rDestino, String destino, String saida, long retardo) {
     tabela.alterarEntrada(new EntradaTabela(rDestino, destino, saida, Long.toString(retardo)));
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: processarVetor
+   * Funcao: coloca a tabela para processar a tabela do vizinho
+   * Parametros: Roteador emissor - roteador que enviou a tabela
+                 ArrayList<EntradaTabela> entradasEmissor - conjunto de entradas da tabela do emissor
+   * Retorno: void
+   ****************************************************************/
 
   private void processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
     tabela.processarVetor(emissor, entradasEmissor);
