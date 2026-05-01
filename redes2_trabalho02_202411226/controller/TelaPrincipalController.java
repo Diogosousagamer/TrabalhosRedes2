@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 09/04/2026
+* Ultima alteracao.: 01/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -899,6 +899,9 @@ public class TelaPrincipalController implements Initializable {
         // Desenha a aresta se nenhum dos roteadores for nulo
         if (r1 != null && r2 != null) gerarAresta(r1, r2, peso);
       } // Fim do bloco while
+
+      // Posiciona os roteadores acima das arestas
+      jogarRoteadoresParaFrente();
     }
     catch (IOException e) {
       // Em caso de excecao, ela sera exibida no terminal
@@ -1266,6 +1269,28 @@ public class TelaPrincipalController implements Initializable {
       pesosArestas.add(lblPeso);
       subrede.getChildren().add(lblPeso);
     } // Fim do bloco if
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: jogarRoteadoresParaFrente
+   * Funcao: posiciona os roteadores acima das arestas
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void jogarRoteadoresParaFrente() {
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      // Joga os nos dos roteadores para frente
+      c.toFront();
+    } // Fim do bloco for
+
+    // Inicio do bloco for
+    for (Label l : labels.values()) {
+      // Joga as labels dos roteadores para frente
+      l.toFront();
+    } // Fim do bloco for
   }
 
   /*
