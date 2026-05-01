@@ -62,42 +62,53 @@ public class Roteador extends Thread {
 
   @Override
   public void run() {
-    // Preenche as entradas iniciais da tabela e coloca o roteador para dormir por 1 segundo
-    Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
-    dormir(1000);
+    // Inicio do bloco while
+    // Enquanto a Thread nao for interrompida
+    while (!Thread.currentThread().isInterrupted()) {
+      // Preenche as entradas iniciais da tabela e coloca o roteador para dormir por 1 segundo
+      Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
+      dormir(1000);
 
-    // A quantidade maxima de iteracoes a ser feita eh o total de roteadores
-    // presentes na sub rede
-    int maxIteracoes = listaRoteadores.size();
+      // A quantidade maxima de iteracoes a ser feita eh o total de roteadores
+      // presentes na sub rede
+      int maxIteracoes = listaRoteadores.size();
 
-    // Inicio do bloco for
-    for (int i = 0; i < maxIteracoes; i++) {
       // Inicio do bloco for
-      // Ao longo das iteracoes, serao feitas visitas aos vizinhos do roteador
-      for (Roteador v : vizinhos) {
-        // Envia um pacote de solicitacao para o vizinho e eh posto para dormir
-        // ate que o pacote chegue no destino
-        TelaPrincipalController.controller.enviarSolicitacao(this, v);
-        while (this.echo) dormir(100);
+      for (int i = 0; i < maxIteracoes; i++) {
+        // Interrompe o laco caso a Thread for interrompida
+        if (Thread.currentThread().isInterrupted()) break;
 
-        // Obtem as entradas da tabela do vizinho
-        ArrayList<EntradaTabela> entradasVizinho = new ArrayList<>();
+        // Inicio do bloco for
+        // Ao longo das iteracoes, serao feitas visitas aos vizinhos do roteador
+        for (Roteador v : vizinhos) {
+          // Interrompe o laco caso a Thread for interrompida
+          if (Thread.currentThread().isInterrupted()) break;
 
-        // Garante que ele obtenha as entradas corretas caso a tabela tiver sido alterada
-        // por questoes de concorrencia
-        synchronized(v.getTabela()) {
-          entradasVizinho = new ArrayList<>(v.getTabela().getEntradas());
-        }
+          // Envia um pacote de solicitacao para o vizinho e eh posto para dormir
+          // ate que o pacote chegue no destino e a Thread nao seja interrompida
+          TelaPrincipalController.controller.enviarSolicitacao(this, v);
+          while (this.echo && !Thread.currentThread().isInterrupted()) dormir(100);
 
-        // Faz as devidas modificacoes na tabela e coloca o roteador
-        // para dormir por meio segundo
-        tabela.processarVetor(v, entradasVizinho);
-        dormir(500);
+          // Obtem as entradas da tabela do vizinho
+          ArrayList<EntradaTabela> entradasVizinho = new ArrayList<>();
+
+          // Garante que ele obtenha as entradas corretas caso a tabela tiver sido alterada
+          // por questoes de concorrencia
+          synchronized(v.getTabela()) {
+            entradasVizinho = new ArrayList<>(v.getTabela().getEntradas());
+          }
+
+          // Faz as devidas modificacoes na tabela e coloca o roteador
+          // para dormir por meio segundo
+          tabela.processarVetor(v, entradasVizinho);
+          dormir(500);
+        } // Fim do bloco for
       } // Fim do bloco for
-    } // Fim do bloco for
 
-    // Apos as iteracoes, sinaliza que a tabela esta completa
-    this.tabelaCompleta = true;
+      // Apos as iteracoes, sinaliza que a tabela esta completa
+      this.tabelaCompleta = true;
+      break;
+    } // Fim do bloco while
   }
 
   /*

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 25/04/2026
-* Ultima alteracao.: 28/04/2026
+* Ultima alteracao.: 01/05/2026
 * Nome.............: Echo
 * Funcao...........: Thread que gerencia as operacoes de cada pacote de solicitacao enviados
                      entre os roteadores.
@@ -51,14 +51,24 @@ public class Echo extends Thread {
 
   @Override
 	public void run() {
-		// Define a posicao
-		definirPosicao();
+		// Inicio do bloco while
+		// Enquanto a Thread nao for interrompida
+		while (!Thread.currentThread().isInterrupted()) {
+			// Define a posicao
+			definirPosicao();
 
-		// Se movimenta ate o destino
-		movimentar(this.destino);
+			// Exibe o pacote
+		  exibirPacote();
 
-		// Remove o pacote de solicitacao da subrede
-		TelaPrincipalController.controller.removerSolicitacao(this);
+		  // Se movimenta ate o destino
+		  movimentar(this.destino);
+
+			// Remove o pacote de solicitacao da subrede
+			TelaPrincipalController.controller.removerSolicitacao(this);
+
+      // Interrompe o laco
+			break;
+		} // Fim do bloco while
 	}
 
   /*
@@ -81,6 +91,18 @@ public class Echo extends Thread {
 			envelope.setLayoutX(posX);
 			envelope.setLayoutY(posY);
 		}); // Fim do bloco Platform.runLater
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: exibirPacote
+   * Funcao: torna a imagem do pacote visivel na sub rede
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: nenhum
+   ****************************************************************/
+
+	private void exibirPacote() {
+		envelope.setVisible(true);
 	}
 
   /*

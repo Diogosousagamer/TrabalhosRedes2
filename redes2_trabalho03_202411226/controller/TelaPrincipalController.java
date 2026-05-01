@@ -279,6 +279,9 @@ public class TelaPrincipalController implements Initializable {
       c.setMouseTransparent(false);
     } // Fim do bloco for
 
+    // Desabilita o botao para acessar e alterar o backbone
+    btnAlterarRede.setDisable(true);
+
     // Oculta o botao de envio e exibe o botao de cancelamento
     btnEnviarPacote.setVisible(false);
     btnCancelarEnvio.setVisible(true);
@@ -306,11 +309,23 @@ public class TelaPrincipalController implements Initializable {
 
     // Inicio do bloco for
     for (Circle c : nosCriados.values()) {
+      // Reseta os nos
+      c.setStroke(Color.BLACK);
       c.setMouseTransparent(true);
-    } // Fim do bloco for
+    } // Fim do bloco for 
+
+    // Inicio do bloco if
+    if (origem != null) {
+      // Anula a origem caso ela tiver sido definida
+      origem = null;
+      lblOrigem.setText("");
+    } // Fim do bloco if
 
     // Oculta a selecao
     lblSelecao.setVisible(false);
+
+    // Habilita o botao para acessar e alterar o backbone
+    btnAlterarRede.setDisable(false);
 
     // Exibe o botao de envio e oculta o botao de cancelamento
     btnEnviarPacote.setVisible(true);
@@ -334,9 +349,6 @@ public class TelaPrincipalController implements Initializable {
 
     // Interrompe o metodo se o circulo nao tiver um rotulo correspondente
     if (nome == null) return;
-
-    // Impede que a rede seja alterada durante a simulacao
-    btnAlterarRede.setDisable(true);
 
     // Inicio do bloco if/else if/else if
     // Se um roteador ainda nao tiver sido definido como origem
@@ -505,6 +517,7 @@ public class TelaPrincipalController implements Initializable {
       request.setFitWidth(21);
       request.setFitHeight(61);
       request.setPreserveRatio(true);
+      request.setVisible(false);
       subrede.getChildren().add(request);
 
       // Inicializa o pacote de solicitacao
@@ -915,8 +928,22 @@ public class TelaPrincipalController implements Initializable {
       // Oculta o painel de modificacao da rede
       painelAlterarRede.setVisible(false);
 
-      // Marca que a sub rede foi alterada para reiniciar a simulacao
+      // Para a simulacao e marca que a sub rede foi alterada 
+      // para reiniciar a simulacao
+      simulacaoAtiva = false;
       alterouSubRede = true;
+
+      // Inicio do bloco for
+      for (Roteador r : roteadores) {
+        // Interrompe os roteadores
+        r.interrupt();
+      } // Fim do bloco for
+
+      // Inicio do bloco for
+      for (Echo e : echos) {
+        // Interrompe os pacotes de solicitacao
+        e.interrupt();
+      } // Fim do bloco for
 
       // Remove a sub rede para depois reconfigura-la
       removerSubrede();
@@ -1029,9 +1056,6 @@ public class TelaPrincipalController implements Initializable {
       // Inicio do bloco if
       // Se a simulacao nao estiver ativa ou a sub rede tiver sido alterada
       if (!simulacaoAtiva || alterouSubRede) {
-        // Desativa a simulacao caso a sub rede tiver sido alterada
-        if (simulacaoAtiva && alterouSubRede) simulacaoAtiva = false;
-
         // Inicio do bloco for
         for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
           // Remova os nos presentes na topologia da subrede
@@ -1042,28 +1066,15 @@ public class TelaPrincipalController implements Initializable {
         for (Map.Entry<String, Label> entrada : labels.entrySet()) {
           subrede.getChildren().remove(entrada.getValue());
         } // Fim do bloco for
-
-        // Inicio do bloco for
-        for (Roteador r : roteadores) {
-          // Interrompe e anula os pacotes de solicitacao
-          r.interrupt();
-          r = null;
-        } // Fim do bloco for
   
         // Inicio do bloco if
         // Se a lista de pacotes de solicitacao nao estiver vazia
         if (!echos.isEmpty()) {
           // Inicio do bloco for
           for (Echo e : echos) {
-            // Interrompe os pacotes de solicitacao
-            e.interrupt();
-
             // Remove a imagem da sub rede
             ImageView echo = e.getEnvelope();
             subrede.getChildren().remove(echo);
-
-            // Anula os pacotes de solicitacao
-            e = null;
           } // Fim do bloco for
         } // Fim do bloco if
 
