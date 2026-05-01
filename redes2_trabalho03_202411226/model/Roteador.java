@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 30/04/2026
+* Ultima alteracao.: 01/05/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -11,10 +11,6 @@
 package model;
 
 import controller.TelaPrincipalController;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -66,27 +62,41 @@ public class Roteador extends Thread {
 
   @Override
   public void run() {
-    Platform.runLater(() -> definirEntradasIniciais());
+    // Preenche as entradas iniciais da tabela e coloca o roteador para dormir por 1 segundo
+    Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
     dormir(1000);
 
+    // A quantidade maxima de iteracoes a ser feita eh o total de roteadores
+    // presentes na sub rede
     int maxIteracoes = listaRoteadores.size();
 
+    // Inicio do bloco for
     for (int i = 0; i < maxIteracoes; i++) {
+      // Inicio do bloco for
+      // Ao longo das iteracoes, serao feitas visitas aos vizinhos do roteador
       for (Roteador v : vizinhos) {
+        // Envia um pacote de solicitacao para o vizinho e eh posto para dormir
+        // ate que o pacote chegue no destino
         TelaPrincipalController.controller.enviarSolicitacao(this, v);
         while (this.echo) dormir(100);
 
+        // Obtem as entradas da tabela do vizinho
         ArrayList<EntradaTabela> entradasVizinho = new ArrayList<>();
 
+        // Garante que ele obtenha as entradas corretas caso a tabela tiver sido alterada
+        // por questoes de concorrencia
         synchronized(v.getTabela()) {
           entradasVizinho = new ArrayList<>(v.getTabela().getEntradas());
         }
 
-        processarVetor(v, entradasVizinho);
+        // Faz as devidas modificacoes na tabela e coloca o roteador
+        // para dormir por meio segundo
+        tabela.processarVetor(v, entradasVizinho);
         dormir(500);
-      }
-    }
+      } // Fim do bloco for
+    } // Fim do bloco for
 
+    // Apos as iteracoes, sinaliza que a tabela esta completa
     this.tabelaCompleta = true;
   }
 
@@ -185,106 +195,8 @@ public class Roteador extends Thread {
 
   /*
    * ***************************************************************
-   * Metodo: definirEntradasIniciais
-   * Funcao: inicializa as entradas iniciais da tabela no inicio da simulacao
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: void
-   ****************************************************************/
-
-  private void definirEntradasIniciais() {
-    tabela.definirEntradasIniciais(listaRoteadores);
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: inserirEntrada
-   * Funcao: insere uma nova entrada na tabela de roteamento
-   * Parametros: EntradaTabela e - entrada a ser inserida
-   * Retorno: void
-   ****************************************************************/
-
-  public void inserirEntrada(EntradaTabela e) {
-    tabela.inserirEntrada(e);
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: modificarEntrada
-   * Funcao: modifica uma certa entrada na tabela de roteamento
-   * Parametros: String destino - linha de destino
-                 String saida - linha de saida
-                 long retardo - retardo do caminho a ser percorrido
-                                ate o destino
-   * Retorno: void
-   ****************************************************************/
-
-  public void modificarEntrada(Roteador rDestino, String destino, String saida, long retardo) {
-    tabela.alterarEntrada(new EntradaTabela(rDestino, destino, saida, Long.toString(retardo)));
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: processarVetor
-   * Funcao: coloca a tabela para processar a tabela do vizinho
-   * Parametros: Roteador emissor - roteador que enviou a tabela
-                 ArrayList<EntradaTabela> entradasEmissor - conjunto de entradas da tabela do emissor
-   * Retorno: void
-   ****************************************************************/
-
-  private void processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
-    tabela.processarVetor(emissor, entradasEmissor);
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: ping
-   * Funcao: retorna o retardo de um caminho entre dois roteadores
-   * Parametros: Roteador destino - roteador de destino
-   * Retorno: long
-   ****************************************************************/
-
-  public long ping(Roteador destino) {
-    long distancia = 0;
-
-    // Inicio do bloco try/catch
-    try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
-      String linha = "";
-
-      // Inicio do bloco while
-      while ((linha = br.readLine()) != null) {
-        String[] partes = linha.split(",");
-
-        if (partes.length < 4) continue;
-
-        String nome1 = partes[0];
-        String nome2 = partes[1];
-
-        // Inicio do bloco if/else if
-        if (nome1.equals(this.getNome()) && nome2.equals(destino.getNome())) {
-          // Retorna o tempo de ida e interrompe o laco
-          distancia = Long.parseLong(partes[2]);
-          break;
-        }
-        else if (nome1.equals(destino.getNome()) && nome2.equals(this.getNome())) {
-          // Retorna o tempo de volta e interrompe o laco
-          distancia = Long.parseLong(partes[3]);
-          break;
-        } // Fim do bloco if/else if
-      } // Fim do bloco while
-    }
-    catch (IOException e) {
-      // Em caso de excecao, ela sera exibida no terminal
-      e.printStackTrace();
-    } // Fim do bloco try/catch
-
-    // Retorna a distancia
-    return distancia;
-  }
-
-  /*
-   * ***************************************************************
    * Metodo: resetarEntradas
-   * Funcao: redefine as entradas apos a finalizacao do algoritmo
+   * Funcao: redefine as entradas da tabela apos a finalizacao do algoritmo
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/

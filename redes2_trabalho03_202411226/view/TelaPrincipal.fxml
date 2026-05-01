@@ -60,6 +60,11 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
             </Button>
+            <Button id="fechar" fx:id="btnCancelarEnvio" layoutX="8.0" layoutY="370.0" mnemonicParsing="false" onAction="#cancelarEnvio" prefHeight="31.0" prefWidth="162.0" styleClass="botao" stylesheets="@../util/trilha.css" text="CANCELAR ENVIO" visible="false">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
             <Label fx:id="lblAviso" layoutX="14.0" layoutY="417.0" prefHeight="36.0" prefWidth="192.0" text="Aguarde as tabelas ficarem completas..." textAlignment="JUSTIFY" textFill="WHITE" visible="false" wrapText="true">
                <font>
                   <Font name="VCR OSD Mono" size="12.0" />

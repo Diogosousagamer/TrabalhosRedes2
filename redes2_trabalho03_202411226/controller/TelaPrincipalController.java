@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 30/04/2026
+* Ultima alteracao.: 01/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -71,6 +71,7 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private AnchorPane subrede;
 	@FXML private Button btnAlterarRede;
   @FXML private Button btnAplicar;
+  @FXML private Button btnCancelarEnvio;
   @FXML private Button btnEnviarPacote;
   @FXML private Button btnFecharAlterarRede;
   @FXML private Button btnReiniciar;
@@ -87,6 +88,7 @@ public class TelaPrincipalController implements Initializable {
   private Pacote p;
 	public static volatile TelaPrincipalController controller;
   private boolean simulacaoAtiva;
+  private boolean removeuAresta;
   private boolean alterouSubRede;
   public static volatile boolean convergiu;
 	private int quantidadeNos;
@@ -237,7 +239,85 @@ public class TelaPrincipalController implements Initializable {
     } // Fim do bloco try/catch
   }
 
-	/*
+  /*
+   * ***************************************************************
+   * Metodo: enviarPacote
+   * Funcao: configura a sub rede para que o pacote seja enviado
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void enviarPacote(ActionEvent event) {
+    // Inicio do bloco if
+    if (!verificarTabelasCompletas()) {
+      // Thread que exibe um aviso caso as tabelas nao estiverem completas
+      Thread aviso = new Thread(() -> {
+        lblAviso.setVisible(true);
+        dormir(2000);
+        lblAviso.setVisible(false);
+      });
+
+      // Inicia a Thread, garantindo que as operacoes sejam encerradas
+      // caso o programa for fechado
+      aviso.setDaemon(true);
+      aviso.start();
+
+      // Sai do metodo
+      return;
+    } // Fim do bloco if
+
+    // Inicio do bloco for
+    for (Aresta a : arestasExistentes.values()) {
+      // Impede que a aresta seja removida durante a selecao
+      Line l = a.getLinha();
+      l.setMouseTransparent(true);
+    } // Fim do bloco for
+
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      c.setMouseTransparent(false);
+    } // Fim do bloco for
+
+    // Oculta o botao de envio e exibe o botao de cancelamento
+    btnEnviarPacote.setVisible(false);
+    btnCancelarEnvio.setVisible(true);
+
+    // Exibe a selecao
+    lblSelecao.setVisible(true);
+  } 
+
+  /*
+   * ***************************************************************
+   * Metodo: cancelarEnvio
+   * Funcao: cancela o envio de um novo pacote na sub rede
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
+  @FXML
+  private void cancelarEnvio(ActionEvent event) {
+    // Inicio do bloco for
+    for (Aresta a : arestasExistentes.values()) {
+      // Impede que a aresta seja removida durante a selecao
+      Line l = a.getLinha();
+      l.setMouseTransparent(false);
+    } // Fim do bloco for
+
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      c.setMouseTransparent(true);
+    } // Fim do bloco for
+
+    // Oculta a selecao
+    lblSelecao.setVisible(false);
+
+    // Exibe o botao de envio e oculta o botao de cancelamento
+    btnEnviarPacote.setVisible(true);
+    btnCancelarEnvio.setVisible(false);
+  }
+
+  /*
    * ***************************************************************
    * Metodo: definirOrigemDestino
    * Funcao: define os roteadores de origem e destino ao clicar em dois nos
@@ -305,6 +385,9 @@ public class TelaPrincipalController implements Initializable {
       lblSelecao.setVisible(false);
       lblCaminho.setVisible(true);
 
+      // Oculta o botao de cancelamento do envio
+      btnCancelarEnvio.setVisible(false);
+
       // Cria o pacote para ser enviado caso a origem nao for nula
       if (origem != null) criarPacote();
     }
@@ -314,50 +397,6 @@ public class TelaPrincipalController implements Initializable {
       return;
     } // Fim do bloco if/else if/else if
   }
-
-  /*
-   * ***************************************************************
-   * Metodo: enviarPacote
-   * Funcao: configura a sub rede para que o pacote seja enviado
-   * Parametros: ActionEvent event - evento gerado ao clicar no botao
-   * Retorno: void
-   ****************************************************************/
-
-  @FXML
-  private void enviarPacote(ActionEvent event) {
-    // Inicio do bloco if
-    if (!verificarTabelasCompletas()) {
-      // Thread que exibe um aviso caso as tabelas nao estiverem completas
-      Thread aviso = new Thread(() -> {
-        lblAviso.setVisible(true);
-        dormir(2000);
-        lblAviso.setVisible(false);
-      });
-
-      // Inicia a Thread, garantindo que as operacoes sejam encerradas
-      // caso o programa for fechado
-      aviso.setDaemon(true);
-      aviso.start();
-
-      // Sai do metodo
-      return;
-    } // Fim do bloco if
-
-    // Inicio do bloco for
-    for (Aresta a : arestasExistentes.values()) {
-      // Impede que a aresta seja removida durante a selecao
-      Line l = a.getLinha();
-      l.setMouseTransparent(true);
-    } // Fim do bloco for
-
-    // Inicio do bloco for
-    for (Circle c : nosCriados.values()) {
-      c.setMouseTransparent(false);
-    } // Fim do bloco for
-
-    // Exibe a selecao
-    lblSelecao.setVisible(true);
-  } 
 
   /*
    * ***************************************************************
@@ -756,6 +795,9 @@ public class TelaPrincipalController implements Initializable {
       lblCaminho.setText("");
       lblCaminho.setVisible(false);
 
+      // Exibe o botao de envio do pacote
+      btnEnviarPacote.setVisible(true);
+
       // Inicio do bloco for
       for (Roteador r : roteadores) {
         // Interrompe a Thread
@@ -988,7 +1030,7 @@ public class TelaPrincipalController implements Initializable {
       // Se a simulacao nao estiver ativa ou a sub rede tiver sido alterada
       if (!simulacaoAtiva || alterouSubRede) {
         // Desativa a simulacao caso a sub rede tiver sido alterada
-        if (simulacaoAtiva) simulacaoAtiva = false;
+        if (simulacaoAtiva && alterouSubRede) simulacaoAtiva = false;
 
         // Inicio do bloco for
         for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
@@ -1007,13 +1049,23 @@ public class TelaPrincipalController implements Initializable {
           r.interrupt();
           r = null;
         } // Fim do bloco for
+  
+        // Inicio do bloco if
+        // Se a lista de pacotes de solicitacao nao estiver vazia
+        if (!echos.isEmpty()) {
+          // Inicio do bloco for
+          for (Echo e : echos) {
+            // Interrompe os pacotes de solicitacao
+            e.interrupt();
 
-        // Inicio do bloco for
-        for (Echo e : echos) {
-          // Interrompe e anula os pacotes de solicitacao
-          e.interrupt();
-          e = null;
-        } // Fim do bloco for
+            // Remove a imagem da sub rede
+            ImageView echo = e.getEnvelope();
+            subrede.getChildren().remove(echo);
+
+            // Anula os pacotes de solicitacao
+            e = null;
+          } // Fim do bloco for
+        } // Fim do bloco if
 
         // Esvazia os paineis, listas e HashMaps
         painelTabela.getTabs().clear();
