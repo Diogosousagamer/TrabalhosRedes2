@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 01/05/2026
+* Ultima alteracao.: 02/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -87,7 +87,8 @@ public class TelaPrincipalController implements Initializable {
 	// Variaveis e instancias
   private Pacote p;
 	public static volatile TelaPrincipalController controller;
-  private boolean simulacaoAtiva;
+  public static volatile boolean simulacaoAtiva;
+  public static volatile boolean houveMudancaNaRede;
   private boolean removeuAresta;
   private boolean alterouSubRede;
   public static volatile boolean convergiu;
@@ -437,8 +438,15 @@ public class TelaPrincipalController implements Initializable {
       p.setDaemon(true);
       p.start();
 
-      // Obtem o caminho final do pacote
-      obterCaminhoFinal();
+      // Roda a montagem do caminho em uma Thread
+      Thread caminho = new Thread(() -> {
+        obterCaminhoFinal();
+      });
+
+      // Inicializa a Thread do caminho, garantindo que ela seja encerrada
+      // caso o programa for fechado abruptamente
+      caminho.setDaemon(true);
+      caminho.start();
     }); // Fim do bloco Platform.runLater
   }
 
@@ -573,6 +581,27 @@ public class TelaPrincipalController implements Initializable {
 
     // Retorna verdadeiro caso nenhuma tabela estiver incompleta
     return true;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: resetarMudanca
+   * Funcao: mostra se houve ou nao alguma mudanca na rede durante um
+             certo periodo de tempo
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+  public synchronized boolean resetarMudanca() {
+    // Inicio do bloco if
+    if (houveMudancaNaRede) {
+      // Reseta a booleana e retorna verdadeiro
+      houveMudancaNaRede = false;
+      return true;
+    } // Fim do bloco if
+
+    // Retorna falso, sinalizando que nao houve nenhuma mudanca ate aquele instante
+    return false;
   }
 
   /*
@@ -1039,18 +1068,24 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void removerSubrede() {
+    // Reseta qualquer mudanca que houver na sub rede
+    houveMudancaNaRede = false;
+
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Lista que armazenara os itens a serem removidos da sub rede
+      ArrayList<Node> itensParaRemover = new ArrayList<>();
+
       // Inicio do bloco for
       for (Aresta a : arestasExistentes.values()) {
-        // Remove as arestas presentes na topologia da subrede
-        subrede.getChildren().remove(a.getLinha());
+        // Marca as arestas para serem removidas
+        itensParaRemover.add(a.getLinha());
       } // Fim do bloco for
 
       // Inicio do bloco for
       for (Label t : tempoArestas) {
-        // Remove os tempos de ida e volta das arestas
-        subrede.getChildren().remove(t);
+        // Marca os tempos de ida e volta das arestas para serem removidos
+        itensParaRemover.add(t);
       } // Fim do bloco for
 
       // Inicio do bloco if
@@ -1058,13 +1093,14 @@ public class TelaPrincipalController implements Initializable {
       if (!simulacaoAtiva || alterouSubRede) {
         // Inicio do bloco for
         for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
-          // Remova os nos presentes na topologia da subrede
-          subrede.getChildren().remove(entrada.getValue());
+          // Marca os nos presentes na topologia da subrede para serem removidos
+          itensParaRemover.add(entrada.getValue());
         } // Fim do bloco for
 
         // Inicio do bloco for  
         for (Map.Entry<String, Label> entrada : labels.entrySet()) {
-          subrede.getChildren().remove(entrada.getValue());
+          // Marca as labels para serem removidas
+          itensParaRemover.add(entrada.getValue());
         } // Fim do bloco for
   
         // Inicio do bloco if
@@ -1072,28 +1108,47 @@ public class TelaPrincipalController implements Initializable {
         if (!echos.isEmpty()) {
           // Inicio do bloco for
           for (Echo e : echos) {
-            // Remove a imagem da sub rede
+            // Marca a imagem do pacote de solicitacao para ser removida
             ImageView echo = e.getEnvelope();
-            subrede.getChildren().remove(echo);
+            itensParaRemover.add(echo);
           } // Fim do bloco for
         } // Fim do bloco if
-
-        // Esvazia os paineis, listas e HashMaps
-        painelTabela.getTabs().clear();
-        roteadores.clear();
-        echos.clear();
-        nosCriados.clear();
-        posicaoCirculos.clear();
-        labels.clear();
       } // Fim do bloco if
 
-      // Remove as arestas e o tempo das arestas
-      arestasExistentes.clear();
-      tempoArestas.clear();
+      // Remove a sub rede e limpa as listas logicas
+      subrede.getChildren().removeAll(itensParaRemover);
+      limparListas();
 
       // Reconfigura a sub rede
       configurarSubrede();
     }); // Fim do bloco Platform.runLater
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: limparListas
+   * Funcao: esvazia as listas contendo os componentes da sub rede
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void limparListas() {
+    // Inicio do bloco if
+    if (!simulacaoAtiva || alterouSubRede) {
+      // Estes itens sao removidos apenas se a simulacao nao estiver ativa
+      // e/ou o backbone da sub rede for alterado em algum momento
+      roteadores.clear(); 
+      echos.clear();
+      painelTabela.getTabs().clear();
+      nosCriados.clear();
+      posicaoCirculos.clear();
+      labels.clear();
+    } // Fim do bloco if
+
+    // Remove as arestas e os seus retardos (ida e volta)
+    // em qualquer caso
+    arestasExistentes.clear();
+    tempoArestas.clear();
   }
 
   /*

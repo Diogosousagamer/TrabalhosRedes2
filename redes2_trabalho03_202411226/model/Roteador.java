@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 01/05/2026
+* Ultima alteracao.: 02/05/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -31,6 +31,7 @@ public class Roteador extends Thread {
   private boolean echo;
 	private boolean origem;
 	private boolean destino;
+  private final long INFINITO = 30;
 
   /*
    * ***************************************************************
@@ -62,19 +63,24 @@ public class Roteador extends Thread {
 
   @Override
   public void run() {
-    // Inicio do bloco while
-    // Enquanto a Thread nao for interrompida
-    while (!Thread.currentThread().isInterrupted()) {
+    // Inicio do bloco try/catch/finally
+    try {
       // Preenche as entradas iniciais da tabela e coloca o roteador para dormir por 1 segundo
       Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
       dormir(1000);
 
-      // A quantidade maxima de iteracoes a ser feita eh o total de roteadores
-      // presentes na sub rede
-      int maxIteracoes = listaRoteadores.size();
+      // Inicio do bloco if
+      if (vizinhos.isEmpty()) {
+        // Marca a tabela como completa e interrompe o metodo, pois como o roteador
+        // nao possui vizinhos nao ha nada que aprender
+        this.tabelaCompleta = true;
+        completo();
+        return;
+      } // Fim do bloco if
 
-      // Inicio do bloco for
-      for (int i = 0; i < maxIteracoes; i++) {
+      // Inicio do bloco while
+      // Enquanto a Thread nao for interrompida e a simulacao ainda estiver ativa
+      while (!Thread.currentThread().isInterrupted() && TelaPrincipalController.controller.simulacaoAtiva) {
         // Interrompe o laco caso a Thread for interrompida
         if (Thread.currentThread().isInterrupted()) break;
 
@@ -103,12 +109,27 @@ public class Roteador extends Thread {
           tabela.processarVetor(v, entradasVizinho);
           dormir(500);
         } // Fim do bloco for
-      } // Fim do bloco for
 
-      // Apos as iteracoes, sinaliza que a tabela esta completa
-      this.tabelaCompleta = true;
-      break;
-    } // Fim do bloco while
+        dormir(2000);
+
+        // Inicio do bloco if
+        if (!TelaPrincipalController.controller.resetarMudanca()) {
+          // Marca a tabela como completa caso nenhum roteador estiver processando
+          // suas tabelas e interrompe o laco
+          this.tabelaCompleta = true;
+          completo();
+          break;
+        } // Fim do bloco if
+      } // Fim do bloco while
+    }
+    catch (InterruptedException e) {
+      // Em caso de excecao, a Thread eh interrompida
+      Thread.currentThread().interrupt();
+    }
+    finally {
+      // Em caso contrario, ele sinaliza que o roteador foi finalizado com sucesso
+      System.out.println("Roteador " + this.getNome() + " finalizado com sucesso");
+    } // Fim do bloco try/catch/finally
   }
 
   /*
@@ -161,6 +182,9 @@ public class Roteador extends Thread {
         break;
       }
     } // Fim do bloco for
+
+    // Altera a entrada para marcar o retardo como infinito
+    tabela.alterarEntrada(new EntradaTabela(v, v.getNome(), "-", Long.toString(INFINITO)));
   }
 
   /*
@@ -218,22 +242,27 @@ public class Roteador extends Thread {
 
   /*
    * ***************************************************************
+   * Metodo: completo
+   * Funcao: sinaliza que o roteador concluiu seu processamento
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void completo() {
+    System.out.println("Roteador " + this.getNome() + " completo");
+  }
+
+  /*
+   * ***************************************************************
    * Metodo: dormir
    * Funcao: coloca a Thread para dormir por alguns milissegundos
    * Parametros: long valor - tempo de sono da Thread em milissegundos
    * Retorno: void
    ****************************************************************/
 
-  private void dormir(long valor) {
-    // Inicio do bloco try/catch
-    try {
-      // O roteador eh posto para dormir por alguns ms
-      Thread.sleep(valor);
-    }
-    catch (InterruptedException e) {
-      // Em caso de excecao, a Thread e interrompida
-      Thread.currentThread().interrupt();
-    } // Fim do bloco try/catch
+  private void dormir(long valor) throws InterruptedException {
+    // O roteador eh posto para dormir por alguns ms
+    Thread.sleep(valor);
   }
 
   /*

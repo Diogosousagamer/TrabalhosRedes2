@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 25/04/2026
-* Ultima alteracao.: 01/05/2026
+* Ultima alteracao.: 02/05/2026
 * Nome.............: Echo
 * Funcao...........: Thread que gerencia as operacoes de cada pacote de solicitacao enviados
                      entre os roteadores.
@@ -58,7 +58,7 @@ public class Echo extends Thread {
 			definirPosicao();
 
 			// Exibe o pacote
-		  exibirPacote();
+	  	exibirPacote();
 
 		  // Se movimenta ate o destino
 		  movimentar(this.destino);

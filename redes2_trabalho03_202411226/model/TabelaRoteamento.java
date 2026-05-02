@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 18/04/2026
-* Ultima alteracao.: 01/05/2026
+* Ultima alteracao.: 02/05/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -27,6 +27,7 @@ public class TabelaRoteamento {
 	private Roteador r;
 	private TableView<EntradaTabela> tabela;
 	private ArrayList<EntradaTabela> entradas;
+  private final long INFINITO = 30;
 
   /*
    * ***************************************************************
@@ -127,7 +128,7 @@ public class TabelaRoteamento {
 				String retardoLocal = entradaLocal.getRetardo().trim();
 
         // Converte o retardo para long, assumindo um valor 'infinito' caso ele nao tiver sido definido
-				long distanciaLocal = (retardoLocal.equals("-")) ? Long.MAX_VALUE : Long.parseLong(retardoLocal);
+				long distanciaLocal = (retardoLocal.equals("-")) ? INFINITO : Long.parseLong(retardoLocal);
 
         // Verifica se a linha de saida atual corresponde ao vizinho que enviou a tabela
 				boolean viaMesmoVizinho = entradaLocal.getLinhaSaida().equals(emissor.getNome());
@@ -136,30 +137,37 @@ public class TabelaRoteamento {
 				Roteador entrada = entradaLocal.getRoteadorDestino();
 
         // Inicio do bloco if
-        // Se o roteador de destino nao for nulo e o custo total for menor que a distancia atual ou a linha de saida
-        // atual corresponder ao vizinho emissor 
-				if ((entrada != null) && (custoViaVizinho < distanciaLocal || viaMesmoVizinho)) {
+        // Se o custo total for menor que a distancia atual e/ou o emissor corresponder a linha de saida atual
+        if (custoViaVizinho < distanciaLocal || viaMesmoVizinho) {
           // Inicio do bloco if
-          // Se a distancia atual for diferente do custo total ou a linha de saida atual 
-          // nao corresponder ao vizinho emissor
-					if (distanciaLocal != custoViaVizinho || !viaMesmoVizinho) {
-            // Altera o retardo e a linha de saida, enviando a entrada para ser alterada
-            // na tabela local
-						entradaLocal.setRetardo(Long.toString(custoViaVizinho));
-						entradaLocal.setLinhaSaida(emissor.getNome());
-						alterarEntrada(entradaLocal);
+          // Se a distancia atual for diferente do custo atual e/ou o emissor nao corresponder a linha de saida atual
+          if (distanciaLocal != custoViaVizinho || !viaMesmoVizinho) {
+            // Altera o retardo e a linha de saida da entrada da tabela local
+            entradaLocal.setRetardo(Long.toString(custoViaVizinho));
+            entradaLocal.setLinhaSaida(emissor.getNome());
+            alterarEntrada(entradaLocal);
 
+            // Sinaliza que ocorreu alguma mudanca na rede
+            TelaPrincipalController.controller.houveMudancaNaRede = true;
+ 
             // Inicio do bloco Platform.runLater
-						Platform.runLater(() -> {
-              // Atualiza o roteador de destino na lista de roteadores e nos seus vizinhos
-							TelaPrincipalController.controller.atualizarRoteador(entrada);
-							TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
+            Platform.runLater(() -> {
+              // Inicio do bloco if
+              if (TelaPrincipalController.controller.simulacaoAtiva) {
+                // Atualiza o roteador da tabela na lista e nos vizinhos
+                TelaPrincipalController.controller.atualizarRoteador(r);
+                TelaPrincipalController.controller.alterarRoteadorNosVizinhos(r);
 
-              // Forca a tabela a ser atualizada novamente por precaucao
-							this.atualizarTabela();
-						}); // Fim do bloco Platform.runLater
-					} // Fim do bloco if
-				} // Fim do bloco if
+                // Atualiza o roteador de destino na lista e nos vizinhos
+                TelaPrincipalController.controller.atualizarRoteador(entrada);
+                TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
+
+                // Atualiza a tabela mais uma vez por precaucao
+                this.atualizarTabela();
+              } // Fim do bloco if
+            }); // Fim do bloco Platform.runLater
+          } // Fim do bloco if
+        } // Fim do bloco if
 			} // Fim do bloco if
 		} // Fim do bloco for
 	}
@@ -258,7 +266,7 @@ public class TabelaRoteamento {
    * Retorno: void
    ****************************************************************/
 
-	private void alterarEntrada(EntradaTabela modificada) {
+	public void alterarEntrada(EntradaTabela modificada) {
 		// Inicio do bloco for
 		for (int i = 0; i < entradas.size(); i++) {
       // Obtem a entrada atual
