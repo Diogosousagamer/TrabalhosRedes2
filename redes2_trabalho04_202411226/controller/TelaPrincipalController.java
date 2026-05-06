@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 02/05/2026
+* Ultima alteracao.: 07/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -454,7 +454,7 @@ public class TelaPrincipalController implements Initializable {
    * ***************************************************************
    * Metodo: iniciarRoteadores
    * Funcao: inicializa os roteadores para calcularem o roteamento
-             por vetor de distancia
+             por estado de enlace
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
@@ -499,7 +499,7 @@ public class TelaPrincipalController implements Initializable {
     }); // Fim do bloco Thread
 
     // Inicia a Thread, com a garantia de que ela seja encerrada
-    // caso o programa seja encerrado
+    // caso o programa seja fechado
     pausa.setDaemon(true);
     pausa.start();
   }
@@ -1399,14 +1399,6 @@ public class TelaPrincipalController implements Initializable {
       // Adiciona a linha na tela da sub rede
       subrede.getChildren().add(linha);
 
-      // Os roteadores sao marcados como vizinhos um do outro
-      r1.adicionarVizinho(r2);
-      r2.adicionarVizinho(r1);
-
-      // Atualiza os roteadores
-      atualizarRoteador(r1);
-      atualizarRoteador(r2);
-
       // Converte o peso em valor inteiro
       long idaLong = Long.parseLong(ida);
       long voltaLong = Long.parseLong(volta);
@@ -1432,27 +1424,6 @@ public class TelaPrincipalController implements Initializable {
 
       // Coloca a aresta dentro do HashMap
       arestasExistentes.put(idConexao, aresta);
-
-      // Gera as labels de ida e volta da aresta
-      Label lblTempo = new Label(ida + ";" + volta);
-      lblTempo.setFont(Font.font("VCR OSD Mono", 13));
-      lblTempo.setTextFill(Color.web("#f5e940"));
-
-      // Calcula a posicao media do peso a partir do centro dos nos
-      double xMedio = (r1.getNo().getCenterX() + r2.getNo().getCenterX()) / 2;
-      double yMedio = (r1.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
-
-      // Define a posicao do peso
-      lblTempo.setLayoutX(xMedio);
-      lblTempo.setLayoutY(yMedio);
-
-      // Adiciona uma translacao para garantir que fique alinhado
-      lblTempo.setTranslateX(-7);
-      lblTempo.setTranslateY(-7);
-
-      // Adiciona a label dentro da lista de pesos e da sub rede
-      tempoArestas.add(lblTempo);
-      subrede.getChildren().add(lblTempo);
     } // Fim do bloco if
   }
 
@@ -1536,6 +1507,29 @@ public class TelaPrincipalController implements Initializable {
         } // Fim do bloco if/else
       }
     });
+  }
+
+  public void inserirRetardo() {
+    /* // Gera as labels de ida e volta da aresta
+    Label lblTempo = new Label(ida + ";" + volta);
+    lblTempo.setFont(Font.font("VCR OSD Mono", 13));
+    lblTempo.setTextFill(Color.web("#f5e940"));
+
+    // Calcula a posicao media do peso a partir do centro dos nos
+    double xMedio = (r1.getNo().getCenterX() + r2.getNo().getCenterX()) / 2;
+    double yMedio = (r1.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
+
+    // Define a posicao do peso
+    lblTempo.setLayoutX(xMedio);
+    lblTempo.setLayoutY(yMedio);
+
+    // Adiciona uma translacao para garantir que fique alinhado
+    lblTempo.setTranslateX(-7);
+    lblTempo.setTranslateY(-7);
+
+    // Adiciona a label dentro da lista de pesos e da sub rede
+    tempoArestas.add(lblTempo);
+    subrede.getChildren().add(lblTempo); */
   }
 
   /*
