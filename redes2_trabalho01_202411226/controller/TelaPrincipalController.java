@@ -614,6 +614,9 @@ public class TelaPrincipalController implements Initializable {
         // Desenha a aresta se nenhum dos roteadores for nulo
         if (r1 != null && r2 != null) gerarAresta(r1, r2, peso);
       } // Fim do bloco while
+
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
     }
     catch (IOException e) {
       // Em caso de excecao, ela sera exibida no terminal
@@ -849,6 +852,28 @@ public class TelaPrincipalController implements Initializable {
       r1.adicionarVizinho(r2);
       r2.adicionarVizinho(r1);
     } // Fim do bloco if
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: jogarRoteadoresParaFrente
+   * Funcao: posiciona os roteadores acima das arestas
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void jogarRoteadoresParaFrente() {
+    // Inicio do bloco for
+    for (Circle c : nosCriados.values()) {
+      // Joga os nos dos roteadores para frente
+      c.toFront();
+    } // Fim do bloco for
+
+    // Inicio do bloco for
+    for (Label l : labels.values()) {
+      // Joga as labels dos roteadores para frente
+      l.toFront();
+    } // Fim do bloco for
   }
 
   /*

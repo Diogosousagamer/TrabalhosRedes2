@@ -165,15 +165,15 @@ public class Pacote extends Thread {
 		double destinoX = roteador.getPosX();
 		double destinoY = roteador.getPosY();
 
-    // Calcula-se a distancia (em termos de posicao) entre a origem e o destino
+    	// Calcula-se a distancia (em termos de posicao) entre a origem e o destino
 		double deltaX = destinoX - posX;
 		double deltaY = destinoY - posY;
  
-    // Calcula a quantidade de passos a serem realizados ate o pacote alcancar o destino
+    	// Calcula a quantidade de passos a serem realizados ate o pacote alcancar o destino
 		int passos = Math.max((int) Math.abs(deltaX), (int) Math.abs(deltaY));
 
-    // Interrompe o metodo caso nao ser necessario realizar nenhum passo
-    if (passos == 0) return;
+    	// Interrompe o metodo caso nao ser necessario realizar nenhum passo
+    	if (passos == 0) return;
 
     // Calcula o valor dos incrementos a serem feitos nos eixos X e Y para assim, atingir o destino final
 		double passoX = deltaX / passos;
