@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 08/05/2026
+* Ultima alteracao.: 09/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -199,7 +199,7 @@ public class TelaPrincipalController implements Initializable {
     // Inicio do bloco if
     if (simulacaoAtiva) {
       // Os roteadores param de se tornar vizinhos caso a simulacao estiver ativa
-      // (isso porque os roteadores nao serao reescritos)
+      // (isso porque os roteadores nao poderao ser reescritos)
       r1.removerVizinho(r2);
       r2.removerVizinho(r1);
     } // Fim do bloco if
@@ -504,6 +504,15 @@ public class TelaPrincipalController implements Initializable {
     pausa.start();
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: enviarHello
+   * Funcao: envia um pacote Hello dentro da sub rede
+   * Parametros: Roteador origem - ponto de origem do pacote
+                 Roteador destino - ponto de destino do pacote
+   * Retorno: Hello
+   ****************************************************************/
+
   public Hello enviarHello(Roteador origem, Roteador destino) {
     ImageView h = new ImageView();
 
@@ -525,8 +534,17 @@ public class TelaPrincipalController implements Initializable {
     return hello;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: removerHello
+   * Funcao: remove um pacote Hello de dentro da sub rede
+   * Parametros: Hello h - pacote a ser removido
+   * Retorno: void
+   ****************************************************************/
+
   public void removerHello(Hello h) {
     Platform.runLater(() -> {
+      h.setChegou(true);
       h.interrupt();
       ImageView img = h.getHello();
 
@@ -538,54 +556,54 @@ public class TelaPrincipalController implements Initializable {
   /*
    * ***************************************************************
    * Metodo: enviarEcho
-   * Funcao: envia um novo pacote de solicitacao dentro da sub rede
+   * Funcao: envia um novo pacote echo dentro da sub rede
    * Parametros: Roteador origem - roteador de origem do pacote
                  Roteador destino - roteador para o qual o pacote sera destinado
-   * Retorno: void
+   * Retorno: Echo
    ****************************************************************/
 
-  public void enviarEcho(Roteador origem, Roteador destino) {
-    // Sinaliza que o pacote de solicitacao sera enviado para o roteador esperar
-    origem.setEcho(true);
+  public Echo enviarEcho(Roteador origem, Roteador destino) {
+    // Cria uma nova imagem para o pacote
+    ImageView request = new ImageView();
+
+    // Instancia um novo pacote echo
+    Echo e = new Echo(origem, destino, request);
+    e.setDaemon(true);
 
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
-      // Cria a imagem do pacote e a adiciona na sub rede
+      // Configura a imagem do pacote e a adiciona na sub rede
       Image echo = new Image(getClass().getResource("/img/Echo.png").toExternalForm());
-      ImageView request = new ImageView(echo);
+      request.setImage(echo);
       request.setFitWidth(21);
       request.setFitHeight(61);
       request.setPreserveRatio(true);
-      request.setVisible(false);
       subrede.getChildren().add(request);
 
       // Inicializa o pacote de solicitacao
-      Echo e = new Echo(origem, destino, request);
-      e.setDaemon(true);
       e.start();
 
       // Adiciona o pacote de solicitacao na lista
       echos.add(e);
     }); // Fim do bloco Platform.runLater
+
+    // Retorna o pacote
+    return e;
   }
 
   /*
    * ***************************************************************
-   * Metodo: removerSolicitacao
-   * Funcao: remove um pacote de solicitacao da sub rede
-   * Parametros: Echo e - pacote de solicitacao a ser removido
+   * Metodo: removerEcho
+   * Funcao: remove um pacote echo da sub rede
+   * Parametros: Echo e - pacote echo a ser removido
    * Retorno: void
    ****************************************************************/
 
-  public void removerSolicitacao(Echo e) {
-    // Destrava o roteador que deu origem ao pacote de solicitacao
-    Roteador origemEcho = e.getOrigem();
-    Roteador r = obterRoteador(origemEcho.getNome());
-    r.setEcho(false);
-
+  public void removerEcho(Echo e) {
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
-      // Interrompe a Thread e remove a imagem da sub rede
+      // Encerra o pacote, interrompe a Thread e remove a imagem da sub rede
+      e.setEncerrou(true);
       e.interrupt();
       ImageView envelope = e.getEnvelope();
       subrede.getChildren().remove(envelope);
@@ -595,22 +613,23 @@ public class TelaPrincipalController implements Initializable {
     }); // Fim do bloco Platform.runLater
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: verificarTabelasCompletas
-   * Funcao: verifica se as tabelas de todos os roteadores estao completas
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: boolean
-   ****************************************************************/
-
-  private boolean verificarTabelasCompletas() {
-    // Inicio do bloco for
+  public synchronized boolean verificarEncontrouVizinhos() {
     for (Roteador r : roteadores) {
-      // Retorna falso caso alguma tabela nao estiver completa
-      if (!r.isTabelaCompleta()) return false;
-    } // Fim do bloco for
+      if (!r.encontrouVizinhos()) {
+        return false;
+      }
+    }
 
-    // Retorna verdadeiro caso nenhuma tabela estiver incompleta
+    return true;
+  }
+
+  public synchronized boolean verificarMediuRetardos() {
+    for (Roteador r : roteadores) {
+      if (!r.mediuRetardos()) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -633,6 +652,25 @@ public class TelaPrincipalController implements Initializable {
 
     // Retorna falso, sinalizando que nao houve nenhuma mudanca ate aquele instante
     return false;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: verificarTabelasCompletas
+   * Funcao: verifica se as tabelas de todos os roteadores estao completas
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+  private boolean verificarTabelasCompletas() {
+    // Inicio do bloco for
+    for (Roteador r : roteadores) {
+      // Retorna falso caso alguma tabela nao estiver completa
+      if (!r.isTabelaCompleta()) return false;
+    } // Fim do bloco for
+
+    // Retorna verdadeiro caso nenhuma tabela estiver incompleta
+    return true;
   }
 
   /*
@@ -732,16 +770,6 @@ public class TelaPrincipalController implements Initializable {
 
     // Libera o pacote para percorrer o caminho
     p.liberar();
-  }
-
-  public synchronized boolean verificarEncontrouVizinhos() {
-    for (Roteador r : roteadores) {
-      if (!r.isEncontrouVizinhos()) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   /*
@@ -1480,6 +1508,10 @@ public class TelaPrincipalController implements Initializable {
       // Atualiza a linha dentro da aresta
       aresta.setLinha(linha);
 
+      // Deixa a aresta desativada por padrao
+      aresta.desativarAresta();
+
+      // Adiciona dentro das extremidades a serem percorridas
       r1.adicionarExtremidade(aresta);
       r2.adicionarExtremidade(aresta);
 
@@ -1571,10 +1603,11 @@ public class TelaPrincipalController implements Initializable {
   }
 
   public void inserirRetardo(Roteador r1, Roteador r2, long ida, long volta) {
-    // String idAresta = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
-    // if (tempoArestas.) return;
+    // Obtem a id da aresta e verifica se os retardos dela ja estao registrados na 
+    String idAresta = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+    if (tempoArestas.containsKey(idAresta)) return;
 
-    /* // Gera as labels de ida e volta da aresta
+    // Gera as labels de ida e volta da aresta
     Label lblTempo = new Label(Long.toString(ida) + ";" + Long.toString(volta));
     lblTempo.setFont(Font.font("VCR OSD Mono", 13));
     lblTempo.setTextFill(Color.web("#f5e940"));
@@ -1591,9 +1624,9 @@ public class TelaPrincipalController implements Initializable {
     lblTempo.setTranslateX(-7);
     lblTempo.setTranslateY(-7);
 
-    // Adiciona a label dentro da lista de pesos e da sub rede
-    tempoArestas.add(lblTempo);
-    subrede.getChildren().add(lblTempo); */
+    // Adiciona a label dentro do HashMap de pesos e da sub rede
+    tempoArestas.put(idAresta, lblTempo);
+    subrede.getChildren().add(lblTempo);
   }
 
   /*

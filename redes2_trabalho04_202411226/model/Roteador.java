@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 08/05/2026
+* Ultima alteracao.: 09/05/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -27,12 +27,13 @@ public class Roteador extends Thread {
 	private CopyOnWriteArrayList<Roteador> vizinhos;
   private CopyOnWriteArrayList<Roteador> listaRoteadores;
   private CopyOnWriteArrayList<Hello> hellosEnviados;
+  private CopyOnWriteArrayList<Echo> echosEnviados;
   private TabelaRoteamento tabela;
   private BufferEnlace bufferEnlace;
   private boolean encontrouVizinhos;
+  private boolean mediuRetardos;
   private boolean tabelaCompleta;
 	private String nome;
-  private boolean echo;
 	private boolean origem;
 	private boolean destino;
   private final long INFINITO = 30;
@@ -53,6 +54,7 @@ public class Roteador extends Thread {
     listaRoteadores = new CopyOnWriteArrayList<>();
     extremidades = new CopyOnWriteArrayList<>();
     hellosEnviados = new CopyOnWriteArrayList<>();
+    echosEnviados = new CopyOnWriteArrayList<>();
     encontrouVizinhos = false;
     tabelaCompleta = false;
 		origem = false;
@@ -71,64 +73,199 @@ public class Roteador extends Thread {
   @Override
   public void run() {
     while (!Thread.currentThread().isInterrupted() && TelaPrincipalController.controller.simulacaoAtiva) {
+      // Interrompe a Thread caso ela for interrompida
       if (Thread.currentThread().isInterrupted()) break;
 
       // O roteador conhece os seus vizinhos
       conhecerVizinhos();
 
+      // Interrompe a Thread caso ela for interrompida
       if (Thread.currentThread().isInterrupted()) break;
 
+      // Mensura os retardos das extremidades
+      medirRetardos();
+
+      // Interrompe a Thread caso ela for interrompida
+      if (Thread.currentThread().isInterrupted()) break;
+
+      // processarEstadosEnlace();
+
+      if (Thread.currentThread().isInterrupted()) break;
+
+      // Interrompe o laco
       break;
     }
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: conhecerVizinhos
+   * Funcao: o roteador passa a conhecer os seus vizinhos
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   private void conhecerVizinhos() {
+    // Inicio do bloco try/catch
     try {
+      // Inicio do bloco for
       for (Aresta a : extremidades) {
+        // Interrompe o metodo se a Thread for interrompida
         if (Thread.currentThread().isInterrupted()) return;
 
+        // Obtem-se os roteadores da aresta atual
         Roteador r1 = a.getR1();
         Roteador r2 = a.getR2();
 
+        // Obtem-se o destino do pacote Hello, o encaminha na sub rede e o adiciona
+        // na lista interna de pacotes Hello
         Roteador destinoHello = (!r1.getNome().equals(this.getNome())) ? r1 : r2;
         Hello h = TelaPrincipalController.controller.enviarHello(this, destinoHello);
         hellosEnviados.add(h);
-        dormir(200);
-      }
 
+        // O roteador dorme por 200 ms
+        dormir(200);
+      } // Fim do bloco for
+ 
+      // Permanece dormindo enquanto todos os Hellos nao encerrarem suas operacoes  
       while (!checarHellos()) dormir(100);
+
+      // Sinaliza que os seus vizinhos foram encontrados
       encontrouVizinhos = true;
 
+      // Interrompe o metodo se a Thread for interrompida
       if (Thread.currentThread().isInterrupted()) return;
 
-      if (!vizinhos.isEmpty()) {
-        String listaVizinhos = "";
+      // Lista os vizinhos obtidos
+      debugVizinhos();
 
-        for (Roteador v : vizinhos) {
-          listaVizinhos += v.getNome() + " ";
-        }
-
-        System.out.println("Vizinhos do roteador " + this.getNome() + ": " + listaVizinhos);
-      }
-      else {
-        System.out.println("Nenhum vizinho encontrado para o roteador " + this.getNome());
-      }
-
+      // Interrompe o metodo se a Thread for interrompida
       if (Thread.currentThread().isInterrupted()) return;
+ 
+      // Inicio do bloco for
+      for (Aresta a : extremidades) {
+        // Interrompe o metodo se a Thread for interrompida
+        if (Thread.currentThread().isInterrupted()) return;
+
+        // Pula a aresta caso ela ja tiver sido ativado
+        if (!a.estaDesativada()) continue; 
+
+        // Ativa a aresta caso ela estiver desativada
+        Platform.runLater(() -> a.ativarAresta());
+        dormir(500);
+      } // Fim do bloco for
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted()) return;
+
+      // O roteador permanece dormindo aguardando os demais roteadores a encontrarem todos os seus vizinhos
       while (!TelaPrincipalController.controller.verificarEncontrouVizinhos()) dormir(100);
+    }
+    catch (InterruptedException e) {
+      // Em caso de excecao, a Thread eh interrompida
+      Thread.currentThread().interrupt();
+    } // Fim do bloco try/catch
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: medirRetardos
+   * Funcao: o roteador medir os retardos dos caminhos para cada vizinho
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void medirRetardos() {
+    // Inicio do bloco try/catch
+    try {
+      // Inicio do bloco for
+      for (Roteador v : vizinhos) {
+        // Interrompe o metodo se a Thread for interrompida
+        if (Thread.currentThread().isInterrupted()) return;
+
+        // Encaminha um novo pacote Echo para o vizinho e o adiciona na lista
+        Echo e = TelaPrincipalController.controller.enviarEcho(this, v);
+        echosEnviados.add(e); 
+
+        // Dorme por 200 ms 
+        dormir(200);
+      } // Fim do bloco for
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted()) return;
+
+      // Aguarda os pacotes Echo enviados encerrarem as operacoes
+      while (!checarEchos()) dormir(100);
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted()) return;
+
+      // Sinaliza que mediu todos os seus retardos dos caminhos
+      // que o levam para seus vizinhos
+      mediuRetardos = true;
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted()) return;
+ 
+      // Aguarda os roteadores medirem todos os retardos dos caminhos
+      // que o levam para seus vizinhos
+      while (!TelaPrincipalController.controller.verificarMediuRetardos()) dormir(100);
+    }
+    catch (InterruptedException e) {
+      // Em caso de excecao, a Thread eh interrompida
+      Thread.currentThread().interrupt();
+    } // Fim do bloco try/catch
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: medirRetardos
+   * Funcao: o roteador medir os retardos dos caminhos para cada vizinho
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void processarEstadosEnlace() {
+    try {
+      bufferEnlace = new BufferEnlace(this, this.listaRoteadores);
+      // bufferEnlace.criarEntradasIniciais();
+
+      Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
+      dormir(1000);
     }
     catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
   }
 
-  private void medirRetardos() {
+  /*
+   * ***************************************************************
+   * Metodo: debugVizinhos
+   * Funcao: o roteador medir os retardos dos caminhos para cada vizinho
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
-  }
+  private void debugVizinhos() {
+    // Inicio do bloco if/else
+    // Se a lista de vizinhos nao estiver vazia
+    if (!vizinhos.isEmpty()) {
+      // Cria-se uma String para concatenar os vizinhos
+      String listaVizinhos = "";
 
-  private void distribuirPacotesEstadoEnlace() {
-    bufferEnlace = new BufferEnlace(this, this.listaRoteadores);
-    bufferEnlace.criarEntradasIniciais();
+      // Inicio do bloco for
+      for (Roteador v : vizinhos) {
+        // Adiciona o nome de cada vizinho na lista
+        listaVizinhos += v.getNome() + " ";
+      } // Fim do bloco for
+
+      // Exibe a lista de vizinhos completa no terminal
+      System.out.println("Vizinhos do roteador " + this.getNome() + ": " + listaVizinhos);
+    }
+    else {
+      // Caso contrario, exibe essa informacao
+      System.out.println("Nenhum vizinho encontrado para o roteador " + this.getNome());
+    } // Fim do bloco if/else
   }
 
   /*
@@ -215,17 +352,63 @@ public class Roteador extends Thread {
     } // Fim do bloco for
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: adicionarExtremidade
+   * Funcao: adiciona uma aresta de extremidade
+   * Parametros: Aresta a - extremidade a ser adicionada
+   * Retorno: void
+   ****************************************************************/
+
   public void adicionarExtremidade(Aresta a) {
+    // Adiciona a aresta na lista de extremidades apenas se ela nao estiver presente
+    // para evitar problemas de redundancia
     if (!extremidades.contains(a)) extremidades.add(a);
   }
 
-  private boolean checarHellos() {
-    for (Hello h : hellosEnviados) {
-      if (!h.chegou()) {
-        return false;
-      }
-    }
+  /*
+   * ***************************************************************
+   * Metodo: checarHellos
+   * Funcao: verifica se todos os pacotes Hello enviados 
+             ja completaram suas operacoes
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
 
+  private boolean checarHellos() {
+    // Inicio do bloco for
+    for (Hello h : hellosEnviados) {
+      // Inicio do bloco if
+      if (!h.chegou()) {
+        // Retorna falso se algum pacote Hello nao tiver encerrado
+        return false;
+      } // Fim do bloco if
+    } // Fim do bloco for
+
+    // Retorna verdadeiro se todos os pacotes Hello tiverem encerrado suas operacoes
+    return true;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: checarEchos
+   * Funcao: verifica se todos os pacotes Echo enviados 
+             ja completaram suas operacoes
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+  private boolean checarEchos() {
+    // Inicio do bloco for
+    for (Echo e : echosEnviados) {
+      // Inicio do bloco if
+      if (!e.encerrou()) {
+        // Retorna falso se algum pacote Echo nao tiver encerrado
+        return false;
+      } // Fim do bloco if
+    } // Fim do bloco for
+
+    // Retorna verdadeiro se todos os pacotes Echo tiverem encerrado suas operacoes
     return true;
   }
 
@@ -494,36 +677,52 @@ public class Roteador extends Thread {
     return listaRoteadores;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: setEncontrouVizinhos
+   * Funcao: define se os vizinhos foram descobertos ou nao
+   * Parametros: boolean v - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
   public void setEncontrouVizinhos(boolean v) {
     this.encontrouVizinhos = v;
   }
 
-  public boolean isEncontrouVizinhos() {
-    return encontrouVizinhos;
-  }
- 
   /*
    * ***************************************************************
-   * Metodo: setEcho
-   * Funcao: define se um pacote de solicitacao foi enviado ou nao
-   * Parametros: boolean echo - valor a ser definido
-   * Retorno: void
-   ****************************************************************/
-
-  public void setEcho(boolean echo) {
-    this.echo = echo;
-  }
-
-  /*
-   * ***************************************************************
-   * Metodo: isEcho
-   * Funcao: retorna se um pacote de solicitacao foi enviado ou nao
+   * Metodo: encontrouVizinhos
+   * Funcao: retorna se os vizinhos foram descobertos ou nao
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: boolean
    ****************************************************************/
 
-  public boolean isEcho() {
-    return echo;
+  public boolean encontrouVizinhos() {
+    return encontrouVizinhos;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: setMediuRetardos
+   * Funcao: define se os retardos foram mensurados ou nao
+   * Parametros: boolean m - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setMediuRetardos(boolean m) {
+    this.mediuRetardos = m;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: mediuRetardos
+   * Funcao: retorna se os retardos foram mensurados ou nao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+  public boolean mediuRetardos() {
+    return mediuRetardos;
   }
 
   /*

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 02/05/2026
+* Ultima alteracao.: 09/05/2026
 * Nome.............: Aresta
 * Funcao...........: Classe que gerencia as operacoes de cada aresta.
                      
@@ -78,6 +78,44 @@ public class Aresta {
 	public Line getLinha() {
 		return linha;
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: ativarAresta
+   * Funcao: ativa a linha da aresta e reseta a opacidade
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void ativarAresta() {
+    linha.setDisable(false);
+    linha.setOpacity(1);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: desativarAresta
+   * Funcao: desativa a linha da aresta e torna-a opaca
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void desativarAresta() {
+    linha.setDisable(true);
+    linha.setOpacity(0.3);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: estaDesativada
+   * Funcao: verifica se a linha da aresta esta desativada ou nao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+  public boolean estaDesativada() {
+    return linha.isDisable();
+  }
 
   /*
    * ***************************************************************

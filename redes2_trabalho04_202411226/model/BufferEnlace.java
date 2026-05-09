@@ -1,7 +1,7 @@
 /* ***************************************************************
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
-* Inicio...........: 07/05/2026
+* Inicio...........: 06/05/2026
 * Ultima alteracao.: 08/05/2026
 * Nome.............: BufferEnlace
 * Funcao...........: Classe que gerencia as operacoes de cada buffer contendo os pacotes

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 02/05/2026
+* Ultima alteracao.: 09/05/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -180,7 +180,7 @@ public class TabelaRoteamento {
    * Retorno: long
    ****************************************************************/
 
-  private long ping(Roteador destino) {
+  public long ping(Roteador destino) {
     // Distancia a ser obtida
     long distancia = 0;
 

@@ -2,10 +2,10 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 02/05/2026
+* Ultima alteracao.: 09/05/2026
 * Nome.............: Echo
-* Funcao...........: Thread que gerencia as operacoes de cada pacote de solicitacao enviados
-                     entre os roteadores.
+* Funcao...........: Thread que gerencia as operacoes dos pacotes echo, responsaveis
+										 por informarem o custo de cada enlace presente na sub rede.
                      
 *************************************************************** */
 
@@ -21,8 +21,11 @@ public class Echo extends Thread {
 	private Roteador origem;
 	private Roteador destino;
 	private ImageView envelope;
+	private long ida;
+	private long volta;
 	private double posX;
 	private double posY;
+	private boolean encerrou;
 
   /*
    * ***************************************************************
@@ -63,8 +66,20 @@ public class Echo extends Thread {
 		  // Se movimenta ate o destino
 		  movimentar(this.destino);
 
-			// Remove o pacote de solicitacao da subrede
-			TelaPrincipalController.controller.removerSolicitacao(this);
+		  // Processa o pacote
+		  processar();
+
+		  // Se movimenta ate a origem
+		  movimentar(this.origem);
+
+      // Inicio do bloco Platform.runLater
+		  Platform.runLater(() -> {
+		  	// Insere o retardo obtido dentro da sub rede
+		  	TelaPrincipalController.controller.inserirRetardo(origem, destino, ida, volta);
+
+		  	// Remove o pacote echo da subrede
+				TelaPrincipalController.controller.removerEcho(this);
+		  });
 
       // Interrompe o laco
 			break;
@@ -108,8 +123,8 @@ public class Echo extends Thread {
   /*
    * ***************************************************************
    * Metodo: movimentar
-   * Funcao: movimenta o pacote de solicitacao para o roteador de destino
-   * Parametros: Roteador r - roteador para o qual o pacote de solicitacao 
+   * Funcao: movimenta o pacote echo para o roteador de destino
+   * Parametros: Roteador r - roteador para o qual o pacote echo
                               sera encaminhado
    * Retorno: void
    ****************************************************************/
@@ -155,8 +170,8 @@ public class Echo extends Thread {
 
       // Inicio do bloco try/catch
 			try {
-				// A Thread e posta para dormir por 10 ms
-				Thread.sleep(10);
+				// A Thread e posta para dormir por 20 ms
+				Thread.sleep(20);
 			}
 			catch (InterruptedException e) {
 				// Em caso de excecao, a Thread e interrompida
@@ -175,6 +190,51 @@ public class Echo extends Thread {
 			envelope.setLayoutX(posX);
 			envelope.setLayoutY(posY);
 		}); // Fim do bloco Platform.runLater
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: processar
+   * Funcao: realiza o processamento do pacote Echo
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+	private void processar() {
+		// Obtem os retardos da perspectiva de cada roteador
+		long retardo1 = origem.getTabela().ping(destino);
+		long retardo2 = destino.getTabela().ping(origem);
+
+    // Obtem a id da aresta que eles compoem
+		String idAresta = (origem.getNome().compareTo(destino.getNome()) < 0) ? origem.getNome() + destino.getNome() 
+		                  : destino.getNome() + origem.getNome();
+
+    // A partir da id da aresta, obtem-se os retardos de ida e volta
+		ida = (idAresta.equals(origem.getNome() + destino.getNome())) ? retardo1 : retardo2;
+		volta = (idAresta.equals(origem.getNome() + destino.getNome())) ? retardo2 : retardo1;
+
+    // A Thread dorme por 300 ms
+		dormir(300);
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: dormir
+   * Funcao: coloca a Thread para dormir por alguns milissegundos
+   * Parametros: long valor - tempo de sono da Thread em milissegundos
+   * Retorno: void
+   ****************************************************************/
+
+	private void dormir(long valor) {
+		// Inicio do bloco try/catch
+		try {
+			// Coloca a Thread para dormir por alguns ms
+			Thread.sleep(valor);
+		}
+		catch (InterruptedException e) {
+			// Em caso de excecao, a Thread eh interrompida
+			Thread.currentThread().interrupt();
+		} // Fim do bloco try/catch
 	}
 
 	/*
@@ -204,7 +264,7 @@ public class Echo extends Thread {
   /*
    * ***************************************************************
    * Metodo: setOrigem
-   * Funcao: define o roteador de origem do percurso do pacote de solicitacao
+   * Funcao: define o roteador de origem do percurso do pacote Echo
    * Parametros: Roteador origem - valor a ser definido
    * Retorno: void
    ****************************************************************/
@@ -216,7 +276,7 @@ public class Echo extends Thread {
   /*
    * ***************************************************************
    * Metodo: getOrigem
-   * Funcao: retorna o roteador de origem do percurso do pacote de solicitacao
+   * Funcao: retorna o roteador de origem do percurso do pacote Echo
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: Roteador
    ****************************************************************/
@@ -228,7 +288,7 @@ public class Echo extends Thread {
   /*
    * ***************************************************************
    * Metodo: setDestino
-   * Funcao: define o roteador de destino do percurso do pacote de solicitacao
+   * Funcao: define o roteador de destino do percurso do pacote Echo
    * Parametros: Roteador destino - valor a ser definido
    * Retorno: void
    ****************************************************************/
@@ -240,12 +300,36 @@ public class Echo extends Thread {
   /*
    * ***************************************************************
    * Metodo: getDestino
-   * Funcao: retorna o roteador de destino do percurso do pacote de solicitacao
+   * Funcao: retorna o roteador de destino do percurso do pacote Echo
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: Roteador
    ****************************************************************/
 
 	public Roteador getDestino() {
 		return destino;
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: setEncerrou
+   * Funcao: define se o pacote Echo encerrou suas operacoes ou nao
+   * Parametros: boolean e - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+	public void setEncerrou(boolean e) {
+		this.encerrou = e;
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: encerrou
+   * Funcao: retorna se o pacote Echo encerrou suas operacoes ou nao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
+	public boolean encerrou() {
+		return encerrou;
 	}
 }

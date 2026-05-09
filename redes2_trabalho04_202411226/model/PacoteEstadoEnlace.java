@@ -1,8 +1,8 @@
 /* ***************************************************************
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
-* Inicio...........: 07/05/2026
-* Ultima alteracao.: 07/05/2026
+* Inicio...........: 06/05/2026
+* Ultima alteracao.: 06/05/2026
 * Nome.............: PacoteEstadoEnlace
 * Funcao...........: Thread que gerencia os pacotes de estado de enlace.
                      
