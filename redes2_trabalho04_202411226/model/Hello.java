@@ -25,7 +25,7 @@ public class Hello extends Thread {
 	private double posX;
 	private double posY;
 	private boolean chegou;
-	private static final Image perolaVolta = new Image(Hello.class.getResource("/img/echoanswered.png").toExternalForm());
+	private static final Image perolaVolta = new Image(Hello.class.getResource("/img/helloanswered.png").toExternalForm());
 
 	public Hello(ImageView hello, Roteador origem, Roteador destino) {
 		this.hello = hello;	
