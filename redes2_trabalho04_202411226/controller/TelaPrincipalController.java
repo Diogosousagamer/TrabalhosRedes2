@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 07/05/2026
+* Ultima alteracao.: 08/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -61,6 +61,7 @@ import javafx.stage.Stage;
 import model.Aresta;
 import model.Echo;
 import model.EntradaTabela;
+import model.Hello;
 import model.Pacote;
 import model.Roteador;
 import model.TabelaRoteamento;
@@ -96,13 +97,14 @@ public class TelaPrincipalController implements Initializable {
 	private Roteador origem;
   private Roteador destino;
   private String modelo;
+  private CopyOnWriteArrayList<Hello> hellos;
   private CopyOnWriteArrayList<Echo> echos;
-  private ArrayList<Label> tempoArestas;
   private CopyOnWriteArrayList<Roteador> roteadores;
+  private HashMap<String, Label> tempoArestas = new HashMap<>();
   private HashMap<String, Circle> nosCriados = new HashMap<>();
-  private Map<String, double[]> posicaoCirculos = new HashMap<>();
   private HashMap<String, Aresta> arestasExistentes = new HashMap<>();
   private HashMap<String, Label> labels = new HashMap<>();
+  private Map<String, double[]> posicaoCirculos = new HashMap<>();
 
   /*
    * ***************************************************************
@@ -120,7 +122,7 @@ public class TelaPrincipalController implements Initializable {
 
     // Carrega as ArrayLists que armazenarao os roteadores, os tempos de ida e volta das arestas, e 
     roteadores = new CopyOnWriteArrayList<>();
-    tempoArestas = new ArrayList<>();
+    hellos = new CopyOnWriteArrayList<>();
     echos = new CopyOnWriteArrayList<>();
 
     // Carrega a instancia volatil do controller
@@ -476,13 +478,14 @@ public class TelaPrincipalController implements Initializable {
       r.setListaRoteadores(roteadores);
       r.setDaemon(true);
       r.start();
+      dormir(100);
     } // Fim do bloco for
 
     // Inicio do bloco Thread
     Thread pausa = new Thread(() -> {
       // Inicio do bloco while
       // Enquanto alguma tabela estiver incompleta
-      while (!verificarTabelasCompletas()) {
+      while (simulacaoAtiva) {
         // Inicio do bloco try/catch
         try {
           // Poe a Thread para dormir por 200 ms
@@ -493,9 +496,6 @@ public class TelaPrincipalController implements Initializable {
           Thread.currentThread().interrupt();
         } // Fim do bloco try/catch
       } // Fim do bloco while
-
-      // Encerra a simulacao caso elas estiverem completas
-      simulacaoAtiva = false;
     }); // Fim do bloco Thread
 
     // Inicia a Thread, com a garantia de que ela seja encerrada
@@ -504,16 +504,47 @@ public class TelaPrincipalController implements Initializable {
     pausa.start();
   }
 
+  public Hello enviarHello(Roteador origem, Roteador destino) {
+    ImageView h = new ImageView();
+
+    Hello hello = new Hello(h, origem, destino);
+    hello.setDaemon(true);
+
+    Platform.runLater(() -> {
+      Image img = new Image(getClass().getResource("/img/hello.png").toExternalForm());
+      h.setImage(img);
+      h.setFitWidth(50);
+      h.setFitHeight(30);
+      h.setPreserveRatio(true);
+      subrede.getChildren().add(h);
+
+      hello.start();
+      hellos.add(hello);
+    });
+
+    return hello;
+  }
+
+  public void removerHello(Hello h) {
+    Platform.runLater(() -> {
+      h.interrupt();
+      ImageView img = h.getHello();
+
+      subrede.getChildren().remove(img);
+      if (hellos.contains(h)) hellos.remove(h);
+    });
+  }
+
   /*
    * ***************************************************************
-   * Metodo: enviarSolicitacao
+   * Metodo: enviarEcho
    * Funcao: envia um novo pacote de solicitacao dentro da sub rede
    * Parametros: Roteador origem - roteador de origem do pacote
                  Roteador destino - roteador para o qual o pacote sera destinado
    * Retorno: void
    ****************************************************************/
 
-  public void enviarSolicitacao(Roteador origem, Roteador destino) {
+  public void enviarEcho(Roteador origem, Roteador destino) {
     // Sinaliza que o pacote de solicitacao sera enviado para o roteador esperar
     origem.setEcho(true);
 
@@ -701,6 +732,16 @@ public class TelaPrincipalController implements Initializable {
 
     // Libera o pacote para percorrer o caminho
     p.liberar();
+  }
+
+  public synchronized boolean verificarEncontrouVizinhos() {
+    for (Roteador r : roteadores) {
+      if (!r.isEncontrouVizinhos()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /*
@@ -968,11 +1009,20 @@ public class TelaPrincipalController implements Initializable {
         r.interrupt();
       } // Fim do bloco for
 
-      // Inicio do bloco for
-      for (Echo e : echos) {
-        // Interrompe os pacotes de solicitacao
-        e.interrupt();
-      } // Fim do bloco for
+      if (!hellos.isEmpty()) {
+        for (Hello h : hellos) {
+          h.interrupt();
+        }
+      }
+
+      // Inicio do bloco if
+      if (!echos.isEmpty()) {
+        // Inicio do bloco for
+        for (Echo e : echos) {
+          // Interrompe os pacotes de solicitacao
+          e.interrupt();
+        } // Fim do bloco for
+      } // Fim do bloco if
 
       // Remove a sub rede para depois reconfigura-la
       removerSubrede();
@@ -1083,7 +1133,7 @@ public class TelaPrincipalController implements Initializable {
       } // Fim do bloco for
 
       // Inicio do bloco for
-      for (Label t : tempoArestas) {
+      for (Label t : tempoArestas.values()) {
         // Marca os tempos de ida e volta das arestas para serem removidos
         itensParaRemover.add(t);
       } // Fim do bloco for
@@ -1102,6 +1152,13 @@ public class TelaPrincipalController implements Initializable {
           // Marca as labels para serem removidas
           itensParaRemover.add(entrada.getValue());
         } // Fim do bloco for
+
+        if (!hellos.isEmpty()) {
+          for (Hello h : hellos) {
+            ImageView hello = h.getHello();
+            itensParaRemover.add(hello);
+          }
+        }
   
         // Inicio do bloco if
         // Se a lista de pacotes de solicitacao nao estiver vazia
@@ -1137,7 +1194,8 @@ public class TelaPrincipalController implements Initializable {
     if (!simulacaoAtiva || alterouSubRede) {
       // Estes itens sao removidos apenas se a simulacao nao estiver ativa
       // e/ou o backbone da sub rede for alterado em algum momento
-      roteadores.clear(); 
+      roteadores.clear();
+      hellos.clear(); 
       echos.clear();
       painelTabela.getTabs().clear();
       nosCriados.clear();
@@ -1422,6 +1480,9 @@ public class TelaPrincipalController implements Initializable {
       // Atualiza a linha dentro da aresta
       aresta.setLinha(linha);
 
+      r1.adicionarExtremidade(aresta);
+      r2.adicionarExtremidade(aresta);
+
       // Coloca a aresta dentro do HashMap
       arestasExistentes.put(idConexao, aresta);
     } // Fim do bloco if
@@ -1509,9 +1570,12 @@ public class TelaPrincipalController implements Initializable {
     });
   }
 
-  public void inserirRetardo() {
+  public void inserirRetardo(Roteador r1, Roteador r2, long ida, long volta) {
+    // String idAresta = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+    // if (tempoArestas.) return;
+
     /* // Gera as labels de ida e volta da aresta
-    Label lblTempo = new Label(ida + ";" + volta);
+    Label lblTempo = new Label(Long.toString(ida) + ";" + Long.toString(volta));
     lblTempo.setFont(Font.font("VCR OSD Mono", 13));
     lblTempo.setTextFill(Color.web("#f5e940"));
 
@@ -1643,6 +1707,9 @@ public class TelaPrincipalController implements Initializable {
     for (int i = 0; i < roteadores.size(); i++) {
       // Obtem o roteador do instante atual
       Roteador rot = roteadores.get(i);
+
+      // Evita atualizar o roteador em uma lista de vizinhos vazia
+      if (rot.getVizinhos().isEmpty()) continue;
 
       // Altera a instancia do roteador passado como parametro caso ele for 
       // vizinho do roteador atual

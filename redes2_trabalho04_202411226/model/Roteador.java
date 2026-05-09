@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 07/05/2026
+* Ultima alteracao.: 08/05/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -23,10 +23,13 @@ public class Roteador extends Thread {
 	private Circle no;
 	private double posX;
   private double posY;
+  private CopyOnWriteArrayList<Aresta> extremidades;
 	private CopyOnWriteArrayList<Roteador> vizinhos;
   private CopyOnWriteArrayList<Roteador> listaRoteadores;
+  private CopyOnWriteArrayList<Hello> hellosEnviados;
   private TabelaRoteamento tabela;
-  private BufferEnlace buffer;
+  private BufferEnlace bufferEnlace;
+  private boolean encontrouVizinhos;
   private boolean tabelaCompleta;
 	private String nome;
   private boolean echo;
@@ -48,6 +51,9 @@ public class Roteador extends Thread {
 		this.nome = nome;
 		vizinhos = new CopyOnWriteArrayList<>();
     listaRoteadores = new CopyOnWriteArrayList<>();
+    extremidades = new CopyOnWriteArrayList<>();
+    hellosEnviados = new CopyOnWriteArrayList<>();
+    encontrouVizinhos = false;
     tabelaCompleta = false;
 		origem = false;
 		destino = false;
@@ -64,34 +70,65 @@ public class Roteador extends Thread {
 
   @Override
   public void run() {
-    try {
-      while (!Thread.currentThread().isInterrupted() && simulacaoAtiva) {
-        // O roteador conhece os seus vizinhos
-        conhecerVizinhos();
+    while (!Thread.currentThread().isInterrupted() && TelaPrincipalController.controller.simulacaoAtiva) {
+      if (Thread.currentThread().isInterrupted()) break;
 
-        // Depois estima os retardos de cada caminho
-        medirRetardos();
+      // O roteador conhece os seus vizinhos
+      conhecerVizinhos();
+
+      if (Thread.currentThread().isInterrupted()) break;
+
+      break;
+    }
+  }
+
+  private void conhecerVizinhos() {
+    try {
+      for (Aresta a : extremidades) {
+        if (Thread.currentThread().isInterrupted()) return;
+
+        Roteador r1 = a.getR1();
+        Roteador r2 = a.getR2();
+
+        Roteador destinoHello = (!r1.getNome().equals(this.getNome())) ? r1 : r2;
+        Hello h = TelaPrincipalController.controller.enviarHello(this, destinoHello);
+        hellosEnviados.add(h);
+        dormir(200);
       }
+
+      while (!checarHellos()) dormir(100);
+      encontrouVizinhos = true;
+
+      if (Thread.currentThread().isInterrupted()) return;
+
+      if (!vizinhos.isEmpty()) {
+        String listaVizinhos = "";
+
+        for (Roteador v : vizinhos) {
+          listaVizinhos += v.getNome() + " ";
+        }
+
+        System.out.println("Vizinhos do roteador " + this.getNome() + ": " + listaVizinhos);
+      }
+      else {
+        System.out.println("Nenhum vizinho encontrado para o roteador " + this.getNome());
+      }
+
+      if (Thread.currentThread().isInterrupted()) return;
+      while (!TelaPrincipalController.controller.verificarEncontrouVizinhos()) dormir(100);
     }
     catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
   }
 
-  private void conhecerVizinhos() {
-
-  }
-
   private void medirRetardos() {
 
   }
 
-  private void criarBuffer() {
-
-  }
-
   private void distribuirPacotesEstadoEnlace() {
-
+    bufferEnlace = new BufferEnlace(this, this.listaRoteadores);
+    bufferEnlace.criarEntradasIniciais();
   }
 
   /*
@@ -176,6 +213,20 @@ public class Roteador extends Thread {
         break;
       } // Fim do bloco if
     } // Fim do bloco for
+  }
+
+  public void adicionarExtremidade(Aresta a) {
+    if (!extremidades.contains(a)) extremidades.add(a);
+  }
+
+  private boolean checarHellos() {
+    for (Hello h : hellosEnviados) {
+      if (!h.chegou()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /*
@@ -443,6 +494,14 @@ public class Roteador extends Thread {
     return listaRoteadores;
   }
 
+  public void setEncontrouVizinhos(boolean v) {
+    this.encontrouVizinhos = v;
+  }
+
+  public boolean isEncontrouVizinhos() {
+    return encontrouVizinhos;
+  }
+ 
   /*
    * ***************************************************************
    * Metodo: setEcho

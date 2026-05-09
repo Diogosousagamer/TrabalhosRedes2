@@ -15,7 +15,7 @@
             <Image url="@../img/Menu.png" />
          </image>
       </ImageView>
-      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="147.0" layoutY="231.0" prefHeight="89.0" prefWidth="407.0" text="O algoritmo de vetor à distância opera fazendo cada roteador manter uma tabela contendo a melhor distância para cada destino e a melhor linha de saída para chegar lá. Essas tabelas são modificadas através da troca de informações com os vizinhos." textAlignment="CENTER" textFill="WHITE" wrapText="true">
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="147.0" layoutY="231.0" prefHeight="89.0" prefWidth="407.0" text="O algoritmo de estado de enlace opera fazendo cada roteador aprender sobre a topologia da sub rede e transportar pacotes contendo os seus aprendizados para cada um de seus vizinhos, para que assim consigam calcular a melhor rota a ser seguida." textAlignment="CENTER" textFill="WHITE" wrapText="true">
          <font>
             <Font name="System Italic" size="14.0" />
          </font>
