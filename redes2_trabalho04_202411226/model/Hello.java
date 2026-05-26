@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 09/05/2026
+* Ultima alteracao.: 15/05/2026
 * Nome.............: Hello
 * Funcao...........: Thread que gerencia os pacotes Hello, usados para conhecer 
                      os vizinhos de cada roteador.
@@ -171,8 +171,8 @@ public class Hello extends Thread {
    ****************************************************************/
 
 	private void processar() {
-		// Marca o destino como novo vizinho da origem
-		origem.adicionarVizinho(destino);
+		// Marca a origem como novo vizinho do destino
+		destino.adicionarVizinho(origem);
 
 		// Dorme por 300 ms
 		dormir(300);

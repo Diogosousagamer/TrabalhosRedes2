@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 09/05/2026
+* Ultima alteracao.: 25/05/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -13,6 +13,8 @@ package model;
 import controller.TelaPrincipalController;
 import java.lang.Thread;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
@@ -36,7 +38,9 @@ public class Roteador extends Thread {
 	private String nome;
 	private boolean origem;
 	private boolean destino;
+  private int contadorSeq;
   private final long INFINITO = 30;
+  private final long CUSTO_INFINITO = 100000;
 
   /*
    * ***************************************************************
@@ -59,6 +63,7 @@ public class Roteador extends Thread {
     tabelaCompleta = false;
 		origem = false;
 		destino = false;
+    contadorSeq = 0;
 	}
 
   /*
@@ -88,7 +93,7 @@ public class Roteador extends Thread {
       // Interrompe a Thread caso ela for interrompida
       if (Thread.currentThread().isInterrupted()) break;
 
-      // processarEstadosEnlace();
+      processarEstadosEnlace();
 
       if (Thread.currentThread().isInterrupted()) break;
 
@@ -219,19 +224,46 @@ public class Roteador extends Thread {
 
   /*
    * ***************************************************************
-   * Metodo: medirRetardos
-   * Funcao: o roteador medir os retardos dos caminhos para cada vizinho
+   * Metodo: processarEstadosEnlace
+   * Funcao: o roteador procura enviar e processar pacotes referentes
+             ao estado de enlace da sub rede
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
   private void processarEstadosEnlace() {
+    // Inicio do bloco try/catch
     try {
+      // Cria o buffer com as entradas iniciais
       bufferEnlace = new BufferEnlace(this, this.listaRoteadores);
-      // bufferEnlace.criarEntradasIniciais();
+      bufferEnlace.criarEntradasIniciais();
 
+      // Cria as entradas iniciais da tabela e dorme por um segundo
       Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
       dormir(1000);
+
+      // Realiza o envio dos pacotes de estado de enlace
+      enviarPacotesEnlace();
+    }
+    catch (InterruptedException e) {
+      // Em caso de excecao, a Thread eh interrompida
+      Thread.currentThread().interrupt();
+    } // Fim do bloco try/catch
+  }
+ 
+  private void calcularRotas() {
+    try {
+      long[][] matrizAdjacencia = gerarMatrizAdjacencia(listaRoteadores.size());
+      int indiceRot = gerarIndice(this.nome);
+
+      for (Roteador v : vizinhos) {
+        int indiceVizinho = gerarIndice(v.getNome());
+        matrizAdjacencia[indiceRot][indiceVizinho] = tabela.ps1(v);
+      }
+
+      executarDijkstra(matrizAdjacencia, indiceRot, listaRoteadores);
+      while (!TelaPrincipalController.controller.verificarTabelasCompletas()) dormir(100);
+      TelaPrincipalController.controller.simulacaoAtiva = false;
     }
     catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -266,6 +298,149 @@ public class Roteador extends Thread {
       // Caso contrario, exibe essa informacao
       System.out.println("Nenhum vizinho encontrado para o roteador " + this.getNome());
     } // Fim do bloco if/else
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: enviarPacotesEnlace
+   * Funcao: o roteador envia pacotes de estado de enlace para todos os seus vizinhos
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void enviarPacotesEnlace() {
+    try {
+      for (Roteador v : vizinhos) {
+        PacoteEstadoEnlace link = TelaPrincipalController.controller.enviarPacoteEnlace(this, v, this, contadorSeq, 60);
+        for (Roteador rot : vizinhos) link.adicionarCustoVizinho(rot, tabela.ps1(rot));
+        link.definirPosicao(this);
+        link.start();
+        dormir(300);
+      }
+
+      contadorSeq++;
+      while (!TelaPrincipalController.controller.verificarPacotesEnlace()) dormir(100);
+      debugBuffer();
+      calcularRotas();
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  public void debugBuffer() {
+    String buffer = "Buffer do Roteador " + this.nome + "\n" + "Roteador:" + "\t" + "Seq. do pacote:" 
+                    + "\t" + "Flags de confirmacao:" + "\t" + "Flags de transmissao:" + "\n";
+    CopyOnWriteArrayList<EntradaBuffer> entradasBuffer = bufferEnlace.getEntradas();
+
+    for (EntradaBuffer e : entradasBuffer) {
+      HashMap<Roteador, Boolean> flagsConfirmacao = e.getFlagsConfirmacao();
+      HashMap<Roteador, Boolean> flagsTransmissao = e.getFlagsTransmissao();
+
+      String trans = "";
+      String con = "";
+
+      for (Map.Entry<Roteador, Boolean> flag : flagsConfirmacao.entrySet()) {
+        Roteador rot = flag.getKey();
+        boolean valor = flag.getValue();
+        con += rot.getNome() + " " + "(" + ((valor) ? "1" : "0") + ")" + " ";
+      } 
+
+      for (Map.Entry<Roteador, Boolean> flag : flagsTransmissao.entrySet()) {
+        Roteador rot = flag.getKey();
+        boolean valor = flag.getValue();
+        trans += rot.getNome() + " " + "(" + ((valor) ? "1" : "0") + ")" + " ";
+      } 
+
+      int sequenciaExibida = (e.getPacoteAtual() != null) ? e.getPacoteAtual().getNumeroSequencia() : 0;
+      buffer += e.getRoteadorEntrada().getNome() + "\t" + sequenciaExibida + "\t" + con + "\t" + trans + "\n";
+    }
+
+    System.out.println(buffer + "\n");
+  }
+
+  private long[][] gerarMatrizAdjacencia(int total) {
+    long[][] matriz = new long[total][total];
+
+    for (int i = 0; i < total; i++) {
+      for (int j = 0; j < total; j++) {
+        if (i == j) matriz[i][j] = 0;
+        else matriz[i][j] = CUSTO_INFINITO;
+      }
+    }
+
+    for (EntradaBuffer entrada : bufferEnlace.getEntradas()) {
+      Roteador origem = entrada.getRoteadorEntrada();
+      PacoteEstadoEnlace pacote = entrada.getPacoteAtual();
+
+      if (pacote != null) {
+        HashMap<Roteador, Long> custos = pacote.getCustoVizinhos();
+        int i = gerarIndice(origem.getNome());
+
+        for (Map.Entry<Roteador, Long> link : custos.entrySet()) {
+          Roteador vizinho = link.getKey();
+          int j = gerarIndice(vizinho.getNome());
+          matriz[i][j] = link.getValue();
+        }
+      }
+    }
+
+    return matriz;
+  }
+
+  private void executarDijkstra(long[][] matriz, int raiz, CopyOnWriteArrayList<Roteador> listaRoteadores) {
+    int n = matriz.length;
+    long[] distancia = new long[n];
+    int[] predecessor = new int[n];
+    boolean[] permanente = new boolean[n];
+
+    for (int i = 0; i < n; i++) {
+      distancia[i] = CUSTO_INFINITO;
+      predecessor[i] = -1;
+      permanente[i] = false;
+    }
+
+    distancia[raiz] = 0;
+
+    for (int i = 0; i < n - 1; i++) {
+      int u = encontrarMenorDistancia(distancia, permanente);
+      if (u == -1) break;
+
+      permanente[u] = true;
+
+      for (int v = 0; v < n; v++) {
+        if (!permanente[v] && matriz[u][v] != CUSTO_INFINITO) {
+          long novaDistancia = distancia[u] + matriz[u][v];
+
+          if (novaDistancia < distancia[v]) {
+            distancia[v] = novaDistancia;
+            predecessor[v] = u;
+          }
+        }
+      }
+    }
+
+    tabela.preencherTabela(distancia, predecessor, raiz, listaRoteadores);
+    tabelaCompleta = true;
+  }
+
+  private int encontrarMenorDistancia(long[] distancia, boolean[] permanente) {
+    long min = 100000;
+    int minIndice = -1;
+
+    for (int i = 0; i < distancia.length; i++) {
+      if (!permanente[i] && distancia[i] <= min) {
+        min = distancia[i];
+        minIndice = i;
+      }
+    }
+
+    return minIndice;
+  }
+
+  private int gerarIndice(String nome) {
+    if (nome == null || nome.isEmpty()) return -1;
+    return nome.charAt(0) - 'A';
   }
 
   /*
@@ -651,6 +826,30 @@ public class Roteador extends Thread {
 
   public TabelaRoteamento getTabela() {
     return tabela;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: setBufferEnlace
+   * Funcao: define o buffer de estado de enlace do roteador
+   * Parametros: BufferEnlace buffer - buffer a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setBufferEnlace(BufferEnlace buffer) {
+    this.bufferEnlace = buffer;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: getBufferEnlace
+   * Funcao: retorna o buffer de estado de enlace do roteador
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: BufferEnlace
+   ****************************************************************/
+
+  public BufferEnlace getBufferEnlace() {
+    return bufferEnlace;
   }
 
   /*

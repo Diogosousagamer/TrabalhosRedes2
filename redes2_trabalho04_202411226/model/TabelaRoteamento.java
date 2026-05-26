@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 09/05/2026
+* Ultima alteracao.: 26/05/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -57,26 +57,7 @@ public class TabelaRoteamento {
 		for (Roteador rot : roteadores) {
 			// Insere a entrada correspondente ao roteador
       inserirEntrada(new EntradaTabela(rot, rot.getNome(), "-", "-"));
-    }
-
-    // Obtem a lista de vizinhos do roteador da tabela
-    CopyOnWriteArrayList<Roteador> vizinhos = new CopyOnWriteArrayList<>(r.getVizinhos());
-
-    // Inicio do bloco if
-    // Se o roteador tiver vizinhos
-    if (!vizinhos.isEmpty()) {
-    	// Inicio do bloco for
-      for (Roteador v : vizinhos) {
-        // Obtem o retardo entre o roteador e o vizinho
-        final long distancia = this.ping(v);
-
-        // Obtem o rotulo do vizinho
-        final String vizinho = v.getNome();
-
-        // Atualiza a entrada correspondente ao vizinho na tabela de roteamento
-      	Platform.runLater(() -> alterarEntrada(new EntradaTabela(v, vizinho, vizinho, Long.toString(distancia))));
-      } // Fim do bloco for
-    } // Fim do bloco if
+    } // Fim do bloco for
 
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
@@ -86,101 +67,52 @@ public class TabelaRoteamento {
     }); // Fim do bloco Platform.runLater
 	}
 
-  /*
-   * ***************************************************************
-   * Metodo: processarVetor
-   * Funcao: modifica a tabela com base na tabela do vizinho
-   * Parametros: Roteador emissor - vizinho que forneceu as entradas da tabela
-                 ArrayList<EntradaTabela> entradasEmissor - entradas da tabela do emissor
-   * Retorno: void
-   ****************************************************************/
+  public void preencherTabela(long[] distancia, int[] predecessor, int raiz, CopyOnWriteArrayList<Roteador> listaRoteadores) {
+    int n = distancia.length;
 
-	public void processarVetor(Roteador emissor, ArrayList<EntradaTabela> entradasEmissor) {
-    // Obtem o custo do caminho direto para o vizinho emissor
-		long custoParaVizinho = this.ping(emissor);
+    for (int idxDestino = 0; idxDestino < n; idxDestino++) {
+      if (idxDestino == raiz) continue;
+      if (distancia[idxDestino] == 100000) continue;
 
-    // Inicio do bloco for
-    // Visitamos todas as entradas da tabela do emissor
-		for (EntradaTabela e : entradasEmissor) {
-      // Obtem-se a linha de destino da entrada atual
-			String destino = e.getDestino().trim();
+      int atual = idxDestino;
+      int proximoSalto = idxDestino;
 
-      // Pula caso o destino obtido for correspondente ao roteador atual
-			if (destino.equals(this.r.getNome())) continue;
+      while (predecessor[atual] != raiz && predecessor[atual] != -1) {
+        proximoSalto = predecessor[atual];
+        atual = predecessor[atual];
+      }
 
-      // Obtem se o retardo da linha de destino atual e pula o laco caso o retardo nao tiver sido definido
-      String retardoEmissor = e.getRetardo().trim();
-      if (retardoEmissor.equals("-")) continue;
+      String nomeDestino = gerarNome(idxDestino);
+      String nomeHop = gerarNome(proximoSalto);
+      long custo = distancia[idxDestino];
+      Roteador rotDestino = obterRoteadorDestino(nomeDestino, listaRoteadores);
 
-      // Converte o retardo para long
-      long custoEntrada = Long.parseLong(retardoEmissor);
+      alterarEntrada(new EntradaTabela(rotDestino, nomeDestino, nomeHop, Long.toString(custo)));
+      dormir(500);
+    }
+  }
 
-      // Obtem o custo total somando o custo para o vizinho com o custo da entrada obtida
-			long custoViaVizinho = custoParaVizinho + custoEntrada;
+  private String gerarNome(int i) {
+    return String.valueOf((char) ('A' + i));
+  }
 
-      // Obtem a entrada correspondente ao destino na tabela local
-			EntradaTabela entradaLocal = this.obterEntrada(destino);
+  private Roteador obterRoteadorDestino(String nome, CopyOnWriteArrayList<Roteador> listaRoteadores) {
+    for (Roteador r : listaRoteadores) {
+      if (r.getNome().equals(nome)) return r;
+    }
 
-      // Inicio do bloco if
-      // Se a entrada local existir
-			if (entradaLocal != null) {
-        // Obtem-se o retardo atual da entrada local
-				String retardoLocal = entradaLocal.getRetardo().trim();
-
-        // Converte o retardo para long, assumindo um valor 'infinito' caso ele nao tiver sido definido
-				long distanciaLocal = (retardoLocal.equals("-")) ? INFINITO : Long.parseLong(retardoLocal);
-
-        // Verifica se a linha de saida atual corresponde ao vizinho que enviou a tabela
-				boolean viaMesmoVizinho = entradaLocal.getLinhaSaida().equals(emissor.getNome());
-
-        // Obtem-se o roteador de destino da entrada local
-				Roteador entrada = entradaLocal.getRoteadorDestino();
-
-        // Inicio do bloco if
-        // Se o custo total for menor que a distancia atual e/ou o emissor corresponder a linha de saida atual
-        if (custoViaVizinho < distanciaLocal || viaMesmoVizinho) {
-          // Inicio do bloco if
-          // Se a distancia atual for diferente do custo atual e/ou o emissor nao corresponder a linha de saida atual
-          if (distanciaLocal != custoViaVizinho || !viaMesmoVizinho) {
-            // Altera o retardo e a linha de saida da entrada da tabela local
-            entradaLocal.setRetardo(Long.toString(custoViaVizinho));
-            entradaLocal.setLinhaSaida(emissor.getNome());
-            alterarEntrada(entradaLocal);
-
-            // Sinaliza que ocorreu alguma mudanca na rede
-            TelaPrincipalController.controller.houveMudancaNaRede = true;
- 
-            // Inicio do bloco Platform.runLater
-            Platform.runLater(() -> {
-              // Inicio do bloco if
-              if (TelaPrincipalController.controller.simulacaoAtiva) {
-                // Atualiza o roteador da tabela na lista e nos vizinhos
-                TelaPrincipalController.controller.atualizarRoteador(r);
-                TelaPrincipalController.controller.alterarRoteadorNosVizinhos(r);
-
-                // Atualiza o roteador de destino na lista e nos vizinhos
-                TelaPrincipalController.controller.atualizarRoteador(entrada);
-                TelaPrincipalController.controller.alterarRoteadorNosVizinhos(entrada);
-
-                // Atualiza a tabela mais uma vez por precaucao
-                this.atualizarTabela();
-              } // Fim do bloco if
-            }); // Fim do bloco Platform.runLater
-          } // Fim do bloco if
-        } // Fim do bloco if
-			} // Fim do bloco if
-		} // Fim do bloco for
-	}
+    return null;
+  }
 
   /*
    * ***************************************************************
-   * Metodo: ping
+   * Metodo: ps1
    * Funcao: retorna o retardo de um caminho entre o host e o destino almejado
    * Parametros: Roteador destino - roteador de destino
    * Retorno: long
    ****************************************************************/
 
-  public long ping(Roteador destino) {
+  public long ps1(Roteador destino) {
     // Distancia a ser obtida
     long distancia = 0;
 
@@ -198,23 +130,22 @@ public class TabelaRoteamento {
  
         // Pula para ler outra linha caso a quantidade de partes
         // nao for a almejada
-        if (partes.length < 4) continue;
+        if (partes.length < 3) continue;
 
         // Obtem os nomes dos roteadores
         String nome1 = partes[0];
         String nome2 = partes[1];
 
+        // Verifica
+        boolean verificacao = nome1.equals(r.getNome()) && nome2.equals(destino.getNome()) 
+                              || nome1.equals(destino.getNome()) && nome2.equals(r.getNome());
+
         // Inicio do bloco if/else if
-        if (nome1.equals(r.getNome()) && nome2.equals(destino.getNome())) {
-          // Retorna o tempo de ida e interrompe o laco
+        if (verificacao) {
+          // Retorna a latencia e interrompe o laco
           distancia = Long.parseLong(partes[2]);
           break;
         }
-        else if (nome1.equals(destino.getNome()) && nome2.equals(r.getNome())) {
-          // Retorna o tempo de volta e interrompe o laco
-          distancia = Long.parseLong(partes[3]);
-          break;
-        } // Fim do bloco if/else if
       } // Fim do bloco while
     }
     catch (IOException e) {

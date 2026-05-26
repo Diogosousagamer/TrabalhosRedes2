@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 09/05/2026
+* Ultima alteracao.: 22/05/2026
 * Nome.............: Echo
 * Funcao...........: Thread que gerencia as operacoes dos pacotes echo, responsaveis
 										 por informarem o custo de cada enlace presente na sub rede.
@@ -14,6 +14,7 @@ package model;
 import controller.TelaPrincipalController;
 import java.lang.Thread;
 import javafx.application.Platform;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Echo extends Thread {
@@ -21,11 +22,11 @@ public class Echo extends Thread {
 	private Roteador origem;
 	private Roteador destino;
 	private ImageView envelope;
-	private long ida;
-	private long volta;
+	private long latencia;
 	private double posX;
 	private double posY;
 	private boolean encerrou;
+	private static final Image echoanswered = new Image(Echo.class.getResource("/img/echoanswered.gif").toExternalForm());
 
   /*
    * ***************************************************************
@@ -75,7 +76,7 @@ public class Echo extends Thread {
       // Inicio do bloco Platform.runLater
 		  Platform.runLater(() -> {
 		  	// Insere o retardo obtido dentro da sub rede
-		  	TelaPrincipalController.controller.inserirRetardo(origem, destino, ida, volta);
+		  	TelaPrincipalController.controller.inserirRetardo(origem, destino, latencia);
 
 		  	// Remove o pacote echo da subrede
 				TelaPrincipalController.controller.removerEcho(this);
@@ -201,20 +202,12 @@ public class Echo extends Thread {
    ****************************************************************/
 
 	private void processar() {
-		// Obtem os retardos da perspectiva de cada roteador
-		long retardo1 = origem.getTabela().ping(destino);
-		long retardo2 = destino.getTabela().ping(origem);
-
-    // Obtem a id da aresta que eles compoem
-		String idAresta = (origem.getNome().compareTo(destino.getNome()) < 0) ? origem.getNome() + destino.getNome() 
-		                  : destino.getNome() + origem.getNome();
-
-    // A partir da id da aresta, obtem-se os retardos de ida e volta
-		ida = (idAresta.equals(origem.getNome() + destino.getNome())) ? retardo1 : retardo2;
-		volta = (idAresta.equals(origem.getNome() + destino.getNome())) ? retardo2 : retardo1;
+		// Obtem a latencia da aresta que liga os roteadores
+		latencia = TelaPrincipalController.controller.gerarLatenciaAleatoria(origem, destino);
 
     // A Thread dorme por 300 ms
 		dormir(300);
+		Platform.runLater(() -> envelope.setImage(echoanswered));
 	}
 
   /*

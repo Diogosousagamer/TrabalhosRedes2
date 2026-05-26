@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
    <children>
       <AnchorPane fx:id="subrede" prefHeight="500.0" prefWidth="700.0">
          <children>
@@ -65,7 +65,7 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
             </Button>
-            <Label fx:id="lblAviso" layoutX="8.0" layoutY="430.0" prefHeight="36.0" prefWidth="192.0" text="Aguarde as tabelas ficarem completas..." textAlignment="JUSTIFY" textFill="#651076" visible="false" wrapText="true">
+            <Label fx:id="lblAviso" layoutX="8.0" layoutY="430.0" prefHeight="36.0" prefWidth="192.0" text="Aguarde o roteamento ser concluído..." textAlignment="JUSTIFY" textFill="#651076" visible="false" wrapText="true">
                <font>
                   <Font name="VCR OSD Mono" size="12.0" />
                </font>
@@ -143,7 +143,7 @@
                         <Font name="VCR OSD Mono" size="13.0" />
                      </font>
                   </Label>
-                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="285.0" prefHeight="35.0" prefWidth="168.0" text="NO1,NO2,RETARDO_IDA,RETARDO_VOLTA" textFill="WHITE" wrapText="true">
+                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="285.0" prefHeight="35.0" prefWidth="168.0" text="NO1,NO2,LATENCIA" textFill="WHITE" wrapText="true">
                      <font>
                         <Font name="VCR OSD Mono" size="14.0" />
                      </font>

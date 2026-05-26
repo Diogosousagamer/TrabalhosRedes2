@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 09/05/2026
+* Ultima alteracao.: 26/05/2026
 * Nome.............: Estado de Enlace (Principal)
 * Funcao...........: Este trabalho tem como objetivo simular o roteamento de pacotes dentro da camada de rede 
                      atraves do algoritmo de estado de enlace.
