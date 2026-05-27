@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class EntradaBuffer {
+	// Variaveis e instancias
 	private Roteador roteadorEntrada;
 	private PacoteEstadoEnlace pacoteAtual;
 	private HashMap<Roteador, Boolean> flagsTransmissao;

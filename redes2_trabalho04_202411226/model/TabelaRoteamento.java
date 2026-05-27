@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 26/05/2026
+* Ultima alteracao.: 27/05/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -67,94 +67,66 @@ public class TabelaRoteamento {
     }); // Fim do bloco Platform.runLater
 	}
 
-  public void preencherTabela(long[] distancia, int[] predecessor, int raiz, CopyOnWriteArrayList<Roteador> listaRoteadores) {
-    int n = distancia.length;
-
-    for (int idxDestino = 0; idxDestino < n; idxDestino++) {
-      if (idxDestino == raiz) continue;
-      if (distancia[idxDestino] == 100000) continue;
-
-      int atual = idxDestino;
-      int proximoSalto = idxDestino;
-
-      while (predecessor[atual] != raiz && predecessor[atual] != -1) {
-        proximoSalto = predecessor[atual];
-        atual = predecessor[atual];
-      }
-
-      String nomeDestino = gerarNome(idxDestino);
-      String nomeHop = gerarNome(proximoSalto);
-      long custo = distancia[idxDestino];
-      Roteador rotDestino = obterRoteadorDestino(nomeDestino, listaRoteadores);
-
-      alterarEntrada(new EntradaTabela(rotDestino, nomeDestino, nomeHop, Long.toString(custo)));
-      dormir(500);
-    }
-  }
-
-  private String gerarNome(int i) {
-    return String.valueOf((char) ('A' + i));
-  }
-
-  private Roteador obterRoteadorDestino(String nome, CopyOnWriteArrayList<Roteador> listaRoteadores) {
-    for (Roteador r : listaRoteadores) {
-      if (r.getNome().equals(nome)) return r;
-    }
-
-    return null;
-  }
-
   /*
    * ***************************************************************
-   * Metodo: ps1
-   * Funcao: retorna o retardo de um caminho entre o host e o destino almejado
-   * Parametros: Roteador destino - roteador de destino
-   * Retorno: long
+   * Metodo: preencherTabela
+   * Funcao: preenche a tabela com base nos calculos de Dijkstra
+   * Parametros: long[] distancia - conjunto de distancias possiveis para cada destino
+                 int[] predecessor - conjunto de predecessores para cada destino
+                 int raiz - indice correspondente ao roteador da tabela
+                 CopyOnWriteArrayList<Roteador> listaRoteadores - lista de roteadores
+                 presentes na sub rede
+   * Retorno: void
    ****************************************************************/
 
-  public long ps1(Roteador destino) {
-    // Distancia a ser obtida
-    long distancia = 0;
-
+  public void preencherTabela(long[] distancia, int[] predecessor, int raiz, CopyOnWriteArrayList<Roteador> listaRoteadores) {
     // Inicio do bloco try/catch
-    // O roteador lera o arquivo de backbone para encontrar o retardo
-    try (BufferedReader br = new BufferedReader(new FileReader("backbone.txt"))) {
-      // String que sera responsavel por ler cada linha do arquivo
-      String linha = "";
+    try {
+      // O tamanho da distancia corresponde a quantidade de roteadores presentes na sub rede
+      int n = distancia.length;
 
-      // Inicio do bloco while
-      // Enquanto ainda tiver texto presente no arquivo
-      while ((linha = br.readLine()) != null) {
-        // Divide a linha em partes e as armazena em um vetor
-        String[] partes = linha.split(",");
- 
-        // Pula para ler outra linha caso a quantidade de partes
-        // nao for a almejada
-        if (partes.length < 3) continue;
+      // Inicio do bloco for
+      // Percorre todas as linhas de destino possiveis para o roteador
+      for (int idxDestino = 0; idxDestino < n; idxDestino++) {
+        // Pula se o destino corresponder ao indice do roteador da tabela
+        if (idxDestino == raiz) continue;
 
-        // Obtem os nomes dos roteadores
-        String nome1 = partes[0];
-        String nome2 = partes[1];
+        // Pula se a distancia marcada tiver um custo infinito
+        if (distancia[idxDestino] == 100000) continue;
 
-        // Verifica
-        boolean verificacao = nome1.equals(r.getNome()) && nome2.equals(destino.getNome()) 
-                              || nome1.equals(destino.getNome()) && nome2.equals(r.getNome());
+        // O destino passa a ser o indice atual e o proximo hop
+        int atual = idxDestino;
+        int proximoSalto = idxDestino;
 
-        // Inicio do bloco if/else if
-        if (verificacao) {
-          // Retorna a latencia e interrompe o laco
-          distancia = Long.parseLong(partes[2]);
-          break;
-        }
-      } // Fim do bloco while
+        // Inicio do bloco while
+        // Enquanto o predecessor for diferente da raiz (roteador da tabela) e tiver sido definido (diferente de -1)
+        while (predecessor[atual] != raiz && predecessor[atual] != -1) {
+          // Atualiza o proximo hop para o predecessor do roteador atual
+          proximoSalto = predecessor[atual];
+
+          // O predecessor obtido passa a ser o roteador atual
+          atual = predecessor[atual];
+        } // Fim do bloco while
+
+        // Obtem o nome do roteador da linha de destino e da linha de saida obtida 
+        String nomeDestino = gerarNome(idxDestino);
+        String nomeHop = gerarNome(proximoSalto);
+
+        // Obtem o custo estimado ate o destino atual e a instancia do roteador de destino
+        long custo = distancia[idxDestino];
+        Roteador rotDestino = obterRoteadorDestino(nomeDestino, listaRoteadores);
+
+        // Cria uma nova entrada com os dados obtidos
+        final EntradaTabela entradaFinal = new EntradaTabela(rotDestino, nomeDestino, nomeHop, Long.toString(custo));
+
+        // Altera a entrada correspondente na tabela e aguarda meio segundo antes de fazer uma nova insercao
+        Platform.runLater(() -> alterarEntrada(entradaFinal));
+        dormir(500);
+      } // Fim do bloco for
     }
-    catch (IOException e) {
-      // Em caso de excecao, ela sera exibida no terminal
-      e.printStackTrace();
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     } // Fim do bloco try/catch
-
-    // Retorna a distancia
-    return distancia;
   }
 
   /*
@@ -263,16 +235,42 @@ public class TabelaRoteamento {
    * Retorno: void
    ****************************************************************/
 
-  private void dormir(long valor) {
-    // Inicio do bloco try/catch
-    try {
-      // A tabela eh posta para dormir por alguns ms
-      Thread.sleep(valor);
-    }
-    catch (InterruptedException e) {
-      // Em caso de excecao, a Thread e interrompida
-      Thread.currentThread().interrupt();
-    } // Fim do bloco try/catch
+  private void dormir(long valor) throws InterruptedException {
+    // A tabela eh posta para dormir por alguns ms
+    Thread.sleep(valor);
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: gerarNome
+   * Funcao: obtem o nome do roteador a partir do indice fornecido
+   * Parametros: int i - indice do roteador
+   * Retorno: String
+   ****************************************************************/
+
+  private String gerarNome(int i) {
+    return String.valueOf((char) ('A' + i));
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: obterRoteadorDestino
+   * Funcao: obtem o roteador da linha de destino fornecida
+   * Parametros: String nome - nome do roteador a ser obtido
+                 CopyOnWriteArrayList<Roteador> listaRoteadores - lista de roteadores
+                 presentes na sub rede
+   * Retorno: Roteador
+   ****************************************************************/
+
+  private Roteador obterRoteadorDestino(String nome, CopyOnWriteArrayList<Roteador> listaRoteadores) {
+    // Inicio do bloco for
+    for (Roteador r : listaRoteadores) {
+      // Retorna o roteador atual se o nome dele corresponder ao nome buscado
+      if (r.getNome().equals(nome)) return r;
+    } // Fim do bloco for
+
+    // Retorna nulo caso nenhuma correspondencia for encontrada
+    return null;
   }
 
   /*

@@ -1,14 +1,14 @@
 8
-A,B,151
-A,F,89
-B,C,65
-B,E,265
-C,F,352
-C,D,362
-D,H,481
-E,F,153
-E,G,387
-F,H,413
-G,H,86
+A,B
+A,F
+B,C
+B,E
+C,F
+C,D
+D,H
+E,F
+E,G
+F,H
+G,H
 
 

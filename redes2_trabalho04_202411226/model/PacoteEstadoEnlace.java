@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 25/05/2026
+* Ultima alteracao.: 27/05/2026
 * Nome.............: PacoteEstadoEnlace
 * Funcao...........: Thread que gerencia os pacotes de estado de enlace.
                      
@@ -39,11 +39,31 @@ public class PacoteEstadoEnlace extends Thread {
 		custoVizinhos = new HashMap<>();
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: run
+   * Funcao: metodo que executa as operacoes da Thread enquanto ela
+             estiver ativa
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
 	@Override
 	public void run() {
-		movimentar(this.destino);
-    processar();
+		while (!Thread.currentThread().isInterrupted()) {
+			movimentar(this.destino);
+    	processar();
+    	break;
+		}
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: definirPosicao
+   * Funcao: define a posicao inicial do pacote de estado de enlace
+   * Parametros: Roteador r - roteador onde o pacote sera posicionado
+   * Retorno: void
+   ****************************************************************/
 
 	public void definirPosicao(Roteador r) {
 		posX = r.getPosX();
@@ -176,10 +196,6 @@ public class PacoteEstadoEnlace extends Thread {
 		Platform.runLater(() -> TelaPrincipalController.controller.removerPacoteEnlace(this));
 	}
 
-	public void adicionarCustoVizinho(Roteador r, long valor) {
-		if (!custoVizinhos.containsKey(r)) custoVizinhos.put(r, valor);
-	}
-
 	public void decrementarIdade() {
 		idade--;
 	}
@@ -241,7 +257,7 @@ public class PacoteEstadoEnlace extends Thread {
 		return linhaChegada;
 	}
 
-  public void setCustoVizinhos(HashMap<Roteador, Long> c)  {
+  public void setCustoVizinhos(HashMap<Roteador, Long> c) {
     this.custoVizinhos = c;
   } 
 

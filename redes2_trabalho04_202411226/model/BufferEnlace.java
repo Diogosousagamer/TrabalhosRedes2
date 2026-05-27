@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 24/05/2026
+* Ultima alteracao.: 27/05/2026
 * Nome.............: BufferEnlace
 * Funcao...........: Classe que gerencia as operacoes de cada buffer contendo os pacotes
                      de estado de enlace.
@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BufferEnlace {
+	// Variaveis e instancias
 	private Roteador r;
 	private CopyOnWriteArrayList<EntradaBuffer> entradas;
 	private CopyOnWriteArrayList<Roteador> listaRoteadores;
@@ -29,7 +30,6 @@ public class BufferEnlace {
 	public void criarEntradasIniciais() {
 		for (Roteador r : listaRoteadores) {
 			if (r.getNome().equals(this.r.getNome())) continue;
-			int tamanhoVizinhos = this.r.getVizinhos().size();
 			EntradaBuffer e = new EntradaBuffer(r, null);
 			e.carregarFlags();
 			entradas.add(e);
@@ -54,7 +54,7 @@ public class BufferEnlace {
 			String rotAtual = ent.getRoteadorEntrada().getNome();
 
 			if (rotAtual.equals(e.getRoteadorEntrada().getNome())) {
-				entradas.remove(e);
+				entradas.remove(ent);
 				break;
 			}
 		}
@@ -97,14 +97,6 @@ public class BufferEnlace {
 				break;
 			}
 		}
-	}
-
-	public boolean obterFlagConfirmacao() {
-		return false;
-	}
-
-	public boolean obterFlagTransmissao() {
-		return false;
 	}
 
 	public void setRoteador(Roteador r) {

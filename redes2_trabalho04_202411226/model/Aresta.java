@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 22/05/2026
+* Ultima alteracao.: 27/05/2026
 * Nome.............: Aresta
 * Funcao...........: Classe que gerencia as operacoes de cada aresta.
                      
@@ -18,7 +18,18 @@ public class Aresta {
 	private Line linha;
 	private Roteador r1;
 	private Roteador r2;
-	private long latencia;
+	private long ida;
+  private long volta;
+
+  /*
+   * ***************************************************************
+   * Metodo: Aresta
+   * Funcao: inicializa uma nova instancia da classe Aresta
+   * Parametros: Line linha - linha da aresta
+                 Roteador r1 - roteador 1 da aresta
+                 Roteador r2 - roteador 2 da aresta
+   * Retorno: void
+   ****************************************************************/
 
 	public Aresta(Line linha, Roteador r1, Roteador r2) {
 		this.linha = linha;
@@ -164,25 +175,49 @@ public class Aresta {
 
   /*
    * ***************************************************************
-   * Metodo: setLatencia
-   * Funcao: define a latencia da aresta
-   * Parametros: long latencia - valor a ser definido
+   * Metodo: setIda
+   * Funcao: define o tempo de ida da aresta
+   * Parametros: long ida - valor a ser definido
    * Retorno: void
    ****************************************************************/
 
-	public void setLatencia(long latencia) {
-		this.latencia = latencia;
+	public void setIda(long ida) {
+		this.ida = ida;
 	}
 
   /*
    * ***************************************************************
-   * Metodo: getLatencia
-   * Funcao: retorna a latencia da aresta
+   * Metodo: getIda
+   * Funcao: retorna o tempo de ida da aresta
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: long
    ****************************************************************/
 
-	public long getLatencia() {
-		return latencia;
+	public long getIda() {
+		return ida;
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: setVolta
+   * Funcao: define o tempo de volta da aresta
+   * Parametros: long volta - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setVolta(long volta) {
+    this.volta = volta;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: getVolta
+   * Funcao: retorna o tempo de volta da aresta
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: long
+   ****************************************************************/
+
+  public long getVolta() {
+    return volta;
+  }
 }

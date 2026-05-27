@@ -89,6 +89,10 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private TextArea txtBackbone;
 
 	// Variaveis e instancias
+  private static final Image imgHello = new Image(TelaPrincipalController.class.getResource("/img/hello.png").toExternalForm());
+  private static final Image echo = new Image(TelaPrincipalController.class.getResource("/img/Echo.png").toExternalForm());
+  private static final Image link = new Image(TelaPrincipalController.class.getResource("/img/link.png").toExternalForm());
+  private static final Image mail = new Image(TelaPrincipalController.class.getResource("/img/Envelope.png").toExternalForm());
   private Pacote p;
 	public static volatile TelaPrincipalController controller;
   public static volatile boolean simulacaoAtiva;
@@ -104,7 +108,8 @@ public class TelaPrincipalController implements Initializable {
   private CopyOnWriteArrayList<Echo> echos;
   private CopyOnWriteArrayList<PacoteEstadoEnlace> pacotesEnlace;
   private CopyOnWriteArrayList<Roteador> roteadores;
-  private HashMap<String, Long> latencias = new HashMap<>();
+  private HashMap<String, Long> temposIda = new HashMap<>();
+  private HashMap<String, Long> temposVolta = new HashMap<>();
   private HashMap<String, Label> tempoArestas = new HashMap<>();
   private HashMap<String, Circle> nosCriados = new HashMap<>();
   private HashMap<String, Aresta> arestasExistentes = new HashMap<>();
@@ -198,6 +203,8 @@ public class TelaPrincipalController implements Initializable {
 
   @FXML
   private void ocultarAresta(MouseEvent event, Aresta a) {
+    if (!simulacaoAtiva) simulacaoAtiva = true;
+
     // Obtem os roteadores ligados pela aresta
     Roteador r1 = a.getR1();
     Roteador r2 = a.getR2();
@@ -213,10 +220,9 @@ public class TelaPrincipalController implements Initializable {
     // Obtem o nome dos roteadores, bem como o tempo de ida e volta da aresta
     String nome1 = r1.getNome();
     String nome2 = r2.getNome();
-    String latencia = Long.toString(a.getLatencia());
 
     // Remonta a linha correspondente a aresta com base na formatacao do backbone
-    String linha = nome1 + "," + nome2 + "," + latencia;
+    String linha = nome1 + "," + nome2;
 
     // Acessa o backbone e cria uma ArrayList para armazenar as linhas que sobrarem do backbone
     File backbone = new File("backbone.txt");
@@ -237,14 +243,46 @@ public class TelaPrincipalController implements Initializable {
 
       // Escreve as linhas restantes no arquivo
       Files.write(backbone.toPath(), linhasRestantes);
-
-      // Remove a sub rede para que ela possa ser reconfigurada
-      removerSubrede();
     }
     catch (IOException e) {
       // Em caso de excecao, ela eh exibida no terminal
       e.printStackTrace();
     } // Fim do bloco try/catch
+
+    Line l = a.getLinha();
+
+    String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+    Label latencia = null;
+
+    for (Map.Entry<String, Label> latencias : tempoArestas.entrySet()) {
+      String idAresta = latencias.getKey();
+
+      if (idAresta.equals(id)) {
+        latencia = latencias.getValue();
+        break;
+      }
+    }
+
+    temposIda.remove(id);
+    temposVolta.remove(id);
+
+    subrede.getChildren().removeAll(l, latencia);
+
+    boolean estadoEnlaceR1 = (r1.encontrouVizinhos() && r1.mediuRetardos());
+    boolean estadoEnlaceR2 = (r2.encontrouVizinhos() && r2.mediuRetardos());
+
+    if (estadoEnlaceR1 && estadoEnlaceR2) {
+      r1.removerCustoVizinho(r2);
+      r2.removerCustoVizinho(r1);
+
+      r1.enviarPacotesEnlace();
+      r2.enviarPacotesEnlace();
+    }
+    else {
+      /* Aresta a = obterAresta(r1, r2);
+      r1.removerExtremidade(a);
+      r2.removerExtremidade(a); */
+    }
   }
 
   /*
@@ -310,7 +348,7 @@ public class TelaPrincipalController implements Initializable {
   private void cancelarEnvio(ActionEvent event) {
     // Inicio do bloco for
     for (Aresta a : arestasExistentes.values()) {
-      // Impede que a aresta seja removida durante a selecao
+      // Permite que a aresta seja removida novamente
       Line l = a.getLinha();
       l.setMouseTransparent(false);
     } // Fim do bloco for
@@ -429,9 +467,6 @@ public class TelaPrincipalController implements Initializable {
   private void criarPacote() {
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
-      // Inicializa uma nova imagem representando o pacote
-      Image mail = new Image(getClass().getResource("/img/Envelope.png").toExternalForm());
-
       // Configura a imagem do pacote e a adiciona na sub rede
       ImageView envelope = new ImageView(mail);
       envelope.setFitWidth(41);
@@ -525,8 +560,7 @@ public class TelaPrincipalController implements Initializable {
     hello.setDaemon(true);
 
     Platform.runLater(() -> {
-      Image img = new Image(getClass().getResource("/img/hello.png").toExternalForm());
-      h.setImage(img);
+      h.setImage(imgHello);
       h.setFitWidth(50);
       h.setFitHeight(30);
       h.setPreserveRatio(true);
@@ -578,7 +612,6 @@ public class TelaPrincipalController implements Initializable {
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       // Configura a imagem do pacote e a adiciona na sub rede
-      Image echo = new Image(getClass().getResource("/img/Echo.png").toExternalForm());
       request.setImage(echo);
       request.setFitWidth(21);
       request.setFitHeight(61);
@@ -624,7 +657,10 @@ public class TelaPrincipalController implements Initializable {
    * Funcao: envia um novo pacote de estado de enlace dentro da sub rede
    * Parametros: Roteador origem - roteador de origem do pacote
                  Roteador destino - roteador para o qual o pacote sera destinado
-   * Retorno: Echo
+                 Roteador linhaChegada - linha de saida pelo qual o pacote chegou
+                                         (nao eh equivalente a origem)
+                 int numeroSequencia - numero de sequencia do pacote
+   * Retorno: PacoteEstadoEnlace
    ****************************************************************/
 
   public PacoteEstadoEnlace enviarPacoteEnlace(Roteador origem, Roteador destino, Roteador linhaChegada, int numeroSequencia, int idade) {
@@ -634,8 +670,7 @@ public class TelaPrincipalController implements Initializable {
     pacoteEnlace.setDaemon(true);
 
     Platform.runLater(() -> {
-      Image olho = new Image("/img/link.png");
-      enlace.setImage(olho);
+      enlace.setImage(link);
       enlace.setFitWidth(30);
       enlace.setFitHeight(61);
       enlace.setPreserveRatio(true);
@@ -1132,7 +1167,7 @@ public class TelaPrincipalController implements Initializable {
 
         // Interrompe o instante atual e retoma o laco
         // se a quantidade de partes for menor que 3
-        if (partes.length < 3) continue;
+        if (partes.length < 2) continue;
 
         // Obtem-se os rotulos dos nos e o peso da aresta
         String nome1 = partes[0];
@@ -1264,62 +1299,6 @@ public class TelaPrincipalController implements Initializable {
     // em qualquer caso
     arestasExistentes.clear();
     tempoArestas.clear();
-  }
-
-  public synchronized long gerarLatenciaAleatoria(Roteador r1, Roteador r2) {
-    String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
-    long latencia = ThreadLocalRandom.current().nextLong(1, 501);
-
-    if (latencias.containsKey(id)) return latencias.get(id);
-    latencias.put(id, latencia);
-
-    Aresta a = obterAresta(r1, r2);
-    a.setLatencia(latencia);
-
-    final String backbone = "backbone.txt";
-    ArrayList<String> linhas = new ArrayList<>();
-
-    try {
-      BufferedReader br = new BufferedReader(new FileReader(backbone));
-      String linha = "";
-
-      while ((linha = br.readLine()) != null) {
-        String[] partes = linha.split(",");
-
-        if (partes.length < 3) {
-          linhas.add(linha);
-          continue;
-        }
-
-        String origem = partes[0];
-        String destino = partes[1];
-
-        boolean ehArestaAlvo = (origem.equals(r1.getNome()) && destino.equals(r2.getNome())) ||
-                               (origem.equals(r2.getNome()) && destino.equals(r1.getNome()));
-
-        if (ehArestaAlvo) {
-          String novaLinha = origem + "," + destino + "," + latencia;
-          linhas.add(novaLinha);
-        }
-        else {
-          linhas.add(linha);
-        }
-      }
-
-      BufferedWriter bw = new BufferedWriter(new FileWriter(backbone));
-
-      for (String l : linhas) {
-        bw.write(l);
-        bw.newLine();
-      } 
-
-      bw.flush();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    return latencia;
   }
 
   /*
@@ -1682,31 +1661,92 @@ public class TelaPrincipalController implements Initializable {
     });
   }
 
-  public void inserirRetardo(Roteador r1, Roteador r2, long latencia) {
-    // Obtem a id da aresta e verifica se os retardos dela ja estao registrados na 
-    String idAresta = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
-    if (tempoArestas.containsKey(idAresta)) return;
+  /*
+   * ***************************************************************
+   * Metodo: ps1
+   * Funcao: gera um valor aleatorio para o retardo de ida/volta para um certo caminho
+   * Parametros: Roteador r1 - roteador de origem
+                 Roteador r2 - roteador de destino
+   * Retorno: long
+   ****************************************************************/
 
-    // Gera as labels de ida e volta da aresta
-    Label lblTempo = new Label(Long.toString(latencia));
-    lblTempo.setFont(Font.font("VCR OSD Mono", 13));
-    lblTempo.setTextFill(Color.web("#f5e940"));
+  public long ps1(Roteador r1, Roteador r2) {
+    String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+    Aresta a = obterAresta(r1, r2);
+    String concatenacao = r1.getNome() + r2.getNome();
 
-    // Calcula a posicao media do peso a partir do centro dos nos
-    double xMedio = (r1.getNo().getCenterX() + r2.getNo().getCenterX()) / 2;
-    double yMedio = (r1.getNo().getCenterY() + r2.getNo().getCenterY()) / 2;
+    if (temposIda.containsKey(id) && id.equals(concatenacao)) {
+      return temposIda.get(id);
+    }
+    else if (temposVolta.containsKey(id) && !id.equals(concatenacao)) {
+      return temposVolta.get(id);
+    }
 
-    // Define a posicao do peso
-    lblTempo.setLayoutX(xMedio);
-    lblTempo.setLayoutY(yMedio);
+    // Gera concorrentemente os dois tempos de uma vez so
+    long latenciaIda = ThreadLocalRandom.current().nextLong(1, 501);
+    long latenciaVolta = ThreadLocalRandom.current().nextLong(1, 501);
 
-    // Adiciona uma translacao para garantir que fique alinhado
-    lblTempo.setTranslateX(-7);
-    lblTempo.setTranslateY(-7);
+    temposIda.put(id, latenciaIda);
+    temposVolta.put(id, latenciaVolta);
+    
+    if (a != null) {
+      a.setIda(latenciaIda);
+      a.setVolta(latenciaVolta);
+    }
 
-    // Adiciona a label dentro do HashMap de pesos e da sub rede
-    tempoArestas.put(idAresta, lblTempo);
-    subrede.getChildren().add(lblTempo);
+    return id.equals(concatenacao) ? latenciaIda : latenciaVolta;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: gerarRetardos
+   * Funcao: exibe os retardos dos caminhos de um roteador ate cada vizinho
+             direto na sub rede
+   * Parametros: Roteador r - roteador de partida
+   * Retorno: void
+   ****************************************************************/
+
+  public void gerarRetardos(Roteador r) {
+    // Obtem-se os vizinhos do roteador passado como parametro
+    CopyOnWriteArrayList<Roteador> vizinhos = r.getVizinhos();
+
+    // Inicio do bloco for
+    for (Roteador v : vizinhos) {
+      // Obtem a identificacao da aresta; se ja houver uma Label existente no mapa, o laco parte para o proximo vizinho
+      String id = (r.getNome().compareTo(v.getNome()) < 0) ? r.getNome() + v.getNome() : v.getNome() + r.getNome();
+      if (tempoArestas.containsKey(id)) continue;
+
+      // Gera uma concatenacao entre o roteador de partida e o vizinho
+      String concatenacao = r.getNome() + v.getNome();
+
+      // Obtem os valores de ida e volta comparando a id da aresta visitada com a concatenacao obtida
+      long ida = id.equals(concatenacao) ? r.obterCustoVizinho(v) : v.obterCustoVizinho(r);
+      long volta = id.equals(concatenacao) ? v.obterCustoVizinho(r) : r.obterCustoVizinho(v);
+
+      // Inicio do bloco Platform.runLater
+      Platform.runLater(() -> {
+        // Gera uma nova label com o tempo de ida e volta da aresta
+        Label lblTempo = new Label(ida + ";" + volta);
+        lblTempo.setFont(Font.font("VCR OSD Mono", 13));
+        lblTempo.setTextFill(Color.web("#f5e940"));
+
+        // Calcula a posicao media do peso a partir do centro dos nos
+        double xMedio = (r.getNo().getCenterX() + v.getNo().getCenterX()) / 2;
+        double yMedio = (r.getNo().getCenterY() + v.getNo().getCenterY()) / 2;
+
+        // Define a posicao do peso
+        lblTempo.setLayoutX(xMedio);
+        lblTempo.setLayoutY(yMedio);
+
+        // Adiciona uma translacao para garantir que fique alinhado
+        lblTempo.setTranslateX(-7);
+        lblTempo.setTranslateY(-7);
+
+        // Adiciona a label dentro do HashMap de pesos e da sub rede
+        tempoArestas.put(id, lblTempo);
+        subrede.getChildren().add(lblTempo);
+      }); // Fim do bloco Platform.runLater
+    } // Fim do bloco for
   }
 
   /*
