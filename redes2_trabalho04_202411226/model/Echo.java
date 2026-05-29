@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 27/05/2026
+* Ultima alteracao.: 28/05/2026
 * Nome.............: Echo
 * Funcao...........: Thread que gerencia as operacoes dos pacotes echo, responsaveis
 										 por informarem o custo de cada enlace presente na sub rede.
@@ -57,7 +57,7 @@ public class Echo extends Thread {
 	public void run() {
 		// Inicio do bloco while
 		// Enquanto a Thread nao for interrompida
-		while (!Thread.currentThread().isInterrupted()) {
+		while (!Thread.currentThread().isInterrupted() && TelaPrincipalController.controller.simulacaoAtiva) {
 			// Define a posicao
 			definirPosicao();
 
@@ -197,13 +197,15 @@ public class Echo extends Thread {
 
 	private void processar() {
 		// Obtem a latencia da aresta que liga os roteadores
-		latencia = TelaPrincipalController.controller.ps1(origem, destino);
+		latencia = TelaPrincipalController.controller.ps(origem, destino);
 
 		// Adiciona o custo da origem ate o destino
 		origem.adicionarCustoVizinho(destino, latencia);
 
     // A Thread dorme por 300 ms
 		dormir(300);
+
+		// Troca a imagem do pacote Echo
 		Platform.runLater(() -> envelope.setImage(echoanswered));
 	}
 

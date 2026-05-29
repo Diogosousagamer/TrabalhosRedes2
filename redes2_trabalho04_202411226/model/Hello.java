@@ -46,8 +46,8 @@ public class Hello extends Thread {
 	@Override
 	public void run() {
 		// Inicio do bloco while
-		// Enquanto a Thread nao for interrompida
-		while (!Thread.currentThread().isInterrupted()) {
+		// Enquanto a Thread e a simulacao nao forem interrompidas
+		while (!Thread.currentThread().isInterrupted() && TelaPrincipalController.controller.simulacaoAtiva) {
 			// Define a posicao
 			definirPosicao();
 

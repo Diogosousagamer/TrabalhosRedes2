@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 26/05/2026
+* Ultima alteracao.: 29/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -60,6 +63,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.Aresta;
 import model.Echo;
 import model.EntradaTabela;
@@ -89,6 +93,8 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private TextArea txtBackbone;
 
 	// Variaveis e instancias
+  private Timeline timerInatividade;
+  private final int LIMITE_INATIVIDADE = 15;
   private static final Image imgHello = new Image(TelaPrincipalController.class.getResource("/img/hello.png").toExternalForm());
   private static final Image echo = new Image(TelaPrincipalController.class.getResource("/img/Echo.png").toExternalForm());
   private static final Image link = new Image(TelaPrincipalController.class.getResource("/img/link.png").toExternalForm());
@@ -96,10 +102,9 @@ public class TelaPrincipalController implements Initializable {
   private Pacote p;
 	public static volatile TelaPrincipalController controller;
   public static volatile boolean simulacaoAtiva;
-  public static volatile boolean houveMudancaNaRede;
-  private boolean removeuAresta;
+  public static volatile boolean removeuAresta;
   private boolean alterouSubRede;
-  public static volatile boolean convergiu;
+  private boolean voltar;
 	private int quantidadeNos;
 	private Roteador origem;
   private Roteador destino;
@@ -153,6 +158,20 @@ public class TelaPrincipalController implements Initializable {
 
 	@FXML
 	private void voltar(ActionEvent event) throws IOException {
+    // Marca a flag de volta (para impedir que o timer de inatividade seja ativado)
+    voltar = true;
+
+    // Inicio do bloco if
+    // Se a simulacao estiver ativa no momento em que o usuario solicitar a volta
+    if (simulacaoAtiva) {
+      // Desativa a simulacao e interrompe as Threads existentes
+      simulacaoAtiva = false;
+      interromperThreads();
+    } // Fim do bloco if
+
+    // Interrompe o timer de inatividade caso ele estiver rodando
+    pararTimerInatividade();
+
 		// Carrega o arquivo FXML e gera uma nova cena
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaMenu.fxml"));
 		Parent root = loader.load();
@@ -203,19 +222,9 @@ public class TelaPrincipalController implements Initializable {
 
   @FXML
   private void ocultarAresta(MouseEvent event, Aresta a) {
-    if (!simulacaoAtiva) simulacaoAtiva = true;
-
     // Obtem os roteadores ligados pela aresta
     Roteador r1 = a.getR1();
     Roteador r2 = a.getR2();
-
-    // Inicio do bloco if
-    if (simulacaoAtiva) {
-      // Os roteadores param de se tornar vizinhos caso a simulacao estiver ativa
-      // (isso porque os roteadores nao poderao ser reescritos)
-      r1.removerVizinho(r2);
-      r2.removerVizinho(r1);
-    } // Fim do bloco if
 
     // Obtem o nome dos roteadores, bem como o tempo de ida e volta da aresta
     String nome1 = r1.getNome();
@@ -249,39 +258,75 @@ public class TelaPrincipalController implements Initializable {
       e.printStackTrace();
     } // Fim do bloco try/catch
 
-    Line l = a.getLinha();
+    arestasExistentes.remove(a);
 
-    String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
-    Label latencia = null;
+    if (simulacaoAtiva) {
+      r1.removerVizinho(r2);
+      r2.removerVizinho(r1);
 
-    for (Map.Entry<String, Label> latencias : tempoArestas.entrySet()) {
-      String idAresta = latencias.getKey();
+      Line l = a.getLinha();
 
-      if (idAresta.equals(id)) {
-        latencia = latencias.getValue();
-        break;
-      }
-    }
+      String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+      Label latencia = tempoArestas.get(id);
 
-    temposIda.remove(id);
-    temposVolta.remove(id);
+      temposIda.remove(id);
+      temposVolta.remove(id);
 
-    subrede.getChildren().removeAll(l, latencia);
+      r1.removerExtremidade(a);
+      r2.removerExtremidade(a);
 
-    boolean estadoEnlaceR1 = (r1.encontrouVizinhos() && r1.mediuRetardos());
-    boolean estadoEnlaceR2 = (r2.encontrouVizinhos() && r2.mediuRetardos());
-
-    if (estadoEnlaceR1 && estadoEnlaceR2) {
       r1.removerCustoVizinho(r2);
       r2.removerCustoVizinho(r1);
 
-      r1.enviarPacotesEnlace();
-      r2.enviarPacotesEnlace();
+      subrede.getChildren().removeAll(l, latencia);
+
+      if (!echos.isEmpty()) {
+        for (Echo e : echos) {
+          boolean verificacaoR1 = e.getOrigem().getNome().equals(r1.getNome()) && e.getDestino().getNome().equals(r2.getNome());
+          boolean verificacaoR2 = e.getOrigem().getNome().equals(r2.getNome()) && e.getDestino().getNome().equals(r1.getNome());
+
+          if (verificacaoR1 || verificacaoR2) {
+            removerEcho(e);
+          }
+        }
+      }
+
+      boolean estadoEnlaceR1 = (r1.encontrouVizinhos() && r1.mediuRetardos());
+      boolean estadoEnlaceR2 = (r2.encontrouVizinhos() && r2.mediuRetardos());
+
+      if (estadoEnlaceR1 && estadoEnlaceR2) {
+        Thread custo1 = new Thread(() -> {
+          try {
+            if (!Thread.currentThread().isInterrupted() && simulacaoAtiva) {
+              r1.enviarPacotesEnlace();
+            }
+          }
+          catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
+
+        custo1.setDaemon(true);
+        custo1.start();
+
+        Thread custo2 = new Thread(() -> {
+          try {
+            if (!Thread.currentThread().isInterrupted() && simulacaoAtiva) {
+              r2.enviarPacotesEnlace();
+            }
+          }
+          catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
+
+        custo2.setDaemon(true);
+        custo2.start();
+      }
     }
     else {
-      /* Aresta a = obterAresta(r1, r2);
-      r1.removerExtremidade(a);
-      r2.removerExtremidade(a); */
+      pararTimerInatividade();
+      removerSubrede();
     }
   }
 
@@ -421,6 +466,9 @@ public class TelaPrincipalController implements Initializable {
                                                                                      // a origem da rota tiver sido definida
                                                                                      // e o no selecionado possuir um rotulo diferente
                                                                                      // do rotulo do no de origem
+      // Encerra o timer de inatividade aqui
+      pararTimerInatividade();
+
       // O contorno do no do roteador de destino se torna vermelho
       c.setStroke(Color.web("#d60b18"));
 
@@ -536,12 +584,60 @@ public class TelaPrincipalController implements Initializable {
           Thread.currentThread().interrupt();
         } // Fim do bloco try/catch
       } // Fim do bloco while
+
+      // Inicia o timer de inatividade apos o fim da simulacao (apenas se 
+      // nenhuma alteracao no backbone for efetuada ou o usuario nao voltar para o menu
+      // principal)
+       if (!alterouSubRede && !voltar) iniciarTimerInatividade();
     }); // Fim do bloco Thread
 
     // Inicia a Thread, com a garantia de que ela seja encerrada
     // caso o programa seja fechado
     pausa.setDaemon(true);
     pausa.start();
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: iniciarTimerInatividade
+   * Funcao: inicia o timer de inatividade apos o fim da simulacao,
+             reiniciando-a caso o usuario nao querer enviar nenhum 
+             pacote durante esse periodo
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void iniciarTimerInatividade() {
+    // Para o timer caso ja houver algum timer rodando
+    pararTimerInatividade();
+
+    // Depois de 15 segundos sem clicar no btnEnviarPacote, a simulacao eh reiniciada
+    timerInatividade = new Timeline(new KeyFrame(Duration.seconds(LIMITE_INATIVIDADE), event -> {
+      System.out.println("Tempo expirado! Reiniciando a simulacao...");
+      reiniciar(new ActionEvent());
+    }));
+
+    // O timer roda uma unica vez
+    timerInatividade.setCycleCount(1);
+
+    // Executa o timer
+    timerInatividade.play();
+  } 
+
+  /*
+   * ***************************************************************
+   * Metodo: pararTimerInatividade
+   * Funcao: encerra o timer de inatividade caso ele estiver rodando
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  private void pararTimerInatividade() {
+    // Inicio do bloco if
+    if (timerInatividade != null && timerInatividade.getStatus() == Animation.Status.RUNNING) {
+      // Interrompe o timer se ele nao for nulo e estiver rodando
+      timerInatividade.stop();
+    } // Fim do bloco if
   }
 
   /*
@@ -554,22 +650,30 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public Hello enviarHello(Roteador origem, Roteador destino) {
+    // Imagem do pacote Hello
     ImageView h = new ImageView();
 
+    // Carrega uma nova instancia de pacote Hello
     Hello hello = new Hello(h, origem, destino);
+
+    // Garante que a Thread seja interrompida caso o programa for fechado
     hello.setDaemon(true);
 
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Configura a imagem do pacote Hello e a adiciona na sub rede
       h.setImage(imgHello);
       h.setFitWidth(50);
       h.setFitHeight(30);
       h.setPreserveRatio(true);
       subrede.getChildren().add(h);
 
+      // Inicia o pacote e o adiciona na lista de pacotes Hello existentes
       hello.start();
       hellos.add(hello);
-    });
+    }); // Fim do bloco Platform.runLater
 
+    // Retorna o pacote Hello ao roteador de origem
     return hello;
   }
 
@@ -582,14 +686,21 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   public void removerHello(Hello h) {
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Marca que o Hello chegou no destino, interrompe o pacote
+      // o remove da lista e remove a imagem dele da sub rede
       h.setChegou(true);
       h.interrupt();
-      ImageView img = h.getHello();
 
+      // Remove a imagem do pacote Hello da sub rede
+      ImageView img = h.getHello();
       subrede.getChildren().remove(img);
+
+      // Remove o pacote Hello da lista de pacotes Hello presentes
+      // na sub rede
       if (hellos.contains(h)) hellos.remove(h);
-    });
+    }); // Fim do bloco Platform.runLater
   }
 
   /*
@@ -663,24 +774,43 @@ public class TelaPrincipalController implements Initializable {
    * Retorno: PacoteEstadoEnlace
    ****************************************************************/
 
-  public PacoteEstadoEnlace enviarPacoteEnlace(Roteador origem, Roteador destino, Roteador linhaChegada, int numeroSequencia, int idade) {
+  public PacoteEstadoEnlace enviarPacoteEnlace(Roteador origem, Roteador destino, Roteador linhaChegada, int numeroSequencia) {
+    // Imagem do pacote de estado de enlace
     ImageView enlace = new ImageView();
 
-    PacoteEstadoEnlace pacoteEnlace = new PacoteEstadoEnlace(enlace, numeroSequencia, idade, origem, destino, linhaChegada);
+    // Cria uma nova instancia do pacote de estado de enlace
+    PacoteEstadoEnlace pacoteEnlace = new PacoteEstadoEnlace(enlace, numeroSequencia, origem, destino, linhaChegada);
+
+    // Garante que a Thread seja interrompida caso o programa seja fechado
     pacoteEnlace.setDaemon(true);
 
+    // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
+      // Configura a imagem do pacote de estado de enlace
+      // e a adiciona a sub rede
       enlace.setImage(link);
       enlace.setFitWidth(30);
       enlace.setFitHeight(61);
       enlace.setPreserveRatio(true);
       subrede.getChildren().add(enlace);
 
+      // Adiciona o pacote de estado de enlace a lista de pacotes
+      // de estado de enlace presentes na sub rede
       pacotesEnlace.add(pacoteEnlace);
-    });
+    }); // Fim do bloco Platform.runLater
 
+    // Retorna o pacote de estado de enlace ao Roteador que o criou
     return pacoteEnlace;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: removerPacoteEnlace
+   * Funcao: remove um pacote de estado de enlace da sub rede
+   * Parametros: PacoteEstadoEnlace pacoteEnlace - pacote de estado de enlace
+                 a ser removido
+   * Retorno: void
+   ****************************************************************/
 
   public void removerPacoteEnlace(PacoteEstadoEnlace pacoteEnlace) {
     // Inicio do bloco Platform.runLater
@@ -695,28 +825,62 @@ public class TelaPrincipalController implements Initializable {
     }); // Fim do bloco Platform.runLater
   }
 
-  public synchronized boolean verificarEncontrouVizinhos() {
-    for (Roteador r : roteadores) {
-      if (!r.encontrouVizinhos()) {
-        return false;
-      }
-    }
+  /*
+   * ***************************************************************
+   * Metodo: verificarEncontrouVizinhos
+   * Funcao: verifica se todos os roteadores encontraram seus vizinhos
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
 
+  public synchronized boolean verificarEncontrouVizinhos() {
+    // Inicio do bloco for
+    for (Roteador r : roteadores) {
+      // Retorna falso caso algum roteador ainda nao tiver
+      // conhecido seus vizinhos
+      if (!r.encontrouVizinhos()) return false;
+    } // Fim do bloco for
+
+    // Retorna verdadeiro em caso contrario
     return true;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: verificarMediuRetardos
+   * Funcao: verifica se todos os roteadores obtiveram os custos
+             para cada um de seus vizinhos
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
 
   public synchronized boolean verificarMediuRetardos() {
+    // Inicio do bloco for
     for (Roteador r : roteadores) {
-      if (!r.mediuRetardos()) {
-        return false;
-      }
-    }
+      // Retorna falso caso algum roteador ainda nao tiver
+      // mensurado os retardos para cada um de seus vizinhos
+      if (!r.mediuRetardos()) return false;
+    } // Fim do bloco for
 
+    // Retorna verdadeiro em caso contrario
     return true;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: verificarPacotesEnlace
+   * Funcao: verifica se todos os pacotes de estado de enlace presentes na sub rede
+             foram processados e/ou descartados
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
   public synchronized boolean verificarPacotesEnlace() {
+    // Retorna falso se ainda houver pacotes de estado de enlace
+    // presentes na sub rede
     if (!pacotesEnlace.isEmpty()) return false;
+
+    // Retorna verdadeiro em caso contrario
     return true;
   }
 
@@ -964,6 +1128,9 @@ public class TelaPrincipalController implements Initializable {
       btnReiniciar.setVisible(false);
       btnAlterarRede.setDisable(false);
 
+      // Oculta a label de selecao
+      lblSelecao.setVisible(false);
+
       // Oculta a origem e o destino na Label
       lblOrigem.setText("");
       lblDestino.setText("");
@@ -973,6 +1140,7 @@ public class TelaPrincipalController implements Initializable {
       lblCaminho.setVisible(false);
 
       // Exibe o botao de envio do pacote
+      btnCancelarEnvio.setVisible(false);
       btnEnviarPacote.setVisible(true);
 
       // Inicio do bloco for
@@ -1097,26 +1265,11 @@ public class TelaPrincipalController implements Initializable {
       simulacaoAtiva = false;
       alterouSubRede = true;
 
-      // Inicio do bloco for
-      for (Roteador r : roteadores) {
-        // Interrompe os roteadores
-        r.interrupt();
-      } // Fim do bloco for
+      // Interrompe as Threads existentes
+      interromperThreads();
 
-      if (!hellos.isEmpty()) {
-        for (Hello h : hellos) {
-          h.interrupt();
-        }
-      }
-
-      // Inicio do bloco if
-      if (!echos.isEmpty()) {
-        // Inicio do bloco for
-        for (Echo e : echos) {
-          // Interrompe os pacotes de solicitacao
-          e.interrupt();
-        } // Fim do bloco for
-      } // Fim do bloco if
+      // Encerra o timer de inatividade
+      pararTimerInatividade();
 
       // Remove a sub rede para depois reconfigura-la
       removerSubrede();
@@ -1210,61 +1363,75 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void removerSubrede() {
-    // Reseta qualquer mudanca que houver na sub rede
-    houveMudancaNaRede = false;
-
     // Inicio do bloco Platform.runLater
     Platform.runLater(() -> {
       // Lista que armazenara os itens a serem removidos da sub rede
       ArrayList<Node> itensParaRemover = new ArrayList<>();
 
-      // Inicio do bloco for
-      for (Aresta a : arestasExistentes.values()) {
-        // Marca as arestas para serem removidas
-        itensParaRemover.add(a.getLinha());
-      } // Fim do bloco for
+      subrede.getChildren().removeIf(node -> {
+        if (node instanceof Line) {
+          return true;
+        }
 
-      // Inicio do bloco for
-      for (Label t : tempoArestas.values()) {
-        // Marca os tempos de ida e volta das arestas para serem removidos
-        itensParaRemover.add(t);
-      } // Fim do bloco for
+        if (node instanceof Label) {
+          String idNode = node.getId();
+          return (idNode != null) && (idNode.equals("pesoAresta"));
+        }
+
+        return false;
+      });
 
       // Inicio do bloco if
       // Se a simulacao nao estiver ativa ou a sub rede tiver sido alterada
       if (!simulacaoAtiva || alterouSubRede) {
-        // Inicio do bloco for
-        for (Map.Entry<String, Circle> entrada : nosCriados.entrySet()) {
-          // Marca os nos presentes na topologia da subrede para serem removidos
-          itensParaRemover.add(entrada.getValue());
-        } // Fim do bloco for
+        subrede.getChildren().removeIf(node -> {
+          if (node instanceof Circle) {
+            return true;
+          }
 
-        // Inicio do bloco for  
-        for (Map.Entry<String, Label> entrada : labels.entrySet()) {
-          // Marca as labels para serem removidas
-          itensParaRemover.add(entrada.getValue());
-        } // Fim do bloco for
+          if (node instanceof Label) {
+            String idNode = node.getId();
+            return (idNode != null) && idNode.equals("rotuloRoteador");
+          }
 
+          return false;
+        });
+
+        // Inicio do bloco if
+        // Se a lista de pacotes Hello nao estiver vazia 
         if (!hellos.isEmpty()) {
+          // Inicio do bloco for
           for (Hello h : hellos) {
+            // Marca a imagem do pacote Hello para remocao
             ImageView hello = h.getHello();
             itensParaRemover.add(hello);
-          }
-        }
+          } // Fim do bloco for
+        } // Fim do bloco if
   
         // Inicio do bloco if
-        // Se a lista de pacotes de solicitacao nao estiver vazia
+        // Se a lista de pacotes Echo nao estiver vazia
         if (!echos.isEmpty()) {
           // Inicio do bloco for
           for (Echo e : echos) {
-            // Marca a imagem do pacote de solicitacao para ser removida
+            // Marca a imagem do pacote Echo para remocao
             ImageView echo = e.getEnvelope();
             itensParaRemover.add(echo);
           } // Fim do bloco for
         } // Fim do bloco if
+
+        // Inicio do bloco if
+        // Se a lista de pacotes de estado de enlace nao estiver vazia
+        if (!pacotesEnlace.isEmpty()) {
+          // Inicio do bloco for
+          for (PacoteEstadoEnlace p : pacotesEnlace) {
+            // Marca a imagem do pacote de estado de enlace para remocao
+            ImageView link = p.getLink();
+            itensParaRemover.add(link);
+          } // Fim do bloco for
+        } // Fim do bloco if
       } // Fim do bloco if
 
-      // Remove a sub rede e limpa as listas logicas
+      // Remove os itens listados para tal e limpa as listas logicas
       subrede.getChildren().removeAll(itensParaRemover);
       limparListas();
 
@@ -1282,21 +1449,17 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
   private void limparListas() {
-    // Inicio do bloco if
-    if (!simulacaoAtiva || alterouSubRede) {
-      // Estes itens sao removidos apenas se a simulacao nao estiver ativa
-      // e/ou o backbone da sub rede for alterado em algum momento
-      roteadores.clear();
-      hellos.clear(); 
-      echos.clear();
-      painelTabela.getTabs().clear();
-      nosCriados.clear();
-      posicaoCirculos.clear();
-      labels.clear();
-    } // Fim do bloco if
-
-    // Remove as arestas e os seus retardos (ida e volta)
-    // em qualquer caso
+    // Limpa todas as listas logicas da simulacao
+    roteadores.clear();
+    hellos.clear(); 
+    echos.clear();
+    pacotesEnlace.clear();
+    temposIda.clear();
+    temposVolta.clear();
+    painelTabela.getTabs().clear();
+    nosCriados.clear();
+    posicaoCirculos.clear();
+    labels.clear();
     arestasExistentes.clear();
     tempoArestas.clear();
   }
@@ -1492,6 +1655,7 @@ public class TelaPrincipalController implements Initializable {
       Label label = new Label(nome);
       label.setTextFill(Color.web("#ae11cd"));
       label.setFont(Font.font("VCR OSD Mono", 15));
+      label.setId("rotuloRoteador");
       labels.put(nome, label);
     } // Fim do bloco for
   }
@@ -1663,37 +1827,54 @@ public class TelaPrincipalController implements Initializable {
 
   /*
    * ***************************************************************
-   * Metodo: ps1
+   * Metodo: ps
    * Funcao: gera um valor aleatorio para o retardo de ida/volta para um certo caminho
    * Parametros: Roteador r1 - roteador de origem
                  Roteador r2 - roteador de destino
    * Retorno: long
    ****************************************************************/
 
-  public long ps1(Roteador r1, Roteador r2) {
+  public long ps(Roteador r1, Roteador r2) {
+    // Obtem a id da aresta
     String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
+
+    // Obtem a aresta entre os roteadores
     Aresta a = obterAresta(r1, r2);
+
+    // Concatena os nomes do primeiro e do segundo roteador para identificar
+    // se o valor a ser retornado eh o tempo de ida ou o tempo de volta
     String concatenacao = r1.getNome() + r2.getNome();
 
+    // Inicio do bloco if/else
     if (temposIda.containsKey(id) && id.equals(concatenacao)) {
+      // Retorna o tempo de ida caso a ID da aresta bater com a concatenacao obtida
+      // e se ja existir dentro 
       return temposIda.get(id);
     }
     else if (temposVolta.containsKey(id) && !id.equals(concatenacao)) {
+      // Caso contrario, retorna o tempo de volta caso ja existir um tempo de volta registrado
       return temposVolta.get(id);
-    }
+    } // Fim do bloco if/else
 
     // Gera concorrentemente os dois tempos de uma vez so
     long latenciaIda = ThreadLocalRandom.current().nextLong(1, 501);
     long latenciaVolta = ThreadLocalRandom.current().nextLong(1, 501);
 
+    // Adiciona os tempos de ida e volta nos respectivos mapas
     temposIda.put(id, latenciaIda);
     temposVolta.put(id, latenciaVolta);
     
+    // Inicio do bloco if
     if (a != null) {
+      // Atualiza os tempos de ida e volta da aresta correspondente
+      // se ela nao for nula
       a.setIda(latenciaIda);
       a.setVolta(latenciaVolta);
-    }
+    } // Fim do bloco if
 
+    // Retorna ou o tempo de ida ou o tempo de volta de acordo com o resultado
+    // da comparacao entre a id padrao da aresta e a concatenacao formada pelos
+    // dois roteadores
     return id.equals(concatenacao) ? latenciaIda : latenciaVolta;
   }
 
@@ -1729,6 +1910,9 @@ public class TelaPrincipalController implements Initializable {
         Label lblTempo = new Label(ida + ";" + volta);
         lblTempo.setFont(Font.font("VCR OSD Mono", 13));
         lblTempo.setTextFill(Color.web("#f5e940"));
+
+        // Marca uma ID na label para que ela possa ser removida posteriormente
+        lblTempo.setId("pesoAresta");
 
         // Calcula a posicao media do peso a partir do centro dos nos
         double xMedio = (r.getNo().getCenterX() + v.getNo().getCenterX()) / 2;
@@ -1949,5 +2133,40 @@ public class TelaPrincipalController implements Initializable {
     // Retorna nulo caso nao for obtido nenhum retorno
     // a partir da busca
     return null;
+  }
+
+  private void interromperThreads() {
+    // Inicio do bloco for
+    for (Roteador r : roteadores) {
+      // Interrompe os roteadores
+      r.interrupt();
+    } // Fim do bloco for
+
+    // Inicio do bloco if
+    if (!hellos.isEmpty()) {
+      // Inicio do bloco for
+      for (Hello h : hellos) {
+        // Interrompe os pacotes Hello
+        h.interrupt();
+      } // Fim do bloco for
+    } // Fim do bloco if
+
+    // Inicio do bloco if
+    if (!echos.isEmpty()) {
+      // Inicio do bloco for
+      for (Echo e : echos) {
+        // Interrompe os pacotes Echo
+        e.interrupt();
+      } // Fim do bloco for
+    } // Fim do bloco if
+
+    // Inicio do bloco if
+    if (!pacotesEnlace.isEmpty()) {
+      // Inicio do bloco for
+      for (PacoteEstadoEnlace p : pacotesEnlace) {
+        // Interrompe os pacotes de estado de enlace
+        p.interrupt();
+      } // Fim do bloco for
+    } // Fim do bloco if
   }
 }

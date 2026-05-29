@@ -1,14 +1,19 @@
-8
+10
 A,B
-A,F
+A,G
+A,J
 B,C
 B,E
 C,F
 C,D
+D,E
 D,H
-E,F
 E,G
+E,F
 F,H
 G,H
+I,E
+I,J
+
 
 

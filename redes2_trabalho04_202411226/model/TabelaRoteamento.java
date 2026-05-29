@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 27/05/2026
+* Ultima alteracao.: 29/05/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -125,6 +125,7 @@ public class TabelaRoteamento {
       } // Fim do bloco for
     }
     catch (InterruptedException e) {
+      // Em caso de excecao, a Thread eh interrompida
       Thread.currentThread().interrupt();
     } // Fim do bloco try/catch
   }

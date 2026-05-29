@@ -143,7 +143,7 @@
                         <Font name="VCR OSD Mono" size="13.0" />
                      </font>
                   </Label>
-                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="285.0" prefHeight="35.0" prefWidth="168.0" text="NO1,NO2,LATENCIA" textFill="WHITE" wrapText="true">
+                  <Label alignment="TOP_LEFT" layoutX="430.0" layoutY="285.0" prefHeight="35.0" prefWidth="168.0" text="NO1,NO2" textFill="WHITE" wrapText="true">
                      <font>
                         <Font name="VCR OSD Mono" size="14.0" />
                      </font>

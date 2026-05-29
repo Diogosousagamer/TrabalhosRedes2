@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 27/05/2026
+* Ultima alteracao.: 29/05/2026
 * Nome.............: PacoteEstadoEnlace
 * Funcao...........: Thread que gerencia os pacotes de estado de enlace.
                      
@@ -21,7 +21,6 @@ public class PacoteEstadoEnlace extends Thread {
 	// Variaveis e instancias
 	private ImageView link;
 	private int numeroSequencia;
-	private int idade;
 	private HashMap<Roteador, Long> custoVizinhos;
 	private Roteador origem;
   private Roteador linhaChegada;
@@ -29,10 +28,22 @@ public class PacoteEstadoEnlace extends Thread {
 	private double posX;
 	private double posY;
 
-	public PacoteEstadoEnlace(ImageView link, int numeroSequencia, int idade, Roteador origem, Roteador destino, Roteador linhaChegada) {
+  /*
+   * ***************************************************************
+   * Metodo: PacoteEstadoEnlace
+   * Funcao: inicializa uma nova instancia da classe PacoteEstadoEnlace
+   * Parametros: ImageView link - imagem do pacote
+                 int numeroSequencia - numero de sequencia do pacote
+                 Roteador origem - roteador que criou o pacote
+                 Roteador destino - roteador de destino do percurso
+                 Roteador linhaChegada - linha de saida usada para chegar
+                                         ao destino final
+   * Retorno: nenhum
+   ****************************************************************/
+
+	public PacoteEstadoEnlace(ImageView link, int numeroSequencia, Roteador origem, Roteador destino, Roteador linhaChegada) {
 		this.link = link;
 		this.numeroSequencia = numeroSequencia;
-		this.idade = idade;
 		this.origem = origem;
 		this.destino = destino;
     this.linhaChegada = linhaChegada;
@@ -50,11 +61,18 @@ public class PacoteEstadoEnlace extends Thread {
 
 	@Override
 	public void run() {
-		while (!Thread.currentThread().isInterrupted()) {
+		// Inicio do bloco while
+		// Enquanto a Thread e a simulacao nao forem interrompidas
+		while (!Thread.currentThread().isInterrupted() && TelaPrincipalController.controller.simulacaoAtiva) {
+			// Movimenta o pacote ate o destino final
 			movimentar(this.destino);
+
+			// Processa o pacote de estado de enlace
     	processar();
+
+    	// Interrompe o laco
     	break;
-		}
+		} // Fim do bloco while
 	}
 
   /*
@@ -66,13 +84,17 @@ public class PacoteEstadoEnlace extends Thread {
    ****************************************************************/
 
 	public void definirPosicao(Roteador r) {
+		// Carrega os contadores com a posicao do roteador
 		posX = r.getPosX();
 		posY = r.getPosY();
 
+    // Inicio do bloco Platform.runLater
 		Platform.runLater(() -> {
+			// Posiciona a imagem em cima do valor inicial
+			// dos contadores
 			link.setLayoutX(posX);
 			link.setLayoutY(posY);
-		});	
+		});	// Fim do bloco Platform.runLater
 	}
 
   /*
@@ -147,12 +169,20 @@ public class PacoteEstadoEnlace extends Thread {
 		}); // Fim do bloco Platform.runLater
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: processar
+   * Funcao: processa as informacoes do pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
 	private void processar() {
 		BufferEnlace bufferDestino = destino.getBufferEnlace();
 		EntradaBuffer entradaOrigem = bufferDestino.obterEntrada(origem);
 		
 		PacoteEstadoEnlace pacoteEntradaOrigem = entradaOrigem.getPacoteAtual();
-		int seqAtual = (pacoteEntradaOrigem != null) ? pacoteEntradaOrigem.getNumeroSequencia() : 0;
+		int seqAtual = (pacoteEntradaOrigem != null) ? pacoteEntradaOrigem.getNumeroSequencia() : -1;
 
 		if (pacoteEntradaOrigem == null || this.numeroSequencia > seqAtual) {
 			entradaOrigem.setPacoteAtual(this);
@@ -179,26 +209,42 @@ public class PacoteEstadoEnlace extends Thread {
 		}
 	}
 
-	private void encaminharParaOsVizinhos() {
-		CopyOnWriteArrayList<Roteador> vizinhosDestino = destino.getVizinhos();
-		BufferEnlace bufferDestino = destino.getBufferEnlace();
+  /*
+   * ***************************************************************
+   * Metodo: encaminharParaOsVizinhos
+   * Funcao: encaminha o pacote de estado de enlace para os vizinhos
+             do destino
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
+	private void encaminharParaOsVizinhos() {
+		// Obtem a lista de vizinhos do destino
+		CopyOnWriteArrayList<Roteador> vizinhosDestino = destino.getVizinhos();
+
+    // Inicio do bloco for
 		for (Roteador v : vizinhosDestino) {
+			// Envia um novo pacote de estado de enlace para cada vizinho, exceto
+			// para o vizinho que enviou o pacote inicial
 			if (v.getNome().equals(linhaChegada.getNome())) continue;
-      PacoteEstadoEnlace pacoteEnlace = TelaPrincipalController.controller.enviarPacoteEnlace
-                                        (origem, v, destino, numeroSequencia, idade);
+      PacoteEstadoEnlace pacoteEnlace = TelaPrincipalController.controller.enviarPacoteEnlace(origem, v, destino, numeroSequencia);
       pacoteEnlace.definirPosicao(destino);
       pacoteEnlace.setCustoVizinhos(custoVizinhos);
       pacoteEnlace.start();
       dormir(200);
-		}
+		} // Fim do bloco for
 
+    // Remove o pacote de estado de enlace da sub rede
 		Platform.runLater(() -> TelaPrincipalController.controller.removerPacoteEnlace(this));
 	}
 
-	public void decrementarIdade() {
-		idade--;
-	}
+  /*
+   * ***************************************************************
+   * Metodo: dormir
+   * Funcao: coloca a Thread para dormir por alguns ms
+   * Parametros: long valor - tempo de repouso
+   * Retorno: void
+   ****************************************************************/
 
 	private void dormir(long valor) {
 		try {
@@ -223,14 +269,6 @@ public class PacoteEstadoEnlace extends Thread {
 
 	public int getNumeroSequencia() {
 		return numeroSequencia;
-	}
-
-	public void setIdade(int idade) {
-		this.idade = idade;
-	}
-
-	public int getIdade() {
-		return idade;
 	}
 
 	public void setOrigem(Roteador o) {
