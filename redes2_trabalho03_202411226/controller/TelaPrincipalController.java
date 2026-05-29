@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 16/04/2026
-* Ultima alteracao.: 02/05/2026
+* Ultima alteracao.: 29/05/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -140,6 +140,26 @@ public class TelaPrincipalController implements Initializable {
 
 	@FXML
 	private void voltar(ActionEvent event) throws IOException {
+    // Inicio do bloco if
+    // Se a simulacao estiver ativa
+    if (simulacaoAtiva) {
+      // Inicio do bloco for
+      for (Roteador r : roteadores) {
+        // Interrompe o roteador
+        r.interrupt();
+      } // Fim do bloco for
+
+      // Inicio do bloco if
+      // Se houver pacotes de solicitacao existentes na rede
+      if (echos.isEmpty()) {
+        // Inicio do bloco for
+        for (Echo e : echos) {
+          // Interrompe o pacote de solicitacao
+          e.interrupt();
+        } // Fim do bloco for
+      } // Fim do bloco if
+    } // Fim do bloco if
+
 		// Carrega o arquivo FXML e gera uma nova cena
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaMenu.fxml"));
 		Parent root = loader.load();
