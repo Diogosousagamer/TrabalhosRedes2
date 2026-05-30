@@ -65,6 +65,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.Aresta;
+import model.BufferEnlace;
 import model.Echo;
 import model.EntradaTabela;
 import model.Hello;
@@ -258,46 +259,70 @@ public class TelaPrincipalController implements Initializable {
       e.printStackTrace();
     } // Fim do bloco try/catch
 
+    // Remove a aresta da lista de arestas
     arestasExistentes.remove(a);
 
+    // Inicio do bloco if/else
+    // Se a simulacao se encontrar ativa
     if (simulacaoAtiva) {
+      // Os roteadores deixam de se tornar vizinhos
       r1.removerVizinho(r2);
       r2.removerVizinho(r1);
 
+      // Obtem a linha, a id e a latencia da aresta
       Line l = a.getLinha();
-
       String id = (r1.getNome().compareTo(r2.getNome()) < 0) ? r1.getNome() + r2.getNome() : r2.getNome() + r1.getNome();
       Label latencia = tempoArestas.get(id);
 
+      // Remove os retardos de ida e volta da aresta
       temposIda.remove(id);
       temposVolta.remove(id);
 
+      // A aresta nao serve mais como uma extremidade dos roteadores
       r1.removerExtremidade(a);
       r2.removerExtremidade(a);
 
+      // Os roteadores nao referenciam mais os seus custos
       r1.removerCustoVizinho(r2);
       r2.removerCustoVizinho(r1);
 
+      // Remove a linha e a latencia da sub rede
       subrede.getChildren().removeAll(l, latencia);
 
+      // Inicio do bloco if
+      // Se houver pacotes Echo presentes na sub rede
       if (!echos.isEmpty()) {
+        // Inicio do bloco for
         for (Echo e : echos) {
+          // Verifica se o trajeto do pacote Echo eh de R1 para R2 ou de R2 para R1
           boolean verificacaoR1 = e.getOrigem().getNome().equals(r1.getNome()) && e.getDestino().getNome().equals(r2.getNome());
           boolean verificacaoR2 = e.getOrigem().getNome().equals(r2.getNome()) && e.getDestino().getNome().equals(r1.getNome());
 
+          // Inicio do bloco if
           if (verificacaoR1 || verificacaoR2) {
+            // Remove o pacote caso alguma das hipoteses forem verdadeiras
             removerEcho(e);
-          }
-        }
-      }
+          } // Fim do bloco if
+        } // Fim do bloco for
+      } // Fim do bloco for
 
+      // Verifica se os roteadores ja estao distribuindo os pacotes de estado de enlace
       boolean estadoEnlaceR1 = (r1.encontrouVizinhos() && r1.mediuRetardos());
       boolean estadoEnlaceR2 = (r2.encontrouVizinhos() && r2.mediuRetardos());
 
+      // Inicio do bloco if
+      // Se ambos estiverem nessa fase
       if (estadoEnlaceR1 && estadoEnlaceR2) {
+        // Forca o roteador 1 a distribuir pacotes de estado de enlace
+        // para informar aos demais roteadores a mudanca sofrida no seu
+        // estado de enlace
         Thread custo1 = new Thread(() -> {
           try {
             if (!Thread.currentThread().isInterrupted() && simulacaoAtiva) {
+              BufferEnlace buffer = r1.getBufferEnlace();
+              buffer.removerFlagConfirmacao(r2);
+              buffer.removerFlagTransmissao(r2);
+
               r1.enviarPacotesEnlace();
             }
           }
@@ -306,12 +331,16 @@ public class TelaPrincipalController implements Initializable {
           }
         });
 
-        custo1.setDaemon(true);
-        custo1.start();
-
+        // Forca o roteador 1 a distribuir pacotes de estado de enlace
+        // para informar aos demais roteadores a mudanca sofrida no seu
+        // estado de enlace
         Thread custo2 = new Thread(() -> {
           try {
             if (!Thread.currentThread().isInterrupted() && simulacaoAtiva) {
+              BufferEnlace buffer = r2.getBufferEnlace();
+              buffer.removerFlagConfirmacao(r1);
+              buffer.removerFlagTransmissao(r1);
+
               r2.enviarPacotesEnlace();
             }
           }
@@ -320,14 +349,21 @@ public class TelaPrincipalController implements Initializable {
           }
         });
 
+        // Inicializa as duas Threads, garantindo que elas sejam interrompidas
+        // caso o programa seja fechado
+        custo1.setDaemon(true);
+        custo1.start();
+
         custo2.setDaemon(true);
         custo2.start();
-      }
+      } // Fim do bloco if
     }
     else {
+      // Caso a simulacao estiver inativa, para o timer de inatividade
+      // caso ele estiver rodando e redesenha a sub rede
       pararTimerInatividade();
       removerSubrede();
-    }
+    } // Fim do bloco if/else
   }
 
   /*
@@ -1715,7 +1751,7 @@ public class TelaPrincipalController implements Initializable {
       // Cria uma nova instancia de aresta
       Aresta aresta = new Aresta(linha, r1, r2);
 
-      // Adiciona os devidos eventos a linha
+      // Adiciona os eventos de remocao da aresta a linha
       linha.setOnMouseClicked(event -> {
         ocultarAresta(event, aresta);
       });
@@ -2135,6 +2171,14 @@ public class TelaPrincipalController implements Initializable {
     return null;
   }
 
+   /*
+   * ***************************************************************
+   * Metodo: intteromperThreads
+   * Funcao: interrompe as threads que estejam rodando no programa
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   private void interromperThreads() {
     // Inicio do bloco for
     for (Roteador r : roteadores) {
@@ -2167,6 +2211,12 @@ public class TelaPrincipalController implements Initializable {
         // Interrompe os pacotes de estado de enlace
         p.interrupt();
       } // Fim do bloco for
+    } // Fim do bloco if
+
+    // Inicio do bloco if
+    if (p != null) {
+      // Interrompe o roteador se ele nao for nulo
+      p.interrupt();
     } // Fim do bloco if
   }
 }

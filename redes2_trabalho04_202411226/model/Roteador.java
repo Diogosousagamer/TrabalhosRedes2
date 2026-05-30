@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 29/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: Roteador
 * Funcao...........: Thread que gerencia as operacoes de cada roteador.
                      
@@ -120,23 +120,36 @@ public class Roteador extends Thread {
   private void conhecerVizinhos() {
     // Inicio do bloco try/catch
     try {
+      // Inicio do bloco if
       if (extremidades.isEmpty()) {
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+        // Sinaliza que os seus vizinhos foram encontrados
         encontrouVizinhos = true;
+
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+        // Lista os vizinhos obtidos
         debugVizinhos();
 
+        // O roteador permanece dormindo aguardando os demais roteadores a encontrarem todos os seus vizinhos
         while (!TelaPrincipalController.controller.verificarEncontrouVizinhos()) {
           if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
           dormir(100);
         }
 
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
         if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
+        // Sai do metodo
         return;
-      }
+      } // Fim do bloco if
 
       // Inicio do bloco for
       for (Aresta a : extremidades) {
-        // Interrompe o metodo se a Thread for interrompida
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
         if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
         // Obtem-se os roteadores da aresta atual
@@ -159,25 +172,25 @@ public class Roteador extends Thread {
         dormir(100);
       }
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Sinaliza que os seus vizinhos foram encontrados
       encontrouVizinhos = true;
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Lista os vizinhos obtidos
       debugVizinhos();
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
  
       // Inicio do bloco for
       for (Aresta a : extremidades) {
-        // Interrompe o metodo se a Thread for interrompida
-        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
 
         // Pula a aresta caso ela ja tiver sido ativado
         if (!a.estaDesativada()) continue; 
@@ -196,6 +209,7 @@ public class Roteador extends Thread {
         dormir(100);
       }
 
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
     }
     catch (InterruptedException e) {
@@ -207,7 +221,8 @@ public class Roteador extends Thread {
   /*
    * ***************************************************************
    * Metodo: medirRetardos
-   * Funcao: o roteador medir os retardos dos caminhos para cada vizinho
+   * Funcao: o roteador envia pacotes Echo para medir 
+             os retardos dos caminhos para cada vizinho
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
@@ -215,21 +230,35 @@ public class Roteador extends Thread {
   private void medirRetardos() {
     // Inicio do bloco try/catch
     try {
+      // Inicio do bloco if
+      // Se o roteador nao possuir nenhum vizinho
       if (vizinhos.isEmpty()) {
+        // Ativa a flag para impedir que a simulacao fique em loop
         mediuRetardos = true;
 
+        // Aguarda os roteadores medirem todos os retardos dos caminhos
+        // que o levam para seus vizinhos
         while (!TelaPrincipalController.controller.verificarMediuRetardos()) {
           if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
           dormir(100);
         }
 
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
         if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-        return;
-      }
+
+        // Exibe os custos dos vizinhos do roteador
+        debugCustos();
+
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+        // Sai do metodo
+        return; 
+      } // Fim do bloco if
 
       // Inicio do bloco for
       for (Roteador v : vizinhos) {
-        // Interrompe o metodo se a Thread for interrompida
+        // Interrompe o laco se a Thread ou a simulacao forem interrompidas
         if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
         // Encaminha um novo pacote Echo para o vizinho e o adiciona na lista
@@ -240,7 +269,7 @@ public class Roteador extends Thread {
         dormir(200);
       } // Fim do bloco for
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Aguarda os pacotes Echo enviados encerrarem as operacoes
@@ -249,20 +278,20 @@ public class Roteador extends Thread {
         dormir(100);
       }
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Sinaliza que mediu todos os seus retardos dos caminhos
       // que o levam para seus vizinhos
       mediuRetardos = true;
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
-      // Gera os retardos do 
+      // Gera as Labels dos retardos dos caminhos do roteador para os seus vizinhos
       TelaPrincipalController.controller.gerarRetardos(this);
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
  
       // Aguarda os roteadores medirem todos os retardos dos caminhos
@@ -293,25 +322,112 @@ public class Roteador extends Thread {
   private void processarEstadosEnlace() {
     // Inicio do bloco try/catch
     try {
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Cria o buffer com as entradas iniciais
       bufferEnlace = new BufferEnlace(this, this.listaRoteadores);
       bufferEnlace.criarEntradasIniciais();
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Cria as entradas iniciais da tabela e dorme por um segundo
       Platform.runLater(() -> tabela.definirEntradasIniciais(listaRoteadores));
       dormir(1000);
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Realiza o envio dos pacotes de estado de enlace
       enviarPacotesEnlace();
+    }
+    catch (InterruptedException e) {
+      // Em caso de excecao, a Thread eh interrompida
+      Thread.currentThread().interrupt();
+    } // Fim do bloco try/catch
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: enviarPacotesEnlace
+   * Funcao: o roteador envia pacotes de estado de enlace para todos os seus vizinhos
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+  public void enviarPacotesEnlace() {
+    try {
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+      // Inicio do bloco if
+      // Se o roteador nao possuir nenhum vizinho
+      if (vizinhos.isEmpty()) {
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+        // Aguarda todos os pacotes de estado de enlace da sub rede serem processados ou descartados
+        while (!TelaPrincipalController.controller.verificarPacotesEnlace()) {
+          if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
+          dormir(100);
+        }
+
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+        // Calcula as rotas finais para cada roteador
+        calcularRotas();
+
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+        // Sai do metodo
+        return;
+      } // Fim do bloco if
+ 
+      // Inicio do bloco for
+      for (Roteador v : vizinhos) {
+        // Interrompe o laco se a Thread for interrompida
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
+
+        // Encaminha um pacote de estado de enlace para cada vizinho
+        PacoteEstadoEnlace link = TelaPrincipalController.controller.enviarPacoteEnlace(this, v, this, contadorSeq);
+        link.setCustoVizinhos(this.custoVizinhos);
+        link.definirPosicao(this);
+        link.start();
+        dormir(300);
+      } // Fim do bloco for
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+      // Incrementa o contador de numeros de sequencia
+      contadorSeq++;
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+      // Aguarda todos os pacotes de estado de enlace da sub rede serem processados ou descartados
+      while (!TelaPrincipalController.controller.verificarPacotesEnlace()) {
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
+        dormir(100);
+      }
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+      // Exibe os resultados finais do buffer
+      debugBuffer();
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+      // Calcula as rotas finais para cada roteador
+      calcularRotas();
+
+      // Interrompe o metodo se a Thread for interrompida
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
     }
     catch (InterruptedException e) {
       // Em caso de excecao, a Thread eh interrompida
@@ -330,21 +446,27 @@ public class Roteador extends Thread {
   private void calcularRotas() {
     // Inicio do bloco try/catch
     try {
+      // Inicio do bloco if
+      // Se o roteador nao tiver nenhum vizinho
       if (vizinhos.isEmpty()) {
+        // Marca a tabela como completa
         tabelaCompleta = true;
 
+        // Dorme por um tempo enquanto as demais tabelas nao estiverem concluidas
         while (!TelaPrincipalController.controller.verificarTabelasCompletas()) {
           if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
           dormir(100);
         }
 
-        // Interrompe o metodo se a Thread for interrompida
+        // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
         if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
+ 
+        // Desativa a simulacao
         TelaPrincipalController.controller.simulacaoAtiva = false;
 
+        // Sai do metodo
         return;
-      }
+      } // Fim do bloco if
 
       // Gera a matriz de adjacencia com base nos aprendizados adquiridos no estado de enlace
       long[][] matrizAdjacencia = gerarMatrizAdjacencia(listaRoteadores.size());
@@ -352,13 +474,13 @@ public class Roteador extends Thread {
       // Obtem o indice do roteador
       int indiceRot = gerarIndice(this.nome);
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Calcula o caminho mais curto para cada destino com o algoritmo de Dijkstra
       executarDijkstra(matrizAdjacencia, indiceRot, listaRoteadores);
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
 
       // Dorme por um tempo enquanto as demais tabelas nao estiverem concluidas
@@ -367,7 +489,7 @@ public class Roteador extends Thread {
         dormir(100);
       }
 
-      // Interrompe o metodo se a Thread for interrompida
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
       if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
  
       // Encerra a simulacao
@@ -382,7 +504,7 @@ public class Roteador extends Thread {
   /*
    * ***************************************************************
    * Metodo: debugVizinhos
-   * Funcao: o roteador medir os retardos dos caminhos para cada vizinho
+   * Funcao: exibe os vizinhos do roteador
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
@@ -409,211 +531,275 @@ public class Roteador extends Thread {
     } // Fim do bloco if/else
   }
 
-  private void debugCustos() {
-    // Inicio do bloco if
-    // Se houver custo para os vizinhos
-    if (!custoVizinhos.isEmpty()) {
-      String custos = "Custo dos vizinhos de " + this.nome + ": \n";
-
-      for (Map.Entry<Roteador, Long> custo : custoVizinhos.entrySet()) {
-        custos += custo.getKey().getNome() + ": " + custo.getValue() + "\n";
-      }
-
-      System.out.println(custos);
-    } // Fim do bloco if
-  }
-
   /*
    * ***************************************************************
-   * Metodo: enviarPacotesEnlace
-   * Funcao: o roteador envia pacotes de estado de enlace para todos os seus vizinhos
+   * Metodo: debugCustos
+   * Funcao: exibe os retardos estimados dos caminhos para cada vizinho
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: void
    ****************************************************************/
 
-  public void enviarPacotesEnlace() {
-    try {
-      // Interrompe o metodo se a Thread for interrompida
-      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+  private void debugCustos() {
+    // Inicio do bloco if/else
+    // Se houver custo para os vizinhos
+    if (!custoVizinhos.isEmpty()) {
+      // Reserva uma String para formatar os custos dos vizinhos do roteador
+      String custos = "Custo dos vizinhos de " + this.nome + ": \n";
 
-      if (vizinhos.isEmpty()) {
-        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-        while (!TelaPrincipalController.controller.verificarPacotesEnlace()) {
-          if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
-          dormir(100);
-        }
-
-        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-        calcularRotas();
-
-        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-        return;
+      // Formata cada custo dentro da String
+      for (Map.Entry<Roteador, Long> custo : custoVizinhos.entrySet()) {
+        custos += custo.getKey().getNome() + ": " + custo.getValue() + "\n";
       }
 
-      for (Roteador v : vizinhos) {
-        // Interrompe o laco se a Thread for interrompida
-        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
-
-        PacoteEstadoEnlace link = TelaPrincipalController.controller.enviarPacoteEnlace(this, v, this, contadorSeq);
-        link.setCustoVizinhos(this.custoVizinhos);
-        link.definirPosicao(this);
-        link.start();
-        dormir(300);
-      }
-
-      // Interrompe o metodo se a Thread for interrompida
-      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-      contadorSeq++;
-
-      // Interrompe o metodo se a Thread for interrompida
-      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-      while (!TelaPrincipalController.controller.verificarPacotesEnlace()) {
-        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
-        dormir(100);
-      }
-
-      // Interrompe o metodo se a Thread for interrompida
-      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-      // Exibe os resultados finais do buffer
-      debugBuffer();
-
-      // Interrompe o metodo se a Thread for interrompida
-      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
-
-      // Calcula as rotas finais
-      calcularRotas();
-
-      // Interrompe o metodo se a Thread for interrompida
-      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+      // Exibe a String
+      System.out.println(custos);
     }
-    catch (InterruptedException e) {
-      // Em caso de excecao, a Thread eh interrompida
-      Thread.currentThread().interrupt();
-    } // Fim do bloco try/catch
+    else {
+      // Exibe uma mensagem informando que nenhum custo foi estimado caso contrario 
+      System.out.println("Nenhum custo estimado para os vizinhos de " + this.nome);
+    } // Fim do bloco if/else
   }
+ 
+  /*
+   * ***************************************************************
+   * Metodo: debugBuffer
+   * Funcao: exibe o buffer completo do roteador
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
   public void debugBuffer() {
-    String buffer = "Buffer do Roteador " + this.nome + "\n" + "Roteador:" + "\t" + "Seq. do pacote:" 
-                    + "\t" + "Flags de confirmacao:" + "\t" + "Flags de transmissao:" + "\n";
+    // String reservada para formatar o buffer
+    String buffer = "Buffer do Roteador " + this.nome + ": " + "\n";
+
+    // Obtem as entradas do buffer do roteador
     CopyOnWriteArrayList<EntradaBuffer> entradasBuffer = bufferEnlace.getEntradas();
 
+    // Inicio do bloco for
     for (EntradaBuffer e : entradasBuffer) {
+      // Obtem as flags da entrada atual
       HashMap<Roteador, Boolean> flagsConfirmacao = e.getFlagsConfirmacao();
       HashMap<Roteador, Boolean> flagsTransmissao = e.getFlagsTransmissao();
 
+      // Strings reservadas para a formatacao das flags de transmissao e confirmacao, respectivamente
       String trans = "";
       String con = "";
 
+      // Formata as flags de confirmacao dessa entrada
       for (Map.Entry<Roteador, Boolean> flag : flagsConfirmacao.entrySet()) {
         Roteador rot = flag.getKey();
         boolean valor = flag.getValue();
         con += rot.getNome() + " " + "(" + ((valor) ? "1" : "0") + ")" + " ";
       } 
 
+      // Formata as flags de transmissao dessa entrada
       for (Map.Entry<Roteador, Boolean> flag : flagsTransmissao.entrySet()) {
         Roteador rot = flag.getKey();
         boolean valor = flag.getValue();
         trans += rot.getNome() + " " + "(" + ((valor) ? "1" : "0") + ")" + " ";
       } 
 
-      int sequenciaExibida = (e.getPacoteAtual() != null) ? e.getPacoteAtual().getNumeroSequencia() : 0;
-      buffer += e.getRoteadorEntrada().getNome() + "\t" + sequenciaExibida + "\t" + con + "\t" + trans + "\n";
-    }
+      // Obtem o numero de sequencia do pacote mantido pela entrada
+      int sequenciaExibida = (e.getPacoteAtual() != null) ? e.getPacoteAtual().getNumeroSequencia() : -1;
 
+      // Formata a linha da entrada dentro do texto do buffer
+      buffer += "Roteador: " + e.getRoteadorEntrada().getNome() + "\t" + "Num. de Sequencia: " + sequenciaExibida + "\t" 
+             + "Flags de confirmacao: " + con + "\t" + "Flags de transmissao: " + trans + "\n";
+    } // Fim do bloco for
+
+    // Imprime o buffer completo do roteador
     System.out.println(buffer + "\n");
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: gerarMatrizAdjacencia
+   * Funcao: gera a matriz de adjacencia do roteador com base nas informacoes
+             coletadas durante a distribuicao de pacotes de estado de enlace
+   * Parametros: int total - total de roteadores presentes na sub rede
+   * Retorno: long[][]
+   ****************************************************************/
+
   private long[][] gerarMatrizAdjacencia(int total) {
+    // Gera uma matriz com tamanho totalxtotal (ex: com 8 roteadores, teremos 8 linhas e 8 colunas)
     long[][] matriz = new long[total][total];
 
+    // Inicio do bloco for
     for (int i = 0; i < total; i++) {
+      // Inicio do bloco for
       for (int j = 0; j < total; j++) {
+        // Atribui custo 0 a entradas cujos indices de linha e coluna
+        // sejam iguais
         if (i == j) matriz[i][j] = 0;
+        // Caso contrario atribui um custo infinito (suficientemente grande
+        // para o calculo de Dijkstra)
         else matriz[i][j] = CUSTO_INFINITO;
-      }
-    }
+      } // Fim do bloco for
+    } // Fim do bloco for
 
+    // Inicio do bloco for
     for (EntradaBuffer entrada : bufferEnlace.getEntradas()) {
+      // Obtem o roteador da entrada atual no buffer
       Roteador origem = entrada.getRoteadorEntrada();
+
+      // Obtem o pacote guardado na entrada atual
       PacoteEstadoEnlace pacote = entrada.getPacoteAtual();
 
+      // Inicio do bloco if
+      // Se o pacote nao for nulo
       if (pacote != null) {
+        // Obtem os custos guardados pelo pacote
         HashMap<Roteador, Long> custos = pacote.getCustoVizinhos();
+
+        // Obtem o indice do roteador atual
         int i = gerarIndice(origem.getNome());
 
+        // Inicio do bloco for
         for (Map.Entry<Roteador, Long> link : custos.entrySet()) {
+          // Obtem o roteador vizinho da entrada de custo
           Roteador vizinho = link.getKey();
-          int j = gerarIndice(vizinho.getNome());
-          matriz[i][j] = link.getValue();
-        }
-      }
-    }
 
+          // Obtem o indice correspondente ao roteador vizinho na matriz
+          // de adjacencia
+          int j = gerarIndice(vizinho.getNome());
+
+          // Guarda o custo dentro da entrada ixj da matriz
+          matriz[i][j] = link.getValue();
+        } // Fim do bloco for
+      } // Fim do bloco if
+    } // Fim do bloco for
+
+    // Obtem o indice correspondente ao roteador na matriz
     int raiz = gerarIndice(this.nome);
 
+    // Guarda os custos dos vizinhos diretos do roteador
     for (Map.Entry<Roteador, Long> link : this.custoVizinhos.entrySet()) {
       int vizinho = gerarIndice(link.getKey().getNome());
       matriz[raiz][vizinho] = link.getValue();
     }
 
+    // Retorna a matriz de adjacencia completa
     return matriz;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: executarDijkstra
+   * Funcao: executa o algoritmo de Dijkstra (caminho mais curto) para estimar 
+             as rotas finais
+   * Parametros: long[][] matriz - matriz de adjacencia do roteador
+                 int raiz - indice correspondente ao roteador dentro da matriz
+                 CopyOnWriteArrayList<Roteador> - lista de roteadores presentes na sub rede
+   * Retorno: void
+   ****************************************************************/
+
   private void executarDijkstra(long[][] matriz, int raiz, CopyOnWriteArrayList<Roteador> listaRoteadores) {
+    // Obtem o tamanho da matriz para criar os vetores contendo as distancias, os predecessores
+    // os predecessores para cada roteador, e os roteadores ja visitados, respectivamente
     int n = matriz.length;
     long[] distancia = new long[n];
     int[] predecessor = new int[n];
     boolean[] permanente = new boolean[n];
 
+    // Inicio do bloco for
     for (int i = 0; i < n; i++) {
+      // A distancia inicializa como infinito
       distancia[i] = CUSTO_INFINITO;
-      predecessor[i] = -1;
-      permanente[i] = false;
-    }
 
+      // Nenhum predecessor eh registrado inicialmente
+      predecessor[i] = -1;
+
+      // Todos os roteadores sao marcados como provisorios
+      permanente[i] = false;
+    } // Fim do bloco for
+
+    // A raiz comeca com distancia 0
     distancia[raiz] = 0;
 
+    // Inicio do bloco for
     for (int i = 0; i < n - 1; i++) {
+      // Obtem o indice com a menor distancia, interrompendo o laco 
+      // caso retornar um valor indeterminado
       int u = encontrarMenorDistancia(distancia, permanente);
       if (u == -1) break;
 
+      // Marca o indice "u" como permanente
       permanente[u] = true;
 
+      // Inicio do bloco for
       for (int v = 0; v < n; v++) {
+        // Inicio do bloco if
+        // Se o roteador atual nao estiver rotulado como permanente e a entrada do roteador de menor distancia
+        // com o roteador atual nao tiver um valor infinito
         if (!permanente[v] && matriz[u][v] != CUSTO_INFINITO) {
+          // Calcula a nova distancia somando a distancia de u com a entrada correspondente na matirz
           long novaDistancia = distancia[u] + matriz[u][v];
 
+          // Inicio do bloco if
+          // Se a nova distancia for menor que a distancia atual de v
           if (novaDistancia < distancia[v]) {
+            // Troca a distancia e o predecessor
             distancia[v] = novaDistancia;
             predecessor[v] = u;
-          }
-        }
-      }
-    }
+          } // Fim do bloco if
+        } // Fim do bloco if
+      } // Fim do bloco for
+    } // Fim do bloco for
 
+    // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+    if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+    // Apos o termino do algoritmo, preenche a tabela
     tabela.preencherTabela(distancia, predecessor, raiz, listaRoteadores);
+
+    // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+    if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
+
+    // Marca a tabela como completa
     tabelaCompleta = true;
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: encontrarMenorDistancia
+   * Funcao: encontra o indice do roteador com a menor distancia possivel
+   * Parametros: long[] distancia - vetor de distancias
+                 boolean[] permanente - vetor contendo roteadores ja visitados
+   * Retorno: int
+   ****************************************************************/
+
   private int encontrarMenorDistancia(long[] distancia, boolean[] permanente) {
+    // O menor custo eh infinito
     long min = 100000;
+
+    // O menor indice nao foi registrado
     int minIndice = -1;
 
+    // Inicio do bloco for
     for (int i = 0; i < distancia.length; i++) {
+      // Inicio do bloco if
+      // Se o roteador i nao estiver rotulado como permanente
+      // e a distancia ate esse roteador i for menor ou igual ao menor valor possivel
       if (!permanente[i] && distancia[i] <= min) {
+        // A distancia do roteador i passa a ser o menor custo
         min = distancia[i];
-        minIndice = i;
-      }
-    }
 
+        // Atualiza o menor indice com o indice do roteador atual
+        minIndice = i;
+      } // Fim do bloco if
+    } // Fim do bloco for
+
+    // Retorna o menor indice obtido apos o fim do laco
     return minIndice;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: gerarIndice
+   * Funcao: gera o indice do roteador correspondente a matriz de adjacencia
+   * Parametros: String nome - nome do roteador
+   * Retorno: int
+   ****************************************************************/
 
   private int gerarIndice(String nome) {
     if (nome == null || nome.isEmpty()) return -1;
@@ -955,7 +1141,7 @@ public class Roteador extends Thread {
   /*
    * ***************************************************************
    * Metodo: getPosY
-   * Funcao: define a posicao do host
+   * Funcao: retorna a posicao no eixo Y
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: double
    ****************************************************************/

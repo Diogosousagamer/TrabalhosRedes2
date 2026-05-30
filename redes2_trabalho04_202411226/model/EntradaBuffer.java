@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 29/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: EntradaBuffer
 * Funcao...........: Classe que gerencia as entradas dos buffers contendo
                      os pacotes de estado de enlace.
@@ -41,13 +41,14 @@ public class EntradaBuffer {
    * ***************************************************************
    * Metodo: carregarFlags
    * Funcao: carrega as flags de transmissao/confirmacao do buffer
-   * Parametros: nenhum parametro foi definido para esta funcao
+   * Parametros: Roteador r - roteador cujos vizinhos servirao de chave 
+                 para as flags
    * Retorno: void
    ****************************************************************/
 
-	public void carregarFlags() {
-		// Obtem os vizinhos do roteador de entrada
-		CopyOnWriteArrayList<Roteador> vizinhos = roteadorEntrada.getVizinhos();
+	public void carregarFlags(Roteador r) {
+		// Obtem os vizinhos do roteador de parametro
+		CopyOnWriteArrayList<Roteador> vizinhos = r.getVizinhos();
 
     // Inicio do bloco for
 		for (Roteador v : vizinhos) {

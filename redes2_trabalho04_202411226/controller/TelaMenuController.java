@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 02/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Esta classe tem como objetivo gerenciar as operacoes da TelaMenu. 
                      
@@ -11,6 +11,8 @@
 package controller;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 29/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: PacoteEstadoEnlace
 * Funcao...........: Thread que gerencia os pacotes de estado de enlace.
                      
@@ -178,35 +178,55 @@ public class PacoteEstadoEnlace extends Thread {
    ****************************************************************/
 
 	private void processar() {
+		// Acessa o buffer do destino e a entrada correspondente a origem do pacote
 		BufferEnlace bufferDestino = destino.getBufferEnlace();
 		EntradaBuffer entradaOrigem = bufferDestino.obterEntrada(origem);
 		
+		// Obtem o pacote mantido pelo buffer e o seu numero de sequencia
 		PacoteEstadoEnlace pacoteEntradaOrigem = entradaOrigem.getPacoteAtual();
 		int seqAtual = (pacoteEntradaOrigem != null) ? pacoteEntradaOrigem.getNumeroSequencia() : -1;
 
+    // Inicio do bloco if
+    // Se o buffer nao estiver mantendo nenhum pacote ou o numero de sequencia deste pacote
+    // for maior que o numero de sequencia do pacote atual
 		if (pacoteEntradaOrigem == null || this.numeroSequencia > seqAtual) {
+			// O buffer passa a manter este pacote, alterando a entrada da origem
 			entradaOrigem.setPacoteAtual(this);
 			bufferDestino.alterarEntrada(entradaOrigem);
+
+			// Obtem os vizinhos do destino
 			CopyOnWriteArrayList<Roteador> vizinhosDestino = destino.getVizinhos();
 
+      // Inicio do bloco for
 			for (Roteador v : vizinhosDestino) {
+				// Inicio do bloco if/else
+				// Se o vizinho corresponder ao roteador pelo qual o pacote chegou
 				if (v.getNome().equals(linhaChegada.getNome())) {
+					// Desmarca a flag de transmissao e marca a flag de confirmacao do vizinho
+					// na entrada da origem
 					bufferDestino.alterarFlagTransmissao(origem, v, false);
 					bufferDestino.alterarFlagConfirmacao(origem, v, true);
 				}
 				else {
+					// Marca a flag de transmissao e desmarca a flag de confirmacao do vizinho
+					// na entrada da origem
 					bufferDestino.alterarFlagTransmissao(origem, v, true);
 					bufferDestino.alterarFlagConfirmacao(origem, v, false);
-				}
-			}
+				} // Fim do bloco if/else
+			} // Fim do bloco for
 
+      // Encaminha o pacote para os seus vizinhos
 			encaminharParaOsVizinhos();
 		}
-		else {
+		else { // Caso contrario
+			// Obtem o buffer da linha de saida, alterando a flag de confirmacao do destino dentro
+			// da entrada da origem
 			BufferEnlace bufferChegada = linhaChegada.getBufferEnlace();
 			if (bufferChegada != null) bufferChegada.alterarFlagConfirmacao(origem, destino, true);
+
+			// Descarta o pacote de estado de enlace da sub rede
 			Platform.runLater(() -> TelaPrincipalController.controller.removerPacoteEnlace(this));
-		}
+		} // Fim do bloco if/else
 	}
 
   /*
@@ -247,75 +267,208 @@ public class PacoteEstadoEnlace extends Thread {
    ****************************************************************/
 
 	private void dormir(long valor) {
+		// Inicio do bloco try/catch
 		try {
+			// Coloca a Thread para dormir por alguns ms
 			Thread.sleep(valor);
 		}
 		catch (InterruptedException e) {
+			// Em caso de excecao, a Thread eh interrompida
 			Thread.currentThread().interrupt();
-		}
+		} // Fim do bloco try/catch
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: setLink
+   * Funcao: define a imagem do pacote de estado de enlace
+   * Parametros: ImageView link - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
 
 	public void setLink(ImageView link) {
 		this.link = link;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: getLink
+   * Funcao: retorna a imagem do pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: ImageView
+   ****************************************************************/
+
 	public ImageView getLink() {
 		return link;
 	}
 
-	public void setNumeroSequencia(int seq) {
-		this.numeroSequencia = seq;
+	/*
+   * ***************************************************************
+   * Metodo: setOrigem
+   * Funcao: define o roteador de origem do percurso do pacote de estado de enlace
+   * Parametros: Roteador origem - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+	public void setOrigem(Roteador origem) {
+		this.origem = origem;
 	}
 
-	public int getNumeroSequencia() {
-		return numeroSequencia;
-	}
-
-	public void setOrigem(Roteador o) {
-		this.origem = o;
-	}
+  /*
+   * ***************************************************************
+   * Metodo: getOrigem
+   * Funcao: retorna o roteador de origem do percurso do pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: Roteador
+   ****************************************************************/
 
 	public Roteador getOrigem() {
 		return origem;
 	}
 
-	public void setDestino(Roteador d) {
-		this.destino = d;
+  /*
+   * ***************************************************************
+   * Metodo: setDestino
+   * Funcao: define o roteador de destino do percurso do pacote de estado de enlace
+   * Parametros: Roteador destino - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+	public void setDestino(Roteador destino) {
+		this.destino = destino;
 	}
+ 
+  /*
+   * ***************************************************************
+   * Metodo: getDestino
+   * Funcao: retorna o roteador de destino do percurso do pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: Roteador
+   ****************************************************************/
 
 	public Roteador getDestino() {
 		return destino;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: setDestino
+   * Funcao: define o roteador de destino do percurso do pacote de estado de enlace
+   * Parametros: Roteador destino - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
 	public void setLinhaChegada(Roteador linhaChegada) {
 		this.linhaChegada = linhaChegada;
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: getLinhaChegada
+   * Funcao: retorna a linha de chegada do percurso do pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: Roteador
+   ****************************************************************/
 
 	public Roteador getLinhaChegada() {
 		return linhaChegada;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: setNumeroSequencia
+   * Funcao: define o numero de sequencia do pacote de estado de enlace
+   * Parametros: int seq - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+	public void setNumeroSequencia(int seq) {
+		this.numeroSequencia = seq;
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: getNumeroSequencia
+   * Funcao: retorna o numero de sequencia do pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: int
+   ****************************************************************/
+
+	public int getNumeroSequencia() {
+		return numeroSequencia;
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: setCustoVizinhos
+   * Funcao: define o custo dos vizinhos da origem transportados
+             pelo pacote de estado de enlace
+   * Parametros: HashMap<Roteador, Long> c - lista a ser definida
+   * Retorno: void
+   ****************************************************************/
+
   public void setCustoVizinhos(HashMap<Roteador, Long> c) {
     this.custoVizinhos = c;
   } 
+
+  /*
+   * ***************************************************************
+   * Metodo: getCustoVizinhos
+   * Funcao: retorna o custo dos vizinhos da origem transportados
+             pelo pacote de estado de enlace
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: HashMap<Roteador, Long>
+   ****************************************************************/
 
   public HashMap<Roteador, Long> getCustoVizinhos() {
     return custoVizinhos;
   }
 
-	public void setPosX(double x) {
-		this.posX = x;
-	}
+	/*
+   * ***************************************************************
+   * Metodo: setPosX
+   * Funcao: define a posicao do pacote de estado de enlace no eixo X
+   * Parametros: double posX - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
 
-	public double getPosX() {
-		return posX;
-	}
+  public void setPosX(double posX) {
+    this.posX = posX;
+  }
 
-	public void setPosY(double y) {
-		this.posY = y;
-	}
+  /*
+   * ***************************************************************
+   * Metodo: getPosX
+   * Funcao: retorna a posicao do pacote de estado de enlace no eixo X
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: double
+   ****************************************************************/
 
-	public double getPosY() {
-		return posY;
-	}
+  public double getPosX() {
+    return posX;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: setPosY
+   * Funcao: define a posicao do pacote de estado de enlace no eixo Y
+   * Parametros: double posY - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
+  public void setPosY(double posY) {
+    this.posY = posY;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: getPosY
+   * Funcao: retorna a posicao do pacote de estado de enlace no eixo Y
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: double
+   ****************************************************************/
+
+  public double getPosY() {
+    return posY;
+  }
 }

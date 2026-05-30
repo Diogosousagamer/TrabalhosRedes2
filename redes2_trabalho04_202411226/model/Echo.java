@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 28/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: Echo
 * Funcao...........: Thread que gerencia as operacoes dos pacotes echo, responsaveis
 										 por informarem o custo de cada enlace presente na sub rede.
@@ -232,7 +232,7 @@ public class Echo extends Thread {
 	/*
    * ***************************************************************
    * Metodo: setEnvelope
-   * Funcao: define a imagem do pacote de solicitacao
+   * Funcao: define a imagem do pacote Echo
    * Parametros: ImageView envelope - valor a ser definido
    * Retorno: void
    ****************************************************************/
@@ -244,7 +244,7 @@ public class Echo extends Thread {
   /*
    * ***************************************************************
    * Metodo: getEnvelope
-   * Funcao: retorna a imagem do pacote de solicitacao
+   * Funcao: retorna a imagem do pacote Echo
    * Parametros: nenhum parametro foi definido para esta funcao
    * Retorno: ImageView
    ****************************************************************/

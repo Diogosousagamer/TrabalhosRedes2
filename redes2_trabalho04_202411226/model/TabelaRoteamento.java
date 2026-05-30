@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 29/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: TabelaRoteamento
 * Funcao...........: Classe que gerencia as operacoes de cada tabela de roteamento.
                      
@@ -88,6 +88,9 @@ public class TabelaRoteamento {
       // Inicio do bloco for
       // Percorre todas as linhas de destino possiveis para o roteador
       for (int idxDestino = 0; idxDestino < n; idxDestino++) {
+        // Interrompe o preenchimento da tabela se a Thread ou a simulacao forem interrompidas
+        if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) break;
+
         // Pula se o destino corresponder ao indice do roteador da tabela
         if (idxDestino == raiz) continue;
 
@@ -123,6 +126,9 @@ public class TabelaRoteamento {
         Platform.runLater(() -> alterarEntrada(entradaFinal));
         dormir(500);
       } // Fim do bloco for
+
+      // Interrompe o metodo se a Thread ou a simulacao forem interrompidas
+      if (Thread.currentThread().isInterrupted() || !TelaPrincipalController.controller.simulacaoAtiva) return;
     }
     catch (InterruptedException e) {
       // Em caso de excecao, a Thread eh interrompida

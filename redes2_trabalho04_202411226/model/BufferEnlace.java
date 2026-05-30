@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/05/2026
-* Ultima alteracao.: 29/05/2026
+* Ultima alteracao.: 30/05/2026
 * Nome.............: BufferEnlace
 * Funcao...........: Classe que gerencia as operacoes de cada buffer contendo os pacotes
                      de estado de enlace.
@@ -55,7 +55,7 @@ public class BufferEnlace {
 			// Cria uma nova entrada para o roteador, carrega suas flags
 			// e a adiciona na lista de entradas do buffer
 			EntradaBuffer e = new EntradaBuffer(r, null);
-			e.carregarFlags();
+			e.carregarFlags(this.r);
 			entradas.add(e);
 		} // Fim do bloco for
 	}
@@ -152,7 +152,7 @@ public class BufferEnlace {
 		if (entrada == null) {
 			// Cria uma nova entrada se ela for nula
 			entrada = new EntradaBuffer(origem, null);
-			entrada.carregarFlags();
+			entrada.carregarFlags(this.r);
 			entradas.add(entrada);
 		} // Fim do bloco for
 
@@ -193,7 +193,7 @@ public class BufferEnlace {
 		if (entrada == null) {
 			// Cria uma nova entrada se ela for nula
 			entrada = new EntradaBuffer(origem, null);
-			entrada.carregarFlags();
+			entrada.carregarFlags(this.r);
 			entradas.add(entrada);
 		} // Fim do bloco for
 
@@ -212,6 +212,58 @@ public class BufferEnlace {
 
 				// Interrompe o laco
 				break;
+			} // Fim do bloco if
+		} // Fim do bloco for
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: removerFlagConfirmacao
+   * Funcao: remove uma flag de confirmacao do buffer
+   * Parametros: Roteador v - vizinho da flag a ser removida
+   * Retorno: void
+   ****************************************************************/
+
+	public void removerFlagConfirmacao(Roteador v) {
+		// Inicio do bloco for
+		for (EntradaBuffer e : entradas) {
+			// Obtem as flags de confirmacao da entrada atual
+			HashMap<Roteador, Boolean> flagsConfirmacao = e.getFlagsConfirmacao();
+
+      // Inicio do bloco if
+      // Se o mapa de flags de confirmacao nao for nula
+			if (flagsConfirmacao != null) {
+				// Remove a entrada com a chave correspondente ao roteador 
+				// passado como parametro
+				flagsConfirmacao.keySet().removeIf(rotAtual ->
+					(rotAtual != null) && rotAtual.getNome().equals(v.getNome())
+				);
+			} // Fim do bloco if
+		} // Fim do bloco for
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: removerFlagTransmissao
+   * Funcao: remove uma flag de transmissao do buffer
+   * Parametros: Roteador v - vizinho da flag a ser removida
+   * Retorno: void
+   ****************************************************************/
+
+	public void removerFlagTransmissao(Roteador v) {
+		// Inicio do bloco for
+		for (EntradaBuffer e : entradas) {
+			// Obtem as flags de transmissao da entrada atual
+			HashMap<Roteador, Boolean> flagsTransmissao = e.getFlagsConfirmacao();
+
+      // Inicio do bloco if
+      // Se o mapa de flags de transmissao nao for nula
+			if (flagsTransmissao != null) {
+				// Remove a entrada com a chave correspondente ao roteador 
+				// passado como parametro
+				flagsTransmissao.keySet().removeIf(rotAtual ->
+					(rotAtual != null) && rotAtual.getNome().equals(v.getNome())
+				);
 			} // Fim do bloco if
 		} // Fim do bloco for
 	}
