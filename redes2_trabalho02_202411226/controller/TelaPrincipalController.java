@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 01/05/2026
+* Ultima alteracao.: 01/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -72,6 +72,7 @@ public class TelaPrincipalController implements Initializable {
   @FXML private VBox listaNos;
 
 	// Variaveis e instancias
+  private Pacote p;
 	public static volatile TelaPrincipalController controller;
 	private int quantidadeNos;
 	private Roteador origem;
@@ -121,6 +122,9 @@ public class TelaPrincipalController implements Initializable {
 
 	@FXML
 	private void voltar(ActionEvent event) throws IOException {
+    // Interrompe o pacote caso ele estiver ativo
+    if (p != null) p.interrupt();
+
 		// Carrega o arquivo FXML e gera uma nova cena
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaMenu.fxml"));
 		Parent root = loader.load();
@@ -230,8 +234,11 @@ public class TelaPrincipalController implements Initializable {
       envelope.setPreserveRatio(true);
       subrede.getChildren().add(envelope);
 
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
+
       // Gera uma nova Thread para o pacote e a inicializa
-      Pacote p = new Pacote(envelope, origem, destino);
+      p = new Pacote(envelope, origem, destino);
       p.setDaemon(true); // Garante que a Thread seja interrompida com o fechamento do programa
       p.start();
 
@@ -669,6 +676,9 @@ public class TelaPrincipalController implements Initializable {
 
   @FXML
   private void continuar(ActionEvent event) {
+    // Anula o pacote p
+    this.p = null;
+
     // Oculta o painel de interrupcao
     painelInterrupcao.setVisible(false);
 
@@ -1098,8 +1108,8 @@ public class TelaPrincipalController implements Initializable {
       if (c == null) continue;
 
       // Calcula as posicoes X e Y do roteador
-      double x = c.getCenterX() - (larguraPacote / 2);
-      double y = c.getCenterY() - (alturaPacote / 2);
+      double x = c.getCenterX() - (larguraPacote / 2) + 5.0;
+      double y = c.getCenterY() - (alturaPacote / 2) + 30.0;
 
       // Define a posicao do roteador e o atualiza
       r.definirPosicao(x, y);

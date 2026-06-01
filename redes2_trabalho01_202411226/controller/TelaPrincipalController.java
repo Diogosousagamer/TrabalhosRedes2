@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 08/05/2026
+* Ultima alteracao.: 01/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -264,6 +264,9 @@ public class TelaPrincipalController implements Initializable {
       pacotes.add(p);
       incrementarPacotes();
 
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
+
       // Garante que a Thread seja interrompida caso a janela for fechada
       p.setDaemon(true);
 
@@ -309,6 +312,9 @@ public class TelaPrincipalController implements Initializable {
       p.definirPosicao();
       pacotes.add(p);
       incrementarPacotes();
+
+      // Joga roteadores para frente
+      jogarRoteadoresParaFrente();
 
       // Garante que a Thread seja interrompida caso a janela for fechada
       p.setDaemon(true);
@@ -749,8 +755,8 @@ public class TelaPrincipalController implements Initializable {
       if (c == null) continue;
 
       // Calcula as posicoes X e Y do roteador
-      double x = c.getCenterX() - (larguraPacote / 2);
-      double y = c.getCenterY() - (alturaPacote / 2);
+      double x = c.getCenterX() - (larguraPacote / 2) + 5.0;
+      double y = c.getCenterY() - (alturaPacote / 2) + 30.0;
 
       // Define a posicao do roteador e o atualiza
       r.definirPosicao(x, y);

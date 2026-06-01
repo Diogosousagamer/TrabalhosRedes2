@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 29/05/2026
+* Ultima alteracao.: 01/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -559,6 +559,9 @@ public class TelaPrincipalController implements Initializable {
       envelope.setVisible(false);
       subrede.getChildren().add(envelope);
 
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
+
       // Inicializa uma nova Thread correspondente ao pacote
       p = new Pacote(envelope, origem, destino);
       p.setDaemon(true);
@@ -704,6 +707,9 @@ public class TelaPrincipalController implements Initializable {
       h.setPreserveRatio(true);
       subrede.getChildren().add(h);
 
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
+
       // Inicia o pacote e o adiciona na lista de pacotes Hello existentes
       hello.start();
       hellos.add(hello);
@@ -764,6 +770,9 @@ public class TelaPrincipalController implements Initializable {
       request.setFitHeight(61);
       request.setPreserveRatio(true);
       subrede.getChildren().add(request);
+
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
 
       // Inicializa o pacote de solicitacao
       e.start();
@@ -829,6 +838,9 @@ public class TelaPrincipalController implements Initializable {
       enlace.setFitHeight(61);
       enlace.setPreserveRatio(true);
       subrede.getChildren().add(enlace);
+
+      // Joga os roteadores para frente
+      jogarRoteadoresParaFrente();
 
       // Adiciona o pacote de estado de enlace a lista de pacotes
       // de estado de enlace presentes na sub rede
@@ -1298,8 +1310,8 @@ public class TelaPrincipalController implements Initializable {
 
       // Para a simulacao e marca que a sub rede foi alterada 
       // para reiniciar a simulacao
-      simulacaoAtiva = false;
       alterouSubRede = true;
+      simulacaoAtiva = false;
 
       // Interrompe as Threads existentes
       interromperThreads();
@@ -1624,8 +1636,8 @@ public class TelaPrincipalController implements Initializable {
       if (c == null) continue;
 
       // Calcula as posicoes X e Y do roteador
-      double x = c.getCenterX() - (larguraPacote / 2);
-      double y = c.getCenterY() - (alturaPacote / 2);
+      double x = c.getCenterX() - (larguraPacote / 2) + 5.0;
+      double y = c.getCenterY() - (alturaPacote / 2) + 30.0;
 
       // Define a posicao do roteador e o atualiza
       r.definirPosicao(x, y);
