@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 01/06/2026
+* Ultima alteracao.: 02/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -1416,6 +1416,7 @@ public class TelaPrincipalController implements Initializable {
       // Lista que armazenara os itens a serem removidos da sub rede
       ArrayList<Node> itensParaRemover = new ArrayList<>();
 
+      // Remove as linhas e os pesos das arestas
       subrede.getChildren().removeIf(node -> {
         if (node instanceof Line) {
           return true;
@@ -1432,6 +1433,7 @@ public class TelaPrincipalController implements Initializable {
       // Inicio do bloco if
       // Se a simulacao nao estiver ativa ou a sub rede tiver sido alterada
       if (!simulacaoAtiva || alterouSubRede) {
+        // Remove os circulos (roteadores) da sub rede
         subrede.getChildren().removeIf(node -> {
           if (node instanceof Circle) {
             return true;
@@ -1600,8 +1602,8 @@ public class TelaPrincipalController implements Initializable {
       double altura = l.getBoundsInLocal().getHeight();
 
       // Calcula as posicoes X e Y da label
-      double x = c.getCenterX() - (largura / 2.0);
-      double y = c.getCenterY() - (altura / 2.0);
+      double x = c.getCenterX() - (largura / 2.0) - 3.0;
+      double y = c.getCenterY() - (altura / 2.0) - 5.0;
 
       // Posiciona a label
       l.setLayoutX(x);

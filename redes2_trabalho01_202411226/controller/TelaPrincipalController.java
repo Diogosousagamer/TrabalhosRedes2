@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 01/06/2026
+* Ultima alteracao.: 02/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -719,8 +719,8 @@ public class TelaPrincipalController implements Initializable {
       double altura = l.getBoundsInLocal().getHeight();
 
       // Calcula as posicoes X e Y da label
-      double x = c.getCenterX() - (largura / 2.0);
-      double y = c.getCenterY() - (altura / 2.0);
+      double x = c.getCenterX() - (largura / 2.0) - 3.0;
+      double y = c.getCenterY() - (altura / 2.0) - 5.0;
 
       // Posiciona a label
       l.setLayoutX(x);
@@ -730,7 +730,7 @@ public class TelaPrincipalController implements Initializable {
 
   /*
    * ***************************************************************
-   * Metodo: calcularPosicaoRoteadoress
+   * Metodo: calcularPosicaoRoteadores
    * Funcao: calcula a posicao de cada roteador gerado na sub rede
    * Parametros: int totalNos - total de nos existentes na sub rede
    * Retorno: void

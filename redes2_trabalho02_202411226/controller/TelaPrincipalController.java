@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 29/03/2026
-* Ultima alteracao.: 01/06/2026
+* Ultima alteracao.: 02/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -1072,8 +1072,8 @@ public class TelaPrincipalController implements Initializable {
       double altura = l.getBoundsInLocal().getHeight();
 
       // Calcula as posicoes X e Y da label
-      double x = c.getCenterX() - (largura / 2.0);
-      double y = c.getCenterY() - (altura / 2.0);
+      double x = c.getCenterX() - (largura / 2.0) - 3.0;
+      double y = c.getCenterY() - (altura / 2.0) - 5.0;
 
       // Posiciona a label
       l.setLayoutX(x);
