@@ -15,7 +15,7 @@ O grafo exibido é gerado a partir de um arquivo backbone.txt, que informa a qua
 * As demais linhas correspondem às arestas do grafo com os seus respectivos custos (ex: A,B,2); os componentes da aresta devem estar separados por vírgula;
 * Os roteadores são especificados por caracteres. 
 
-# Trabalho 2 - Roteamento Pelo Caminho Mais Curto
+## Trabalho 2 - Roteamento Pelo Caminho Mais Curto
 Esse trabalho visa simular o roteamento pelo caminho mais curto, que se trata de uma aplicação do algoritmo de Dijkstra para determinar o caminho mínimo de uma certa origem até certo destino. O algoritmo funciona da seguinte forma:
 
 * Cada roteador é rotulado como provisório e tendo custo infinito;
@@ -25,7 +25,7 @@ Esse trabalho visa simular o roteamento pelo caminho mais curto, que se trata de
 
 O grafo exibido é gerado a partir de um arquivo backbone.txt, que informa a quantidade de nós (roteadores) presentes no grafo e as arestas (links) entre eles. O usuário pode alterar o arquivo acessando um menu do programa para alterar a sub rede, clicando no botão com a imagem de um grafo. Ao clicar em "Aplicar", o grafo é redesenhado para se adequar às mudanças realizadas, desde que o usuário siga as instruções estipuladas no menu. 
 
-# Trabalho 3 - Roteamento Por Vetor de Distância
+## Trabalho 3 - Roteamento Por Vetor de Distância
 Esse trabalho visa simular o roteamento pelo vetor de distância, onde cada roteador mantém uma tabela de roteamento contendo os melhores caminhos para todos os destinos possíveis (exceto para ele próprio), com cada linha da tabela possuindo uma linha de destino (destino possível), uma linha de saída (roteador usado, direta ou indiretamente, para alcançar o destino), e o custo total do caminho atual. Os roteadores atualizam essas tabelas a partir da troca de informações com os seus vizinhos caso algum deles fornecer um caminho de menor custo para certo destino. 
 
 Ao contrário dos dois primeiros algoritmos, trata-se de um algoritmo dinâmico, levando em consideração as mudanças na carga e na topologia da rede; dessa forma, o usuário pode remover uma aresta entre dois roteadores para refletir essa mudança, bem como alterar o backbone da rede durante a simulação. Além disso, os roteadores funcionam a partir de Threads para promover uma execução mais paralela e realista. 
@@ -34,7 +34,7 @@ O grafo exibido é gerado a partir de um arquivo backbone.txt, que informa a qua
 
 OBS: o grafo é direcionado; ou seja, o custo é diferente dependendo da direção do caminho. Isso é usado para representar o retardo de ida (do A ao B) e o retardo de volta (do B ao A). Desse modo, cada aresta possui dois custos diferentes, que são diferenciados a partir de uma função ping(), que lê o arquivo backbone para descobrir o retardo do caminho um roteador para o outro.  
 
-# Trabalho 4 - Roteamento Por Estado de Enlace
+## Trabalho 4 - Roteamento Por Estado de Enlace
 Esse trabalho visa simular o roteamento por estado de enlace, que substituiu o vetor de distância em decorrência de seus problemas de convergência. O algoritmo funciona seguindo estes passos:
 
 * **Conhecer os vizinhos**: os roteadores enviam pacotes Hello para as suas extremidades (arestas) para conhecerem os seus vizinhos.
