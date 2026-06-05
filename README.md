@@ -4,10 +4,10 @@ Estes trabalhos foram elaborados como parte da avaliação parcial da disciplina
 ## Trabalho 1 - Roteamento Por Inundação
 Esse trabalho visa simular o roteamento por inundação, onde a rede é (literalmente) inundada por pacotes até que se chegue ao destino final, porém com o custo de consumir mais largura de banda. São apresentadas três versões do algoritmo:
 
-* ''Versão 1.0'': Cada pacote é enviado para todos os vizinhos do roteador receptor.
-* ''Versão 2.0'': Cada pacote é enviado para todos os vizinhos do roteador receptor, exceto para o roteador que o encaminhou.
-* ''Versão 3.0'': Cada pacote é enviado para todos os vizinhos do roteador receptor, exceto para o roteador que o encaminhou, possuindo um tempo de vida limitado para que não vaguem infinitamente na sub rede.
-* ''Versão 4.0'': Cada pacote é enviado para todos os vizinhos do roteador receptor, exceto para o roteador que o encaminhou, possuindo um tempo de vida limitado para que não vaguem infinitamente na sub rede. Além disso, eles não podem ser encaminhados para roteadores que já foram visitados anteriormente.
+* **Versão 1.0**: Cada pacote é enviado para todos os vizinhos do roteador receptor.
+* **Versão 2.0**: Cada pacote é enviado para todos os vizinhos do roteador receptor, exceto para o roteador que o encaminhou.
+* **Versão 3.0**: Cada pacote é enviado para todos os vizinhos do roteador receptor, exceto para o roteador que o encaminhou, possuindo um tempo de vida limitado para que não vaguem infinitamente na sub rede.
+* **Versão 4.0**: Cada pacote é enviado para todos os vizinhos do roteador receptor, exceto para o roteador que o encaminhou, possuindo um tempo de vida limitado para que não vaguem infinitamente na sub rede. Além disso, eles não podem ser encaminhados para roteadores que já foram visitados anteriormente.
 
 O grafo exibido é gerado a partir de um arquivo backbone.txt, que informa a quantidade de nós (roteadores) presentes no grafo e as arestas (links) entre eles. O usuário pode alterá-lo abrindo-o no Bloco de Notas, porém para adicionar mais arestas, siga a formatação predefinida no arquivo:
 
@@ -37,10 +37,10 @@ OBS: o grafo é direcionado; ou seja, o custo é diferente dependendo da direç�
 # Trabalho 4 - Roteamento Por Estado de Enlace
 Esse trabalho visa simular o roteamento por estado de enlace, que substituiu o vetor de distância em decorrência de seus problemas de convergência. O algoritmo funciona seguindo estes passos:
 
-* ''Conhecer os vizinhos'': os roteadores enviam pacotes Hello para as suas extremidades (arestas) para conhecerem os seus vizinhos.
-* ''Medir os retardos'': Os roteadores enviam pacotes Echo para mensurar os retardos do caminho direto até os seus vizinhos. Ao contrário dos demais algoritmos, os retardos são mensurados randomicamente (através de uma função chamada ps()) e não são informados no arquivo backbone.txt.
-* ''Distribuir pacotes de estado de enlace'': cada roteador envia pacotes de estado de enlace aos seus vizinhos, que os distribuem para seus respectivos vizinhos, exceto para o roteador que os encaminhou (pode ser diferente da origem) - sendo assim, uma aplicação do algoritmo de inundação. Cada pacote de estado de enlace informa os vizinhos e os seus respectivos custos a partir da origem, possuindo números de sequência para permitir que os roteadores descartem possíveis duplicatas. Os roteadores mantém os pacotes recebidos de cada origem possível (exceto ele próprio) a partir de buffers. Isso é feito para que todos os roteadores estejam cientes de possíveis mudanças na carga da rede, acelerando a convergência. 
-* ''Calcular a melhor rota'': cada roteador, a partir dos aprendizados adquiridos, monta uma matriz de adjacência (ou uma árvore de escoamento) e aplica Dijkstra (caminho mais curto) para calcular a melhor rota para cada destino e preencher as suas tabelas de roteamento.
+* **Conhecer os vizinhos**: os roteadores enviam pacotes Hello para as suas extremidades (arestas) para conhecerem os seus vizinhos.
+* **Medir os retardos**: Os roteadores enviam pacotes Echo para mensurar os retardos do caminho direto até os seus vizinhos. Ao contrário dos demais algoritmos, os retardos são mensurados randomicamente (através de uma função chamada ps()) e não são informados no arquivo backbone.txt.
+* **Distribuir pacotes de estado de enlace**: cada roteador envia pacotes de estado de enlace aos seus vizinhos, que os distribuem para seus respectivos vizinhos, exceto para o roteador que os encaminhou (pode ser diferente da origem) - sendo assim, uma aplicação do algoritmo de inundação. Cada pacote de estado de enlace informa os vizinhos e os seus respectivos custos a partir da origem, possuindo números de sequência para permitir que os roteadores descartem possíveis duplicatas. Os roteadores mantém os pacotes recebidos de cada origem possível (exceto ele próprio) a partir de buffers. Isso é feito para que todos os roteadores estejam cientes de possíveis mudanças na carga da rede, acelerando a convergência. 
+* **Calcular a melhor rota**: cada roteador, a partir dos aprendizados adquiridos, monta uma matriz de adjacência (ou uma árvore de escoamento) e aplica Dijkstra (caminho mais curto) para calcular a melhor rota para cada destino e preencher as suas tabelas de roteamento.
 
 Desta vez, o usuário terá até 15 segundos para selecionar uma origem e um destino e executar o encaminhamento; caso esse tempo for expirado, a simulação será reiniciada. Além disso, ao remover uma aresta durante a distribuição de pacotes de estado de enlace, os roteadores da aresta iniciam uma nova rodada de pacotes de estado de enlace para informar as mudanças, tendo o seu número de sequência atualizado para serem distinguidos de pacotes antigos. 
 
