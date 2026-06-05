@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 02/05/2026
-* Ultima alteracao.: 02/06/2026
+* Ultima alteracao.: 05/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -63,6 +63,8 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 import model.Aresta;
 import model.BufferEnlace;
@@ -96,6 +98,7 @@ public class TelaPrincipalController implements Initializable {
 	// Variaveis e instancias
   private Timeline timerInatividade;
   private final int LIMITE_INATIVIDADE = 15;
+  private MediaPlayer player;
   private static final Image imgHello = new Image(TelaPrincipalController.class.getResource("/img/hello.png").toExternalForm());
   private static final Image echo = new Image(TelaPrincipalController.class.getResource("/img/Echo.png").toExternalForm());
   private static final Image link = new Image(TelaPrincipalController.class.getResource("/img/link.png").toExternalForm());
@@ -133,6 +136,20 @@ public class TelaPrincipalController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
+    // Obtem o caminho da musica
+    URL musica = getClass().getResource("/util/TheEnd.mp3");
+
+    // Inicio do bloco if
+    // Se o caminho da musica for valido
+    if (musica != null) {
+      // Carrega e executa a musica atraves do tocador
+      Media media = new Media(musica.toExternalForm());
+      player = new MediaPlayer(media);
+      player.setCycleCount(MediaPlayer.INDEFINITE);
+      player.setVolume(1);
+      player.play();
+    } // Fim do bloco if
+
     // A simulacao comeca inativa
     simulacaoAtiva = false;
 
