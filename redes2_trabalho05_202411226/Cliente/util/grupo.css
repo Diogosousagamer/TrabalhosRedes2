@@ -1,0 +1,44 @@
+.painel {
+	-fx-background-image: url("FundoChat.png");
+	-fx-background-size: cover;
+	-fx-background-repeat: no-repeat;
+	-fx-background-position: center;
+}
+
+.botao {
+    -fx-background-color: #088924;
+    -fx-background-radius: 15px;
+    -fx-text-fill: white;
+}
+
+.botao:hover {
+    -fx-background-color: #02c72d;
+}
+
+.text-field {
+    -fx-background-color: #D9D9D9;
+    -fx-padding: 8px;
+    -fx-background-radius: 15px;
+    -fx-prompt-text-fill: #3a3d3a;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .thumb {
+  -fx-background-color: #088924;
+  -fx-background-radius: 0px;
+}
+
+.scroll-pane .thumb:hover {
+    -fx-background-color: #02c72d;
+}

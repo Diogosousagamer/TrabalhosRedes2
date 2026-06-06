@@ -1,0 +1,15 @@
+.botao {
+	-fx-background-color: #088924;
+	-fx-background-radius: 15px;
+	-fx-text-fill: white;
+}
+
+.botao:hover {
+	-fx-background-color: #02c72d;
+}
+
+.text-field {
+	-fx-background-color: #D9D9D9;
+	-fx-padding: 8px;
+	-fx-background-radius: 15px;
+}

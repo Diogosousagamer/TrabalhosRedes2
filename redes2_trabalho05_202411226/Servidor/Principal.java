@@ -3,23 +3,12 @@
 * Matricula........: 202411226
 * Inicio...........: 06/06/2026
 * Ultima alteracao.: 06/06/2026
-* Nome.............: DsgChat (Principal/Cliente)
+* Nome.............: Principal (Servidor)
 * Funcao...........: Aplicativo de Instant Messaging desenvolvido utilizando protocolos
-                     da camada de transporte TCP/UDP (Cliente).
+                     da camada de transporte TCP/UDP (Servidor).
                      
 *************************************************************** */
 
-import java.io.IOException;
-import javafx.stage.Stage;
-import javafx.application.Application;
-
-public class Principal extends Application {
-	@Override
-	public void start(Stage stage) throws IOException {
-
-	}
-
-	public static void main(String[] args) {
-		launch(args);
-	}
+public class Principal {
+	
 }
