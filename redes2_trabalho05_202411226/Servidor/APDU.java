@@ -2,17 +2,17 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 18/06/z2026
+* Ultima alteracao.: 18/06/2026
 * Nome.............: APDU
 * Funcao...........: Classe que gerencia as operacoes das APDUs.
                      
 *************************************************************** */
 
 public class APDU {
-	private String tipo;
-	private String usuario;
-	private String grupo;
-	private String mensagem;
+	private static String tipo;
+	private static String usuario;
+	private static String grupo;
+	private static String mensagem;
 
 	private static final String DELIMITADOR = "*";
 	private static final String ESCAPE = "\\";
@@ -64,10 +64,10 @@ public class APDU {
 
 		this.tipo = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		this.usuario = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-		this.usuario = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+		this.grupo = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		if (partes.length > 3 && !partes[3].isEmpty()) this.mensagem = partes[3].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 
-		return this;
+		return (this.mensagem.isEmpty()) ? new APDU(this.tipo, this.usuario, this.grupo) : new APDU(this.tipo, this.usuario, this.grupo, this.mensagem);
 	}
 
 	public void setTipo(String tipo) {
