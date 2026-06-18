@@ -8,6 +8,8 @@
                      
 *************************************************************** */
 
+package model;
+
 public class APDU {
 	private String tipo;
 	private String usuario;

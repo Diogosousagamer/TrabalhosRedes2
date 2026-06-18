@@ -107,7 +107,7 @@ public class TelaPrincipalController implements Initializable {
 
 	public void iniciarGrupos() {
 		if (Usuario.grupos.isEmpty()) return;
-		if (!listaGrupos.isEmpty()) listaGrupos.clear();
+		if (!listaGrupos.getChildren().isEmpty()) listaGrupos.getChildren().clear();
 
 		for (Grupo g : Usuario.grupos) {
 
