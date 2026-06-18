@@ -1,0 +1,35 @@
+/* ***************************************************************
+* Autor............: Diogo Oliveira de Sousa
+* Matricula........: 202411226
+* Inicio...........: 10/06/2026
+* Ultima alteracao.: 17/06/2026
+* Nome.............: clienteUDP
+* Funcao...........: Interface do cliente no protocolo UDP.
+                     
+*************************************************************** */
+
+package model;
+
+import java.io.*;
+import java.net.*;
+import java.lang.Thread;
+
+public class clienteUDP extends Thread {
+	// Variaveis e instancias
+	final int PORTA = 6789;
+
+	@Override
+	public void run() {
+		try {
+			DatagramSocket conexaoCliente = new DatagramSocket();
+			InetAddress enderecoIPServidor = InetAddress.getByName(Usuario.ipServidor);
+			byte[] dadosSaida = new byte[1024];
+
+			String mensagemEnviada = new String("MUITO FACIL ;-)");
+			saida = mensagemEnviada.getBytes();
+			DatagramPacket pacoteEnviado = new DatagramPacket(saida, saida.length, enderecoIPServidor, PORTA);
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
