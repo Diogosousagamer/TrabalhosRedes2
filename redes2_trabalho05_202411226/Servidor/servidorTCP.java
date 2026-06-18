@@ -24,6 +24,7 @@ public class servidorTCP extends Thread {
 			while (true) {
 				Socket conexao = servidor.accept();
 				String ipCliente = conexao.getInetAddress().getHostAddress();
+				System.out.println("Novo cliente conectado com sucesso " + ipCliente);
 
 				BancoClientes bancoClientes = new BancoClientes(conexao, ipCliente);
 				bancoClientes.start();

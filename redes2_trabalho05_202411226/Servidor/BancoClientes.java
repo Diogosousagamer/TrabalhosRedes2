@@ -14,21 +14,26 @@ import java.net.*;
 
 public class BancoClientes extends Thread {
 	private Socket conexao;
-	private String ipUsuario;
+	private String ipCliente;
 
-	public BancoClientes(Socket conexao, String ipUsuario) {
+	public BancoClientes(Socket conexao, String ipCliente) {
 		this.conexao = conexao;
-		this.ipUsuario = ipUsuario;
+		this.ipCliente = ipCliente;
 	}
 
 	@Override
 	public void run() {
 		try {
 			ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream());
-			System.out.println((String) entrada.readObject());
 
-			while (true) {
+			while (!conexao.isClosed()) {
+				String mensagem = (String) entrada.readObject();
+				APDU apdu = APDU.decodificarMensagem(mensagem);
 
+				System.out.println("Tipo: " + apdu.getTipo());
+				System.out.println("Usuario: " + apdu.getUsuario());
+				System.out.println("Grupo: " + apdu.getGrupo());
+				if (!apdu.getMensagem().isEmpty()) System.out.println("Mensagem: " + apdu.getMensagem());
 			}
 		}
 		catch (IOException e) {
@@ -36,6 +41,16 @@ public class BancoClientes extends Thread {
 		}
 		catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		}
+		finally {
+			try {
+				if (!conexao.isClosed()) conexao.close();
+				System.out.println("Conexao encerrada.");
+			}
+			catch (Exception e) {
+				System.out.println("Erro ao encerrar a conexao.");
+				e.printStackTrace();
+			}
 		}
 	}
 }
