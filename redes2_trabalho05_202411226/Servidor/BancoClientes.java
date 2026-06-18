@@ -9,8 +9,8 @@
 *************************************************************** */
 
 import java.io.*;
-import java.net.*;
 import java.lang.Thread;
+import java.net.*;
 
 public class BancoClientes extends Thread {
 	private Socket conexao;
@@ -31,7 +31,7 @@ public class BancoClientes extends Thread {
 
 			}
 		}
-		catch (IOException e) {
+		catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
