@@ -8,6 +8,8 @@
                      
 *************************************************************** */
 
+import java.io.*;
+import java.net.*;
 import java.lang.Thread;
 
 public class ProcessaMensagem extends Thread {

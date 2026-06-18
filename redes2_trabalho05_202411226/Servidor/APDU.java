@@ -9,13 +9,26 @@
 *************************************************************** */
 
 public class APDU {
-	private static String tipo;
-	private static String usuario;
-	private static String grupo;
-	private static String mensagem;
+	private String tipo;
+	private String usuario;
+	private String grupo;
+	private String mensagem;
 
 	private static final String DELIMITADOR = "*";
 	private static final String ESCAPE = "\\";
+
+	public APDU(String tipo, String usuario, String grupo) {
+		this.tipo = tipo;
+		this.usuario = usuario;
+		this.grupo = grupo;
+	}
+
+	public APDU(String tipo, String usuario, String grupo, String mensagem) {
+		this.tipo = tipo;
+		this.usuario = usuario;
+		this.grupo = grupo;
+		this.mensagem = mensagem;
+	}
 
 	public String enviarSend(String usuario, String grupo, String mensagem) {
 		this.usuario = usuario;
@@ -62,12 +75,17 @@ public class APDU {
 	public static APDU decodificarMensagem(String msg) {
 		String[] partes = msg.split("//*");
 
-		this.tipo = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-		this.usuario = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-		this.grupo = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-		if (partes.length > 3 && !partes[3].isEmpty()) this.mensagem = partes[3].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+		String tipoLocal = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+		String usuarioLocal = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+		String grupoLocal = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+		String msgLocal = "";
 
-		return (this.mensagem.isEmpty()) ? new APDU(this.tipo, this.usuario, this.grupo) : new APDU(this.tipo, this.usuario, this.grupo, this.mensagem);
+		if (partes.length > 3 && !partes[3].isEmpty()) {
+			msgLocal = partes[3].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+		}
+
+		return (msgLocal.isEmpty()) ? new APDU(tipoLocal, usuarioLocal, grupoLocal) 
+		       : new APDU(tipoLocal, usuarioLocal, grupoLocal, msgLocal);
 	}
 
 	public void setTipo(String tipo) {
