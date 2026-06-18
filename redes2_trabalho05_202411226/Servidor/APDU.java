@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 18/06/2026
+* Ultima alteracao.: 18/06/z2026
 * Nome.............: APDU
 * Funcao...........: Classe que gerencia as operacoes das APDUs.
                      
@@ -14,8 +14,8 @@ public class APDU {
 	private String grupo;
 	private String mensagem;
 
-	private final String DELIMITADOR = "*";
-	private final String ESCAPE = "\\";
+	private static final String DELIMITADOR = "*";
+	private static final String ESCAPE = "\\";
 
 	public String enviarSend(String usuario, String grupo, String mensagem) {
 		this.usuario = usuario;
@@ -45,7 +45,7 @@ public class APDU {
 	private String codificarMensagem(String tipo, String usuario, String grupo) {
 		tipo = tipo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
 		usuario = usuario.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
-		grupo = grupo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMTADOR, ESCAPE + DELIMITADOR);
+		grupo = grupo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
 
 		return tipo + DELIMITADOR + usuario + DELIMITADOR + grupo;
 	}
@@ -53,7 +53,7 @@ public class APDU {
 	private String codificarMensagem(String tipo, String usuario, String grupo, String mensagem) {
 		tipo = tipo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
 		usuario = usuario.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
-		grupo = grupo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMTADOR, ESCAPE + DELIMITADOR);
+		grupo = grupo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
 		mensagem = mensagem.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
 
 		return tipo + DELIMITADOR + usuario + DELIMITADOR + grupo + DELIMITADOR + mensagem;

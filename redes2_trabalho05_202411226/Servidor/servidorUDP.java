@@ -25,7 +25,7 @@ public class servidorUDP extends Thread {
 				DatagramPacket datagramaRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
 				servidor.receive(datagramaRecebido);
 
-				String mensagemRecebida  = new String(datagramaRecebido.getData(), 0, datagramaRecebido.length());
+				String mensagemRecebida  = new String(datagramaRecebido.getData(), 0, datagramaRecebido.length);
 				ProcessaMensagem p = new ProcessaMensagem(mensagemRecebida);
 				p.start();
 			}
