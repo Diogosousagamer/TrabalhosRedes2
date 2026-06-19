@@ -29,28 +29,48 @@ public class BancoClientes extends Thread {
 			while (!conexao.isClosed()) {
 				String mensagem = (String) entrada.readObject();
 				APDU apdu = APDU.decodificarMensagem(mensagem);
-
-				System.out.println("Tipo: " + apdu.getTipo());
-				System.out.println("Usuario: " + apdu.getUsuario());
-				System.out.println("Grupo: " + apdu.getGrupo());
-				if (!apdu.getMensagem().isEmpty()) System.out.println("Mensagem: " + apdu.getMensagem());
+				processarMensagem(apdu);
 			}
 		}
-		catch (IOException e) {
+		catch (EOFException e) {
 			e.printStackTrace();
 		}
 		catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		finally {
-			try {
-				if (!conexao.isClosed()) conexao.close();
-				System.out.println("Conexao encerrada.");
-			}
-			catch (Exception e) {
-				System.out.println("Erro ao encerrar a conexao.");
-				e.printStackTrace();
-			}
+			encerrarConexao();
+		}
+	}
+
+	private void processarMensagem(APDU apdu) {
+		System.out.println("Tipo: " + apdu.getTipo());
+		System.out.println("Usuario: " + apdu.getUsuario());
+		System.out.println("Grupo: " + apdu.getGrupo());
+		if (!apdu.getMensagem().isEmpty()) System.out.println("Mensagem: " + apdu.getMensagem());
+		
+		String tipo = apdu.getTipo();
+
+		switch (tipo) {
+			case "JOIN":
+				break;
+
+			case "LEAVE":
+				break;
+
+			default:
+				break;
+		} 
+	}
+
+	private void encerrarConexao() {
+		try {
+			if (!conexao.isClosed()) conexao.close();
+			System.out.println("Conexao encerrada com o cliente: " + ipCliente);
+		}
+		catch (Exception e) {
+			System.out.println("Erro ao encerrar a conexao.");
+			e.printStackTrace();
 		}
 	}
 }

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 18/06/2026
+* Ultima alteracao.: 19/06/2026
 * Nome.............: clienteTCP
 * Funcao...........: Interface do cliente no protocolo TCP.
                      
@@ -29,33 +29,36 @@ public class clienteTCP extends Thread {
 			s = new Socket(host, PORTA);
 			saida = new ObjectOutputStream(s.getOutputStream());
 
-			String msg = obterMensagem();
+			String msg = (apdu != null) ? apdu.enviarMensagem() : null;
 			saida.writeObject(msg);
 			saida.flush();
+
+			escutarServidor();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private String obterMensagem() {
-		if (apdu != null) {
-			switch (apdu.getTipo()) {
-				case "SEND":
-					return apdu.enviarSend();
+	private void escutarServidor() {
+		try {		
+			ObjectInputStream entrada = new ObjectInputStream(s.getInputStream());
 
-				case "JOIN":
-					return apdu.enviarJoin();
+			while (!s.isClosed()) {
+				Object obj = entrada.readObject();
 
-				case "LEAVE": 
-					return apdu.enviarLeave();
-
-				default:
-					break;
+				if (obj instanceof String) {
+					String msg = (String) obj;
+					System.out.println("Mensagem do servidor: " + msg);
+				}
 			}
 		}
-
-		return "";
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void setAPDU(APDU apdu) {

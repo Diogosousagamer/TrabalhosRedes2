@@ -28,33 +28,13 @@ public class clienteUDP extends Thread {
 			InetAddress enderecoIPServidor = InetAddress.getByName(Usuario.ipServidor);
 			byte[] dadosSaida = new byte[1024];
 
-			String mensagemEnviada = obterMensagem();
+			String mensagemEnviada = (apdu != null) ? apdu.enviarMensagem() : "";
 			dadosSaida = mensagemEnviada.getBytes();
 			DatagramPacket pacoteEnviado = new DatagramPacket(dadosSaida, dadosSaida.length, enderecoIPServidor, PORTA);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	private String obterMensagem() {
-		if (apdu != null) {
-			switch (apdu.getTipo()) {
-				case "SEND":
-					return apdu.enviarSend();
-
-				case "JOIN":
-					return apdu.enviarJoin();
-
-				case "LEAVE": 
-					return apdu.enviarLeave();
-
-				default:
-					break;
-			}
-		}
-
-		return "";
 	}
 
 	public void setAPDU(APDU apdu) {

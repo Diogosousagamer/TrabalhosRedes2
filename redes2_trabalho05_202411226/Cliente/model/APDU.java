@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 18/06/2026
+* Ultima alteracao.: 19/06/2026
 * Nome.............: APDU
 * Funcao...........: Classe que gerencia as operacoes das APDUs.
                      
@@ -32,19 +32,9 @@ public class APDU {
 		this.mensagem = mensagem;
 	}
 
-	public String enviarSend() {
-		this.tipo = "SEND";
-		return codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem);
-	}
-
-	public String enviarJoin() {
-		this.tipo = "JOIN";
-		return codificarMensagem(this.tipo, this.usuario, this.grupo);
-	}
-
-	public String enviarLeave() {
-		this.tipo = "LEAVE";	
-		return codificarMensagem(this.tipo, this.usuario, this.grupo);
+	public String enviarMensagem() {
+		return (this.mensagem.isEmpty()) ? codificarMensagem(this.tipo, this.usuario, this.grupo)
+		       : codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem);
 	}
 
 	public String codificarMensagem(String tipo, String usuario, String grupo) {
