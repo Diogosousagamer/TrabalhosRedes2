@@ -26,9 +26,12 @@ public class Usuario {
 		this.nome = nome;
 		this.ipServidor = ipServidor;
 		grupos = new ArrayList<>();
+		
 		tcp = new clienteTCP();
 		udp = new clienteUDP();
 		tcp.setDaemon(true);
 		udp.setDaemon(true);
+		tcp.start();
+		udp.start();
 	}
 }
