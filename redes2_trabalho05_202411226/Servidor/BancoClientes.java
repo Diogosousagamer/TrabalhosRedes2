@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 18/06/2026
+* Ultima alteracao.: 19/06/2026
 * Nome.............: BancoClientes
 * Funcao...........: Thread que gerencia a conexao dos clientes.
                      
@@ -32,6 +32,9 @@ public class BancoClientes extends Thread {
 				processarMensagem(apdu);
 			}
 		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 		catch (EOFException e) {
 			e.printStackTrace();
 		}
@@ -48,7 +51,7 @@ public class BancoClientes extends Thread {
 		System.out.println("Usuario: " + apdu.getUsuario());
 		System.out.println("Grupo: " + apdu.getGrupo());
 		if (!apdu.getMensagem().isEmpty()) System.out.println("Mensagem: " + apdu.getMensagem());
-		
+
 		String tipo = apdu.getTipo();
 
 		switch (tipo) {

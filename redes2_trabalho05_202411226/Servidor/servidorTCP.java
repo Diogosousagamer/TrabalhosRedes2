@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 18/06/2026
+* Ultima alteracao.: 19/06/2026
 * Nome.............: servidorTCP
 * Funcao...........: Interface do servidor no protocolo TCP.
                      
@@ -24,7 +24,7 @@ public class servidorTCP extends Thread {
 			while (true) {
 				Socket conexao = servidor.accept();
 				String ipCliente = conexao.getInetAddress().getHostAddress();
-				System.out.println("Novo cliente conectado com sucesso " + ipCliente);
+				System.out.println("Novo cliente conectado com sucesso: " + ipCliente);
 
 				BancoClientes bancoClientes = new BancoClientes(conexao, ipCliente);
 				bancoClientes.start();

@@ -99,9 +99,6 @@ public class TelaPrincipalController implements Initializable {
 		lblIpServidor.setText(Usuario.ipServidor);
 		imgPerfil.setFill(new ImagePattern(Usuario.perfil));
 
-		// Inicializa o UDP do cliente
-		// Usuario.udp.receberMensagem();
-
 		iniciarGrupos();
 	}
 
