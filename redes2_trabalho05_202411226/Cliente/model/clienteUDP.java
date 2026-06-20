@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 19/06/2026
+* Ultima alteracao.: 20/06/2026
 * Nome.............: clienteUDP
 * Funcao...........: Interface do cliente no protocolo UDP.
                      
@@ -43,23 +43,30 @@ public class clienteUDP extends Thread {
 
 	private void escutarServidor() {
 		try {		
-			byte[] bytesRecebidos = new byte[1024];
-
 			while (!conexaoCliente.isClosed()) {
-				DatagramPacket pacoteRecebido = new DatagramPacket(dadosRecebidos, dadosRecebidos.length);
+				byte[] bytesRecebidos = new byte[1024];
+				DatagramPacket pacoteRecebido = new DatagramPacket(bytesRecebidos, bytesRecebidos.length);
 				
 				// A Thread fica PARADA aqui ate chegar um pacote UDP do servidor
 				conexaoCliente.receive(pacoteRecebido);
 
 				// Converte os bytes recebidos para String de forma limpa
-				String mensagemDoServidor = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength());
-				System.out.println("UDP Recebido do Servidor: " + mensagemDoServidor);
+				String msg = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength());
+				APDU apduRecebida = APDU.decodificarMensagem(msg);
+
+				if (apduRecebida != null) {
+					System.out.println("Tipo: " + apduRecebida.getTipo());
+					System.out.println("Usuario: " + apduRecebida.getUsuario());
+					System.out.println("Grupo: " + apduRecebida.getGrupo());
+
+					if (apduRecebida.getMensagem() != null && !apduRecebida.getMensagem().isEmpty()) {
+						System.out.println("Mensagem: " + apduRecebida.getMensagem());
+					}
+				}
 			}
 		}
 		catch (IOException e) {
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e) {
+			System.out.println("Escuta UDP encerrada abruptamente.");
 			e.printStackTrace();
 		}
 	}

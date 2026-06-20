@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 17/06/2026
+* Ultima alteracao.: 20/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -50,12 +50,12 @@ public class TelaPrincipalController implements Initializable {
 
 	// Variaveis e instancias
 	private static final Image semFoto = new Image(TelaMenuController.class.getResource("/img/SemFoto.png").toExternalForm());
-	private Usuario usuario;
 	public static volatile TelaPrincipalController principal;
 
 	@Override 
 	public void initialize(URL url, ResourceBundle rb) {
 		principal = this;
+		carregarInformacoes();
 	}
 
 	@FXML
@@ -86,11 +86,6 @@ public class TelaPrincipalController implements Initializable {
 
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		stage.setScene(scene);
-	}
-
-	public void carregarUsuario(Usuario u) {
-		this.usuario = u;
-		carregarInformacoes();
 	}
 
 	public void carregarInformacoes() {

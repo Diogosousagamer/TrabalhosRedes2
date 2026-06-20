@@ -53,7 +53,7 @@ public class APDU {
 	}
 
 	public static APDU decodificarMensagem(String msg) {
-		String[] partes = msg.split("//*");
+		String[] partes = msg.split("\\*");
 
 		String tipoLocal = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		String usuarioLocal = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);

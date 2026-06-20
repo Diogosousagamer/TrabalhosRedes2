@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 19/06/2026
+* Ultima alteracao.: 20/06/2026
 * Nome.............: clienteTCP
 * Funcao...........: Interface do cliente no protocolo TCP.
                      
@@ -44,19 +44,32 @@ public class clienteTCP extends Thread {
 		try {		
 			ObjectInputStream entrada = new ObjectInputStream(s.getInputStream());
 
-			while (!s.isClosed()) {
+			while (true) {
 				Object obj = entrada.readObject();
+				if (obj == null) continue;
 
 				if (obj instanceof String) {
 					String msg = (String) obj;
-					System.out.println("Mensagem do servidor: " + msg);
+					APDU apdu = APDU.decodificarMensagem(msg);
+
+					if (apdu != null) {
+						System.out.println(apdu.getTipo());
+						System.out.println("Usuario: " + apdu.getUsuario());
+						System.out.println("Grupo: " + apdu.getGrupo());
+
+						if (apdu.getMensagem() != null && !apdu.getMensagem().isEmpty()) {
+							System.out.println("Mensagem: " + apdu.getMensagem());
+						}
+					}
 				}
 			}
 		}
 		catch (IOException e) {
+			System.out.println("Escuta TCP encerrada abruptamente.");
 			e.printStackTrace();
 		}
 		catch (ClassNotFoundException e) {
+			System.out.println("Escuta TCP encerrada abruptamente.");
 			e.printStackTrace();
 		}
 	}

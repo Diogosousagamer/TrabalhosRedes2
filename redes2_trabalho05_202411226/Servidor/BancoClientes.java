@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 19/06/2026
+* Ultima alteracao.: 20/06/2026
 * Nome.............: BancoClientes
 * Funcao...........: Thread que gerencia a conexao dos clientes.
                      
@@ -15,6 +15,7 @@ import java.net.*;
 public class BancoClientes extends Thread {
 	private Socket conexao;
 	private String ipCliente;
+	private APDU apduRecebida;
 
 	public BancoClientes(Socket conexao, String ipCliente) {
 		this.conexao = conexao;
@@ -28,14 +29,11 @@ public class BancoClientes extends Thread {
 
 			while (!conexao.isClosed()) {
 				String mensagem = (String) entrada.readObject();
-				APDU apdu = APDU.decodificarMensagem(mensagem);
-				processarMensagem(apdu);
+				if (mensagem != null && !mensagem.isEmpty()) apduRecebida = APDU.decodificarMensagem(mensagem);
+				if (apduRecebida != null) processarMensagem(apduRecebida);
 			}
 		}
 		catch (IOException e) {
-			e.printStackTrace();
-		}
-		catch (EOFException e) {
 			e.printStackTrace();
 		}
 		catch (ClassNotFoundException e) {
@@ -47,23 +45,28 @@ public class BancoClientes extends Thread {
 	}
 
 	private void processarMensagem(APDU apdu) {
-		System.out.println("Tipo: " + apdu.getTipo());
-		System.out.println("Usuario: " + apdu.getUsuario());
-		System.out.println("Grupo: " + apdu.getGrupo());
-		if (!apdu.getMensagem().isEmpty()) System.out.println("Mensagem: " + apdu.getMensagem());
+		if (apdu != null) {
+			System.out.println("Tipo: " + apdu.getTipo());
+			System.out.println("Usuario: " + apdu.getUsuario());
+			System.out.println("Grupo: " + apdu.getGrupo());
 
-		String tipo = apdu.getTipo();
+			if (apdu.getMensagem() != null && !apdu.getMensagem().isEmpty()) {
+				System.out.println("Mensagem: " + apdu.getMensagem());
+			}
 
-		switch (tipo) {
-			case "JOIN":
-				break;
+			String tipo = apdu.getTipo();
 
-			case "LEAVE":
-				break;
+			switch (tipo) {
+				case "JOIN":
+					break;
 
-			default:
-				break;
-		} 
+				case "LEAVE":
+					break;
+
+				default:
+					break;
+			} 
+		}
 	}
 
 	private void encerrarConexao() {

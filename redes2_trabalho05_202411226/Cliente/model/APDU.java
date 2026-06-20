@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 19/06/2026
+* Ultima alteracao.: 20/06/2026
 * Nome.............: APDU
 * Funcao...........: Classe que gerencia as operacoes das APDUs.
                      
@@ -55,7 +55,7 @@ public class APDU {
 	}
 
 	public static APDU decodificarMensagem(String msg) {
-		String[] partes = msg.split("//*");
+		String[] partes = msg.split("\\*");
 
 		String tipoLocal = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		String usuarioLocal = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
