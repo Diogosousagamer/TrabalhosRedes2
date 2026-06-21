@@ -73,6 +73,10 @@ OBS: o grafo é direcionado; ou seja, o custo é diferente dependendo da direç�
 
 ![ESTADOENLACE5][estadoenlacebackbone]
 
+## Trabalho 5 - DsgChat (Aplicativo de Instant Messaging - Cliente/Servidor)
+
+Este trabalho se trata de um aplicativo de mensagens instantâneas (de maneira similar ao WhatsApp, Telegram etc.) que visa demonstrar o funcionamento dos protocolos TCP e UDP da camada de transporte com base na arquitetura Cliente/Servidor - uma máquina (cliente) que solicita serviços para uma outra máquina (servidor), que se encarregará de executá-los. 
+
 <!-- MARKDOWN LINKS & IMAGES -->
 [inundacao]: readme-images/Inundacao1.PNG
 [inundacaobackbone]: readme-images/InundacaoBackbone.PNG
