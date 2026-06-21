@@ -66,7 +66,7 @@
             </HBox>
             <ScrollPane hbarPolicy="NEVER" layoutY="59.0" prefHeight="441.0" prefWidth="237.0" stylesheets="@../util/principal.css">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="439.0" prefWidth="235.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="439.0" prefWidth="237.0">
                      <children>
                         <VBox fx:id="listaGrupos" prefHeight="441.0" prefWidth="237.0" />
                      </children>
@@ -75,7 +75,7 @@
             </ScrollPane>
          </children>
       </AnchorPane>
-      <AnchorPane layoutX="237.0" prefHeight="500.0" prefWidth="513.0">
+      <AnchorPane fx:id="painelChat" layoutX="237.0" prefHeight="500.0" prefWidth="513.0">
          <children>
             <ImageView fitHeight="500.0" fitWidth="513.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -121,6 +121,27 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
+                  </Button>
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="painelAviso" prefHeight="500.0" prefWidth="750.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">
+         <children>
+            <AnchorPane layoutX="202.0" layoutY="150.0" prefHeight="200.0" prefWidth="346.0" style="-fx-background-color: #d9d9d9; -fx-background-radius: 15px;">
+               <children>
+                  <Label fx:id="lblAviso" layoutX="25.0" layoutY="37.0" prefHeight="76.0" prefWidth="296.0" text="Aviso" textAlignment="JUSTIFY" wrapText="true">
+                     <font>
+                        <Font name="Calibri" size="20.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="btnOk" layoutX="147.0" layoutY="135.0" mnemonicParsing="false" onAction="#ocultarAviso" prefHeight="21.0" prefWidth="49.0" styleClass="botao" stylesheets="@../util/principal.css" text="OK">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="Calibri Bold" size="15.0" />
+                     </font>
                   </Button>
                </children>
             </AnchorPane>

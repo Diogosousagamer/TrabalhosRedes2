@@ -47,7 +47,7 @@ public class clienteUDP extends Thread {
 				byte[] bytesRecebidos = new byte[1024];
 				DatagramPacket pacoteRecebido = new DatagramPacket(bytesRecebidos, bytesRecebidos.length);
 				
-				// A Thread fica PARADA aqui ate chegar um pacote UDP do servidor
+				// A Thread permanece parada ate chegar um pacote UDP do servidor
 				conexaoCliente.receive(pacoteRecebido);
 
 				// Converte os bytes recebidos para String de forma limpa

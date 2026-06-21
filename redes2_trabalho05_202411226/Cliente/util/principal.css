@@ -29,6 +29,10 @@
     -fx-background-color: #02c72d;
 }
 
+.botao-grupo {
+    -fx-background-color: #969696;
+}
+
 .text-field {
     -fx-background-color: #D9D9D9;
     -fx-padding: 8px;
