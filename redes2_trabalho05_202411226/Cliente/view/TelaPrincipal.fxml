@@ -28,7 +28,7 @@
                               <Font name="Calibri Bold" size="14.0" />
                            </font>
                         </Label>
-                        <Label fx:id="lblIpServidor" layoutX="10.0" layoutY="31.0" text="Endereço IP" textFill="WHITE">
+                        <Label fx:id="lblIpServidor" layoutX="10.0" layoutY="31.0" text="IP Servidor" textFill="WHITE">
                            <font>
                               <Font name="Calibri Bold" size="13.0" />
                            </font>
@@ -86,6 +86,14 @@
       </AnchorPane>
       <AnchorPane fx:id="painelJuntarGrupo" prefHeight="500.0" prefWidth="750.0" style="-fx-background-color: rgba(0, 0, 0, 0.5);" visible="false">
          <children>
+            <Button fx:id="btnFecharGrupo" contentDisplay="CENTER" layoutX="670.0" layoutY="36.0" mnemonicParsing="false" onAction="#fecharJanelaGrupo" prefHeight="39.0" prefWidth="40.0" styleClass="botao" stylesheets="@../util/principal.css" text="X">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+               <font>
+                  <Font name="Calibri Bold" size="18.0" />
+               </font>
+            </Button>
             <AnchorPane layoutX="257.0" layoutY="75.0" prefHeight="350.0" prefWidth="237.0" style="-fx-background-color: #2c332e; -fx-background-radius: 15px;">
                <children>
                   <Circle fx:id="imgGrupo" fill="DODGERBLUE" layoutX="117.0" layoutY="84.0" radius="54.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" />
@@ -114,7 +122,7 @@
                         <Font name="Calibri Light" size="13.0" />
                      </font>
                   </TextField>
-                  <Button fx:id="btnEntrarGrupo" alignment="CENTER" layoutX="84.0" layoutY="288.0" mnemonicParsing="false" styleClass="botao" stylesheets="@../util/principal.css" text="Entrar" textAlignment="CENTER">
+                  <Button fx:id="btnEntrarGrupo" alignment="CENTER" layoutX="84.0" layoutY="288.0" mnemonicParsing="false" onAction="#entrarGrupo" styleClass="botao" stylesheets="@../util/principal.css" text="Entrar" textAlignment="CENTER">
                      <font>
                         <Font name="Calibri Bold" size="18.0" />
                      </font>

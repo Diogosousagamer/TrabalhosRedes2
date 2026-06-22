@@ -27,7 +27,7 @@ public class clienteUDP extends Thread {
 	public void run() {
 		try {
 			conexaoCliente = new DatagramSocket();
-			enderecoIPServidor = InetAddress.getByName(Usuario.ipServidor);
+			enderecoIPServidor = InetAddress.getByName(Usuario.getUsuario().getIpServidor());
 			byte[] dadosSaida = new byte[1024];
 
 			String mensagemEnviada = (apdu != null) ? apdu.enviarMensagem() : "";

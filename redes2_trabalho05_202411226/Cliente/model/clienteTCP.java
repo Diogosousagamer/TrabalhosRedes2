@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 20/06/2026
+* Ultima alteracao.: 21/06/2026
 * Nome.............: clienteTCP
 * Funcao...........: Interface do cliente no protocolo TCP.
                      
@@ -25,7 +25,7 @@ public class clienteTCP extends Thread {
 	@Override
 	public void run() {
 		try {
-			host = Usuario.ipServidor;
+			host = Usuario.getUsuario().getIpServidor();
 			s = new Socket(host, PORTA);
 			saida = new ObjectOutputStream(s.getOutputStream());
 

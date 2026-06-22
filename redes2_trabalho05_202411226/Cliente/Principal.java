@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/06/2026
-* Ultima alteracao.: 21/06/2026
+* Ultima alteracao.: 23/06/2026
 * Nome.............: DsgChat (Principal/Cliente)
 * Funcao...........: Aplicativo de Instant Messaging desenvolvido utilizando protocolos
                      da camada de transporte TCP/UDP (Cliente).
@@ -32,6 +32,7 @@ public class Principal extends Application {
 		// Inicializa os controllers de cada tela
 		TelaMenuController TelaMenuController = new TelaMenuController();
 		TelaPrincipalController TelaPrincipalController = new TelaPrincipalController();
+		TelaGrupoController TelaGrupoController = new TelaGrupoController();
 		
 		// Carrega o arquivo FXML e gera uma nova cena
 		Parent root = FXMLLoader.load(getClass().getResource("/view/TelaMenu.fxml"));

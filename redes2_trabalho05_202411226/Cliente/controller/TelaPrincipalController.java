@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 20/06/2026
+* Ultima alteracao.: 22/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -40,8 +40,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import model.clienteTCP;
+import model.clienteUDP;
 import model.APDU;
 import model.Grupo;
+import model.Mensagem;
 import model.Usuario;
 
 public class TelaPrincipalController implements Initializable {
@@ -51,6 +54,7 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private AnchorPane painelJuntarGrupo;
 	@FXML private Button btnEncerrarSessao;
 	@FXML private Button btnEntrarGrupo;
+	@FXML private Button btnFecharGrupo;
 	@FXML private Button btnMudarImagem;
 	@FXML private Button btnOk;
 	@FXML private Circle imgGrupo;
@@ -62,6 +66,7 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private VBox listaGrupos;
 
 	// Variaveis e instancias
+	private ArrayList<Grupo> grupos;
 	public ArrayList<Node> componentesAntigos = new ArrayList<>(); 
 	private static final String GRUPO_VAZIO = "Insira o nome do grupo.";
 	private static final String GRUPO_EXISTENTE = "Voce ja entrou neste grupo.";
@@ -71,6 +76,8 @@ public class TelaPrincipalController implements Initializable {
 
 	@Override 
 	public void initialize(URL url, ResourceBundle rb) {
+		perfilGrupo = semFoto;
+		grupos = Usuario.getUsuario().getGrupos();
 		componentesAntigos.addAll(painelChat.getChildren());
 
 		txtGrupo.textProperty().addListener((obs, oldValue, newValue) -> {
@@ -90,7 +97,7 @@ public class TelaPrincipalController implements Initializable {
 		g.setSelected(true);
 		caixa.setStyle("-fx-background-color: #969696");
 
-		for (Grupo grupo : Usuario.grupos) {
+		for (Grupo grupo : grupos) {
 			if (!grupo.getNome().equals(g.getNome())) {
 				grupo.setSelected(false);
 			}
@@ -106,6 +113,9 @@ public class TelaPrincipalController implements Initializable {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaGrupo.fxml"));
 			Parent root = loader.load();
+
+			TelaGrupoController chat = loader.getController();
+			chat.carregarGrupo(g);
 
 			painelChat.getChildren().clear();
 			painelChat.getChildren().add(root);
@@ -137,11 +147,11 @@ public class TelaPrincipalController implements Initializable {
 		}
 
 		Grupo g = new Grupo(perfilGrupo, nomeGrupo);
-		Usuario.grupos.add(g);
+		grupos.add(g);
 		painelJuntarGrupo.setVisible(false);
-		Usuario.tcp.setAPDU(new APDU("JOIN", Usuario.nome, g.getNome()));
+		Usuario.getUsuario().getTCP().setAPDU(new APDU("JOIN", Usuario.getUsuario().getNome(), g.getNome()));
 
-		iniciarGrupos();
+		carregarGrupos();
 	}
 
 	@FXML
@@ -155,6 +165,11 @@ public class TelaPrincipalController implements Initializable {
 			perfilGrupo = new Image(caminhoImagem);
 			imgGrupo.setFill(new ImagePattern(perfilGrupo));
 		}
+	}
+
+	@FXML
+	private void fecharJanelaGrupo(ActionEvent event) {
+		painelJuntarGrupo.setVisible(false);
 	}
 
 	@FXML
@@ -173,7 +188,7 @@ public class TelaPrincipalController implements Initializable {
 	}	
 
 	private boolean novoGrupoExiste(String nome) {
-		for (Grupo g : Usuario.grupos) {
+		for (Grupo g : grupos) {
 			if (g.getNome().equals(nome)) {
 				return true;
 			}
@@ -183,19 +198,19 @@ public class TelaPrincipalController implements Initializable {
 	}
 
 	public void carregarInformacoes() {
-		// Carrega as informacoes basicas
-		lblUsuario.setText(Usuario.nome);
-		lblIpServidor.setText(Usuario.ipServidor);
-		imgPerfil.setFill(new ImagePattern(Usuario.perfil));
+		// Carrega as informacoes basicas do usuario (nome, ip do servidor e perfil)
+		lblUsuario.setText(Usuario.getUsuario().getNome());
+		lblIpServidor.setText("Servidor: " + Usuario.getUsuario().getIpServidor());
+		imgPerfil.setFill(new ImagePattern(Usuario.getUsuario().getPerfil()));
 
-		iniciarGrupos();
+		carregarGrupos();
 	}
 
-	public void iniciarGrupos() {
-		if (Usuario.grupos.isEmpty()) return;
+	public void carregarGrupos() {
+		if (grupos == null || grupos.isEmpty()) return;
 		if (!listaGrupos.getChildren().isEmpty()) listaGrupos.getChildren().clear();
 
-		for (Grupo g : Usuario.grupos) {
+		for (Grupo g : grupos) {
 			HBox grupo = new HBox();
 			grupo.setAlignment(Pos.CENTER_LEFT);
 			grupo.setPrefWidth(237);
@@ -205,6 +220,7 @@ public class TelaPrincipalController implements Initializable {
 			grupo.setCursor(Cursor.HAND);
 			grupo.getStyleClass().add("botao-grupo");
 			grupo.getStylesheets().add(getClass().getResource("/util/principal.css").toExternalForm());
+			if (g.isSelected()) grupo.setStyle("-fx-background-color: #969696");
 
 			Circle imagemGrupo = new Circle();
 			imagemGrupo.setRadius(25);
@@ -221,8 +237,11 @@ public class TelaPrincipalController implements Initializable {
 			nomeGrupo.setFont(Font.font("Calibri", FontWeight.BOLD, 14));
 			nomeGrupo.setTextFill(Color.WHITE);
 
-			String ultMsg = g.obterUltimaMensagem();
-			Label ultimaMensagem = new Label((ultMsg != null && !ultMsg.isEmpty()) ? ultMsg : "");
+			Mensagem ultMsg = g.obterUltimaMensagem();
+			boolean mensagemUsuario = (ultMsg != null && ultMsg.getAutor().equals(Usuario.getUsuario().getNome()));
+
+			String autor = (mensagemUsuario) ? "Voce: " : ((ultMsg != null) ?  ultMsg.getAutor().getNome() + ": " : "");
+			Label ultimaMensagem = new Label((ultMsg != null && !ultMsg.getTexto().isEmpty()) ? autor + ultMsg.getTexto() : "");
 			ultimaMensagem.setFont(Font.font("Calibri", 12));
 			ultimaMensagem.setTextFill(Color.web("#7d7c7a"));
 

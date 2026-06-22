@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 20/06/2026
+* Ultima alteracao.: 21/06/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -80,7 +80,8 @@ public class TelaMenuController implements Initializable {
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
-		Usuario usuario = new Usuario(perfil, nome, ip);
+		Usuario.conectarUsuario(perfil, nome, ip);
+		Usuario.getUsuario().iniciarProtocolos();
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
 		Parent root = loader.load();
