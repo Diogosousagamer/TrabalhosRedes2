@@ -19,7 +19,7 @@ import controller.*;
 
 public class Principal extends Application {
 
-	/*
+  /*
    * ***************************************************************
    * Metodo: start
    * Funcao: configura a aplicacao
@@ -38,14 +38,14 @@ public class Principal extends Application {
 		Parent root = FXMLLoader.load(getClass().getResource("/view/TelaMenu.fxml"));
 		Scene scene = new Scene(root);
 
-    // Configura a janela
+    	// Configura a janela
 		stage.setScene(scene);
 		stage.setTitle("DsgChat");
 		stage.setResizable(false);
 		stage.show();
 	}
 
-	/*
+  /*
    * ***************************************************************
    * Metodo: main
    * Funcao: executa a aplicacao

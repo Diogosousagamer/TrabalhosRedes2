@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 20/06/2026
+* Ultima alteracao.: 23/06/2026
 * Nome.............: BancoClientes
 * Funcao...........: Thread que gerencia a conexao dos clientes.
                      
@@ -11,15 +11,18 @@
 import java.io.*;
 import java.lang.Thread;
 import java.net.*;
+import java.util.HashMap;
 
 public class BancoClientes extends Thread {
 	private Socket conexao;
 	private String ipCliente;
 	private APDU apduRecebida;
+	private BancoGrupos bancoGrupos;
 
 	public BancoClientes(Socket conexao, String ipCliente) {
 		this.conexao = conexao;
 		this.ipCliente = ipCliente;
+		bancoGrupos = BancoGrupos.getBancoGrupos();
 	}
 
 	@Override
@@ -34,10 +37,10 @@ public class BancoClientes extends Thread {
 			}
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Erro inesperado de entrada/saida: " + e.getMessage());
 		}
 		catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			System.err.println("Classe nao encontrada: " + e.getMessage());
 		}
 		finally {
 			encerrarConexao();
@@ -50,17 +53,23 @@ public class BancoClientes extends Thread {
 			System.out.println("Usuario: " + apdu.getUsuario());
 			System.out.println("Grupo: " + apdu.getGrupo());
 
-			if (apdu.getMensagem() != null && !apdu.getMensagem().isEmpty()) {
-				System.out.println("Mensagem: " + apdu.getMensagem());
-			}
+			String usuario = apdu.getUsuario();
+
+      HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
+			HashMap<String, String> listaUsuarioIp = bancoGrupos.getListaUsuarioIp();
+
+			listaIpUsuario.putIfAbsent(usuario, ipCliente);
+			listaUsuarioIp.putIfAbsent(ipCliente, usuario);
 
 			String tipo = apdu.getTipo();
 
 			switch (tipo) {
 				case "JOIN":
+					bancoGrupos.adicionarUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());
 					break;
 
 				case "LEAVE":
+					bancoGrupos.removerUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());
 					break;
 
 				default:
@@ -72,11 +81,19 @@ public class BancoClientes extends Thread {
 	private void encerrarConexao() {
 		try {
 			if (!conexao.isClosed()) conexao.close();
-			System.out.println("Conexao encerrada com o cliente: " + ipCliente);
+
+			String usuarioDesconectado = bancoGrupos.getListaUsuarioIp().get(ipCliente);
+
+			if (usuarioDesconectado != null) {
+				bancoGrupos.limparGruposUsuario(usuarioDesconectado);
+				bancoGrupos.removerUsuarioIp(usuarioDesconectado);
+				bancoGrupos.removerIpUsuario(ipCliente);
+			}
+
+			System.out.println("Conexao encerrada pelo cliente: " + ipCliente);
 		}
 		catch (Exception e) {
-			System.out.println("Erro ao encerrar a conexao.");
-			e.printStackTrace();
+			System.err.println("Erro ao encerrar a conexao.");
 		}
 	}
 }

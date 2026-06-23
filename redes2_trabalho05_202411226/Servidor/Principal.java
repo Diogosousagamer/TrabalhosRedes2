@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/06/2026
-* Ultima alteracao.: 21/06/2026
+* Ultima alteracao.: 23/06/2026
 * Nome.............: DsgChat (Principal/Servidor)
 * Funcao...........: Aplicativo de Instant Messaging desenvolvido utilizando protocolos
                      da camada de transporte TCP/UDP (Servidor).
@@ -23,6 +23,7 @@ public class Principal {
 		// Inicializa os servidores TCP e UDP
 		servidorUDP serverUDP = new servidorUDP();
 		servidorTCP serverTCP = new servidorTCP();
+		
 		serverUDP.start();
 		serverTCP.start();
 	}

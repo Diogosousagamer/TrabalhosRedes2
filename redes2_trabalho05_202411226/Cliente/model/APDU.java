@@ -33,7 +33,7 @@ public class APDU {
 	}
 
 	public String enviarMensagem() {
-		return (this.mensagem.isEmpty()) ? codificarMensagem(this.tipo, this.usuario, this.grupo)
+		return (this.mensagem == null || this.mensagem.isEmpty()) ? codificarMensagem(this.tipo, this.usuario, this.grupo)
 		       : codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem);
 	}
 
