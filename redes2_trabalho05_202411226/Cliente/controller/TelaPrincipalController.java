@@ -13,8 +13,6 @@ package controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -31,13 +29,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -57,10 +55,7 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private Button btnEncerrarSessao;
 	@FXML private Button btnEntrarGrupo;
 	@FXML private Button btnFecharGrupo;
-	@FXML private Button btnMudarImagem;
 	@FXML private Button btnOk;
-	@FXML private Circle imgGrupo;
-	@FXML private Circle imgPerfil;
 	@FXML private Label lblAviso;
 	@FXML private Label lblIpServidor;
 	@FXML private Label lblUsuario;
@@ -72,8 +67,6 @@ public class TelaPrincipalController implements Initializable {
 	private ArrayList<Node> componentesAntigos = new ArrayList<>(); 
 	private static final String GRUPO_VAZIO = "Insira o nome do grupo.";
 	private static final String GRUPO_EXISTENTE = "Voce ja entrou neste grupo.";
-	private static final Image semFoto = new Image(TelaMenuController.class.getResource("/img/SemFoto.png").toExternalForm());
-	private Image perfilGrupo;
 	public static volatile TelaPrincipalController principal;
 
   /*
@@ -97,6 +90,19 @@ public class TelaPrincipalController implements Initializable {
 				txtGrupo.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px; -fx-prompt-text-fill: #3a3d3a");
 			}
 		});
+
+    // Caso o usuario apertar ENTER enquanto estiver interagindo com o txtGrupo,
+    // o evento de entrar grupo eh executado
+		txtGrupo.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				try {
+					entrarGrupo(new ActionEvent());
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});	
 
     // Carrega a instancia volatil do controller
 		principal = this;
@@ -170,9 +176,7 @@ public class TelaPrincipalController implements Initializable {
 
 	@FXML
 	private void juntarGrupo(ActionEvent event) {
-		// Carrega o perfil e a caixa de texto contendo o nome do grupo
-		perfilGrupo = semFoto;
-		imgGrupo.setFill(new ImagePattern(semFoto));
+		// Esvazia qualquer texto escrito no nome do grupo
 		txtGrupo.clear();
 
 		// Exibe a janela de adicionar grupos
@@ -207,42 +211,15 @@ public class TelaPrincipalController implements Initializable {
 		} // Fim do bloco if/else if
 
     // Cria um novo grupo, adiciona a lista de grupos e oculta o painel
-		Grupo g = new Grupo(perfilGrupo, nomeGrupo);
+		Grupo g = new Grupo(nomeGrupo);
 		grupos.add(g);
 		painelJuntarGrupo.setVisible(false);
 
-		byte[] perfil = Files.readAllBytes(Paths.get(Usuario.getUsuario().getCaminhoImagem()));
-
 		// Envia uma nova APDU JOIN para o servidor TCP
-		Usuario.getUsuario().getTCP().enviarAPDU(new APDU("JOIN", Usuario.getUsuario().getNome(), g.getNome(), perfil, Usuario.getUsuario().getIpServidor()));
+		Usuario.getUsuario().getTCP().enviarAPDU(new APDU("JOIN", Usuario.getUsuario().getNome(), g.getNome()));
 
     // Recarrega os grupos
 		carregarGrupos();
-	}
- 
-  /*
-   * ***************************************************************
-   * Metodo: mudarImagem
-   * Funcao: altera a imagem do perfil do grupo
-   * Parametros: ActionEvent event - evento gerado ao clicar no botao
-   * Retorno: void
-   ****************************************************************/
-
-	@FXML
-	private void mudarImagem(ActionEvent event) {
-		// Abre uma janela para que o usuario possa escolher uma imagem
-		FileChooser fc = new FileChooser();
-		fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
-		File f = fc.showOpenDialog(new Stage());
-
-    // Inicio do bloco if
-		if (f != null) {
-			// Importa a imagem para o perfil do grupo caso ela estiver
-			// sido escolhida pelo usuario
-			String caminhoImagem = f.toURI().toString();
-			perfilGrupo = new Image(caminhoImagem);
-			imgGrupo.setFill(new ImagePattern(perfilGrupo));
-		} // Fim do bloco if
 	}
 
   /*
@@ -326,7 +303,6 @@ public class TelaPrincipalController implements Initializable {
 		// Carrega as informacoes basicas do usuario (nome, ip do servidor e perfil)
 		lblUsuario.setText(Usuario.getUsuario().getNome());
 		lblIpServidor.setText("Servidor: " + Usuario.getUsuario().getIpServidor());
-		imgPerfil.setFill(new ImagePattern(Usuario.getUsuario().getPerfil()));
 
     // Carrega os grupos
 		carregarGrupos();
@@ -364,12 +340,6 @@ public class TelaPrincipalController implements Initializable {
 			grupo.getStylesheets().add(getClass().getResource("/util/principal.css").toExternalForm());
 			if (g.isSelected()) grupo.setStyle("-fx-background-color: #969696");
 
-      // Cria a imagem do perfil do grupo
-			Circle imagemGrupo = new Circle();
-			imagemGrupo.setRadius(25);
-			imagemGrupo.setStrokeWidth(0);
-			imagemGrupo.setFill(new ImagePattern(g.getPerfilGrupo()));
-
       // Cria a caixa contendo as informacoes do grupo (nome e mensagem mais recente)
 			VBox infoGrupo = new VBox();
 			infoGrupo.setAlignment(Pos.CENTER_LEFT);
@@ -385,10 +355,10 @@ public class TelaPrincipalController implements Initializable {
       // Obtem a mensagem mais recente (se houver) e verifica se ela ja foi definida e ela corresponde a uma
       // mensagem enviada pelo usuario
 			Mensagem ultMsg = g.obterUltimaMensagem();
-			boolean mensagemUsuario = (ultMsg != null && ultMsg.getAutor().getNome().equals(Usuario.getUsuario().getNome()));
+			boolean mensagemUsuario = (ultMsg != null && ultMsg.getAutor().equals(Usuario.getUsuario().getNome()));
 
       // Obtem o autor da mensagem e carrega o texto contendo a mensagem mais recente
-			String autor = (mensagemUsuario) ? "Voce: " : ((ultMsg != null) ?  ultMsg.getAutor().getNome() + ": " : "");
+			String autor = (mensagemUsuario) ? "Voce: " : ((ultMsg != null) ?  ultMsg.getAutor() + ": " : "");
 			Label ultimaMensagem = new Label((ultMsg != null && !ultMsg.getTexto().isEmpty()) ? autor + ultMsg.getTexto() : "");
 			ultimaMensagem.setFont(Font.font("Calibri", 12));
 			ultimaMensagem.setTextFill(Color.web("#dfe1e6"));
@@ -396,8 +366,13 @@ public class TelaPrincipalController implements Initializable {
       // Adiciona todas as Labels na caixa de informacoes
 			infoGrupo.getChildren().addAll(nomeGrupo, ultimaMensagem);
 
+      // Gera a Label informando a hora em que foi enviada a ultima mensagem
+			Label envioUltimaMensagem = new Label((ultMsg != null) ? ultMsg.formatarHora() : "");
+			envioUltimaMensagem.setFont(Font.font("Calibri", 14));
+			envioUltimaMensagem.setTextFill(Color.WHITE);
+
       // Adiciona a imagem e as informacoes dentro do botao do grupo
-			grupo.getChildren().addAll(imagemGrupo, infoGrupo);
+			grupo.getChildren().addAll(infoGrupo, envioUltimaMensagem);
 
       // Importa o evento que abre o chat do grupo 
       // caso o usuario clicar no botao

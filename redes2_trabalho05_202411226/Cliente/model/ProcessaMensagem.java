@@ -2,18 +2,19 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 24/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 25/06/2026
 * Nome.............: ProcessaMensagem
-* Funcao...........: Thread que processa as APDUs enviadas para o servidor.
+* Funcao...........: Thread que processa as APDUs enviadas para o cliente.
                      
 *************************************************************** */
 
 package model;
 
+import controller.TelaGrupoController;
 import java.io.*;
 import java.net.*;
 import java.lang.Thread;
-import controller.TelaGrupoController;
+import java.time.LocalDateTime;
 import javafx.application.Platform;
 
 public class ProcessaMensagem extends Thread {
@@ -27,10 +28,11 @@ public class ProcessaMensagem extends Thread {
 	public void run() {
 		try {
 			APDU apdu = APDU.decodificarMensagem(mensagem);
-			Usuario u = Usuario.buscarUsuarioPorNome(apdu.getUsuario());
+			String usuario = apdu.getUsuario();
+			LocalDateTime tempoEnvio = apdu.getTempoEnvio();
 
-			if (apdu.getTipo().equals("SEND") && u != null) {
-				Mensagem m = new Mensagem(apdu.getMensagem(), u, apdu.getTempoEnvio());
+			if (apdu.getTipo().equals("SEND")) {
+				Mensagem m = new Mensagem(apdu.getMensagem(), usuario, tempoEnvio);
 
 				for (Grupo g : Usuario.getUsuario().getGrupos()) {
 					if (g.getNome().equals(apdu.getGrupo())) {

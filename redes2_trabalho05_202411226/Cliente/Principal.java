@@ -15,6 +15,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.application.Application;
+import javafx.scene.text.Font;
 import controller.*;
 
 public class Principal extends Application {
@@ -38,7 +39,10 @@ public class Principal extends Application {
 		Parent root = FXMLLoader.load(getClass().getResource("/view/TelaMenu.fxml"));
 		Scene scene = new Scene(root);
 
-    	// Configura a janela
+   	// Carrega a fonte dentro da interface do programa
+		Font.loadFont(getClass().getResourceAsStream("/util/VCR_OSD_MONO_1.001.ttf"), 18);
+
+    // Configura a janela
 		stage.setScene(scene);
 		stage.setTitle("DsgChat");
 		stage.setResizable(false);

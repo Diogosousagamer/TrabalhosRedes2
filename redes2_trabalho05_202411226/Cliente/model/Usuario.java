@@ -15,55 +15,29 @@ import javafx.scene.image.Image;
 
 public class Usuario {
   // Variaveis e instancias
-  private Image perfil;
   private String nome;
   private String ipServidor;
-  private String caminhoImagem;
   private ArrayList<Grupo> grupos;
   private clienteTCP tcp;
   private clienteUDP udp;
   private static Usuario usuario;
-  private static ArrayList<Usuario> usuariosConectados;
 
-  public Usuario(Image perfil, String nome, String ipServidor, String caminhoImagem) {
-    this.perfil = perfil;
+  public Usuario(String nome, String ipServidor) {
     this.nome = nome;
     this.ipServidor = ipServidor;
-    this.caminhoImagem = caminhoImagem;
     this.grupos = new ArrayList<>();
-    this.usuariosConectados = new ArrayList<>();
   }
 
-  public static boolean conectarUsuario(Image perfil, String nome, String ipServidor, String caminhoImagem) {
+  public static boolean conectarUsuario(String nome, String ipServidor) {
     try {
-      if (usuario == null) usuario = new Usuario(perfil, nome, ipServidor, caminhoImagem);
+      if (usuario == null) usuario = new Usuario(nome, ipServidor);
       usuario.iniciarProtocolos();
-      registrarUsuarioNaRede(usuario);
       return true;
     }
     catch (Exception e) {
       System.err.println("Nao foi possivel conectar ao servidor " + ipServidor + ". Tente novamente mais tarde.");
       return false;
     }
-  }
-
-  public static void registrarUsuarioNaRede(Usuario u) {
-    usuariosConectados.removeIf(usuario -> usuario.getNome().equals(u.getNome()));
-    usuariosConectados.add(u);
-  }
-
-  public static Usuario buscarUsuarioPorNome(String u) {
-    for (Usuario usuario : usuariosConectados) {
-      if (usuario.getNome().equalsIgnoreCase(u)) {
-        return usuario;
-      }
-    }
-
-    return null;
-  }
-
-  public static void removerUsuarioDaRede(Usuario u) {
-    usuariosConectados.removeIf(user -> user.getNome().equals(u.getNome()));
   }
 
   public static Usuario getUsuario() {
@@ -95,22 +69,6 @@ public class Usuario {
 
   public String getNome() { 
   	return nome; 
-  }
-
-  public void setPerfil(Image perfil) {
-  	this.perfil = perfil;
-  }
-
-  public Image getPerfil() { 
-  	return perfil; 
-  }
-
-  public void setCaminhoImagem(String img) {
-    this.caminhoImagem = img;
-  }
-
-  public String getCaminhoImagem() {
-    return caminhoImagem;
   }
 
   public ArrayList<Grupo> getGrupos() { 

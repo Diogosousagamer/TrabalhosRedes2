@@ -36,6 +36,8 @@ public class clienteUDP extends Thread {
 			String mensagemEnviada = (apdu != null) ? apdu.enviarMensagem() : "";
 			dadosSaida = mensagemEnviada.getBytes();
 			DatagramPacket pacoteEnviado = new DatagramPacket(dadosSaida, dadosSaida.length, ipServidor, PORTA);
+
+			conexaoCliente.send(pacoteEnviado);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

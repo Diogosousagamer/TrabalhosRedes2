@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 21/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 25/06/2026
 * Nome.............: Mensagem
 * Funcao...........: Classe que controla as operacoes das mensagens enviadas no chat do aplicativo.
                      
@@ -15,16 +15,16 @@ import java.time.format.DateTimeFormatter;
 
 public class Mensagem {
 	private String texto;
-	private Usuario autor;
+	private String autor;
 	private LocalDateTime tempoEnvio;
 
-	public Mensagem(String texto, Usuario autor) {
+	public Mensagem(String texto, String autor) {
 		this.texto = texto;
 		this.autor = autor;
 		tempoEnvio = LocalDateTime.now();
 	}
 
-	public Mensagem(String texto, Usuario autor, LocalDateTime tempoEnvio) {
+	public Mensagem(String texto, String autor, LocalDateTime tempoEnvio) {
 		this.texto = texto;
 		this.autor = autor;
 		this.tempoEnvio = tempoEnvio;
@@ -38,11 +38,11 @@ public class Mensagem {
 		return texto;
 	}
 
-	public void setAutor(Usuario autor) {
+	public void setAutor(String autor) {
 		this.autor = autor;
 	}
 
-	public Usuario getAutor() {
+	public String getAutor() {
 		return autor;
 	}
 
@@ -59,5 +59,12 @@ public class Mensagem {
 		String dataEnvio = tempoEnvio.format(formatador);
 
 		return dataEnvio;
+	}
+
+	public String formatarHora() {
+		DateTimeFormatter formatador = DateTimeFormatter.ofPattern("HH:mm");
+		String horaEnvio = tempoEnvio.format(formatador);
+
+		return horaEnvio;
 	}
 }

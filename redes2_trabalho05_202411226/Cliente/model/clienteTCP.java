@@ -13,8 +13,6 @@ package model;
 import java.io.*;
 import java.lang.Thread;
 import java.net.*;
-import java.util.Base64;
-import javafx.scene.image.Image;
 
 public class clienteTCP extends Thread {
 	// Variaveis e instancias
@@ -91,19 +89,14 @@ public class clienteTCP extends Thread {
 					APDU apdu = APDU.decodificarMensagem(msg);
 					String tipo = apdu.getTipo();
 					String usuario = apdu.getUsuario();
-					Image perfilUsuario = new Image(new ByteArrayInputStream(apdu.getPerfilUsuario()));
-					String ipServidor = apdu.getIpServidor();
-					Usuario u = new Usuario(perfilUsuario, usuario, ipServidor, Base64.getEncoder().encodeToString(apdu.getPerfilUsuario()));
 
 					switch (tipo) {
 						case "JOIN":
-							Usuario.registrarUsuarioNaRede(u);
-							System.out.println("Usuario " + u.getNome() + " entrou no grupo.");
+							System.out.println("Usuario " + usuario + " entrou no grupo.");
 							break;
 
 						case "LEAVE":
-							Usuario.removerUsuarioDaRede(u);
-							System.out.println("Usuario " + u.getNome() + " saiu do grupo.");
+							System.out.println("Usuario " + usuario + " saiu do grupo.");
 							break;
 
 						default:
@@ -113,10 +106,10 @@ public class clienteTCP extends Thread {
 			}
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 		catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 	}
 }

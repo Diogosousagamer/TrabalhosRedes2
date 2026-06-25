@@ -29,7 +29,7 @@ public class ProcessaMensagem extends Thread {
 			APDU apdu = APDU.decodificarMensagem(mensagem);
 
 			if (apdu.getTipo().equals("SEND")) {
-				TelaPrincipalController.controller.logUDP(apdu.getTipo());
+				TelaPrincipalController.controller.logUDP("Tipo: " + apdu.getTipo());
 				TelaPrincipalController.controller.logUDP("Usuario: " + apdu.getUsuario());
 				TelaPrincipalController.controller.logUDP("Grupo: " + apdu.getGrupo());
 

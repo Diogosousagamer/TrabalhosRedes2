@@ -38,3 +38,7 @@
     -fx-padding: 8px;
     -fx-background-radius: 15px;
 }
+
+.label {
+    -fx-font-family: 'VCR OSD Mono';
+}

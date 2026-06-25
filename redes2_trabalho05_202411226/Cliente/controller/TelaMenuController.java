@@ -27,9 +27,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.ImagePattern;
-import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Usuario;
@@ -37,28 +38,19 @@ import model.Usuario;
 public class TelaMenuController implements Initializable {
 	// Componentes da interface
 	@FXML private AnchorPane painelAviso;
-	@FXML private Button btnAlterarPerfil;
 	@FXML private Button btnEntrar;
 	@FXML private Button btnOk;
-	@FXML private Circle imgPerfil;
 	@FXML private Label lblAviso;
 	@FXML private TextField txtNomeUsuario;
 	@FXML private TextField txtIpServidor;
 
   // Variaveis e instancias
-	private static final Image semFoto = new Image(TelaMenuController.class.getResource("/img/SemFoto.png").toExternalForm());
-	private Image perfil;
-	private String caminhoImagem;
 	private final String DADOS_VAZIOS = "Preencha todos os dados obrigatorios antes de prosseguir.";
 	private boolean usuarioVazio;
 	private boolean ipVazio;
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		caminhoImagem = "/img/SemFoto.png";
-		perfil = semFoto;
-		imgPerfil.setFill(new ImagePattern(perfil));
-
 		txtNomeUsuario.textProperty().addListener((obs, oldValue, newValue) -> {
 			if (usuarioVazio && !newValue.isEmpty()) {
 				txtNomeUsuario.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px");
@@ -72,6 +64,32 @@ public class TelaMenuController implements Initializable {
 				if (ipVazio) ipVazio = false;
 			}
 		});
+
+    // Caso o usuario apertar ENTER enquanto estiver interagindo com o txtNomeUsuario,
+    // o evento de entrar no sistema eh executado
+		txtNomeUsuario.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				try {
+					entrar(new ActionEvent());
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});	
+
+    // Caso o usuario apertar ENTER enquanto estiver interagindo com o txtIpServidor,
+    // o evento de entrar no sistema eh executado
+		txtIpServidor.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				try {
+					entrar(new ActionEvent());
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});	
 	}
 
 	@FXML
@@ -81,7 +99,7 @@ public class TelaMenuController implements Initializable {
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
-		boolean conectado = Usuario.conectarUsuario(perfil, nome, ip, caminhoImagem);
+		boolean conectado = Usuario.conectarUsuario(nome, ip);
 
 		if (conectado) {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
@@ -93,19 +111,6 @@ public class TelaMenuController implements Initializable {
 		}
 		else {
 			System.err.println("Nao conectado. Tente novamente mais tarde.");
-		}
-	}
-
-	@FXML
-	private void alterarPerfil(ActionEvent event) {
-		FileChooser fc = new FileChooser();
-		fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
-		File f = fc.showOpenDialog(new Stage());
-
-		if (f != null) {
-			caminhoImagem = f.toURI().toString();
-			perfil = new Image(caminhoImagem);
-			imgPerfil.setFill(new ImagePattern(perfil));
 		}
 	}
 

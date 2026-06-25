@@ -12,8 +12,6 @@ package controller;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -77,8 +75,7 @@ public class TelaGrupoController implements Initializable {
   @FXML
   private void sairGrupo(ActionEvent event) throws IOException {
     Usuario.getUsuario().getGrupos().remove(g);
-    byte[] perfilBytes = Files.readAllBytes(Paths.get(Usuario.getUsuario().getCaminhoImagem()));
-    Usuario.getUsuario().getTCP().enviarAPDU(new APDU("LEAVE", Usuario.getUsuario().getNome(), g.getNome(), perfilBytes, Usuario.getUsuario().getIpServidor()));
+    Usuario.getUsuario().getTCP().enviarAPDU(new APDU("LEAVE", Usuario.getUsuario().getNome(), g.getNome()));
     sairChat(event);
   }
 
@@ -87,14 +84,13 @@ public class TelaGrupoController implements Initializable {
     if (txtMensagem.getText().isEmpty()) return;
     
     String mensagem = txtMensagem.getText();
-    Usuario autor = Usuario.getUsuario();
+    String autor = Usuario.getUsuario().getNome();
     Mensagem m = new Mensagem(mensagem, autor);
 
     txtMensagem.clear();
 
     g.adicionarMensagem(m);
-    byte[] perfilBytes = Files.readAllBytes(Paths.get(m.getAutor().getCaminhoImagem()));
-    Usuario.getUsuario().getUDP().enviarAPDU(new APDU("SEND", m.getAutor().getNome(), g.getNome(), perfilBytes, m.getAutor().getIpServidor(), m.getTexto(), m.getTempoEnvio()));
+    Usuario.getUsuario().getUDP().enviarAPDU(new APDU("SEND", m.getAutor(), g.getNome(), m.getTexto(), m.getTempoEnvio()));
     carregarMensagens();
   }
 
@@ -110,18 +106,13 @@ public class TelaGrupoController implements Initializable {
     if (!listaMensagens.getChildren().isEmpty()) listaMensagens.getChildren().clear();
 
     for (Mensagem m : mensagens) {
-      boolean ehUsuario = (m.getAutor() != null && m.getAutor().getNome().equals(Usuario.getUsuario().getNome()));
+      boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
 
       HBox mensagem = new HBox();
       mensagem.setAlignment((ehUsuario) ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
       mensagem.setPadding(new Insets(10, 10, 10, 10));
       mensagem.setSpacing(10);
       mensagem.setFillHeight(true);
-
-      Circle perfilAutor = new Circle();
-      perfilAutor.setRadius(20);
-      perfilAutor.setStrokeWidth(0);
-      perfilAutor.setFill(new ImagePattern(m.getAutor().getPerfil()));
 
       VBox conteudoMensagem = new VBox();
       conteudoMensagem.setAlignment((ehUsuario) ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
@@ -131,7 +122,7 @@ public class TelaGrupoController implements Initializable {
       conteudoMensagem.setPrefWidth(VBox.USE_COMPUTED_SIZE);
       conteudoMensagem.setMaxWidth(400);
 
-      Label autor = new Label((m.getAutor().getNome() != null && !m.getAutor().getNome().isEmpty()) ? m.getAutor().getNome() : "");
+      Label autor = new Label((m.getAutor() != null && !m.getAutor().isEmpty()) ? m.getAutor() : "");
       autor.setFont(Font.font("Calibri", FontWeight.BOLD, 17));
       autor.setTextFill(Color.WHITE); 
 
@@ -158,13 +149,7 @@ public class TelaGrupoController implements Initializable {
 
       conteudoMensagem.getChildren().addAll(autor, painelMensagem, horario);
       
-      if (ehUsuario) {
-        mensagem.getChildren().addAll(conteudoMensagem, perfilAutor);
-      }
-      else {
-        mensagem.getChildren().addAll(perfilAutor, conteudoMensagem);
-      }
-
+      mensagem.getChildren().add(conteudoMensagem);
       listaMensagens.getChildren().add(mensagem);
     }
 
