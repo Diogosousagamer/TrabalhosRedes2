@@ -56,11 +56,11 @@
             </Button>
          </children>
       </AnchorPane>
-      <ScrollPane hbarPolicy="NEVER" layoutY="67.0" prefHeight="368.0" prefWidth="513.0" stylesheets="@../util/grupo.css">
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" layoutY="67.0" prefHeight="368.0" prefWidth="513.0" stylesheets="@../util/grupo.css">
         <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="512.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="512.0">
                <children>
-                  <VBox fx:id="listaMensagens" alignment="BOTTOM_RIGHT" prefHeight="368.0" prefWidth="513.0" spacing="5.0">
+                  <VBox fx:id="listaMensagens" alignment="BOTTOM_RIGHT" prefWidth="513.0" spacing="5.0">
                      <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </padding>

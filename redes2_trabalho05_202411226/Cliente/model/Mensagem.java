@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 21/06/2026
-* Ultima alteracao.: 21/06/2026
+* Ultima alteracao.: 24/06/2026
 * Nome.............: Mensagem
 * Funcao...........: Classe que controla as operacoes das mensagens enviadas no chat do aplicativo.
                      
@@ -24,6 +24,12 @@ public class Mensagem {
 		tempoEnvio = LocalDateTime.now();
 	}
 
+	public Mensagem(String texto, Usuario autor, LocalDateTime tempoEnvio) {
+		this.texto = texto;
+		this.autor = autor;
+		this.tempoEnvio = tempoEnvio;
+	}
+
 	public void setTexto(String t) {
 		this.texto = t;
 	}
@@ -38,6 +44,10 @@ public class Mensagem {
 
 	public Usuario getAutor() {
 		return autor;
+	}
+
+	public void setTempoEnvio(LocalDateTime tempoEnvio) {
+		this.tempoEnvio = tempoEnvio;
 	}
 
 	public LocalDateTime getTempoEnvio() {

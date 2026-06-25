@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 23/06/2026
+* Ultima alteracao.: 25/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -13,6 +13,8 @@ package controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -74,33 +76,65 @@ public class TelaPrincipalController implements Initializable {
 	private Image perfilGrupo;
 	public static volatile TelaPrincipalController principal;
 
+  /*
+   * ***************************************************************
+   * Metodo: initialize
+   * Funcao: executa um conjunto de instrucoes durante a inicializacao da aplicacao
+   * Parametros: URL url: endereco do programa
+                 ResourceBundle rb: recursos para inicializacao
+   * Retorno: void
+   ****************************************************************/
+	
 	@Override 
 	public void initialize(URL url, ResourceBundle rb) {
+		// Salva os componentes do painel de chat vazio (caso nenhum grupo tiver sido aberto)
 		componentesAntigos.addAll(painelChat.getChildren());
 
+    // Adiciona um listener a caixa de texto do nome do grupo que age quando o usuario
+    // insere um novo texto
 		txtGrupo.textProperty().addListener((obs, oldValue, newValue) -> {
 			if (txtGrupo.getText().isEmpty() && !newValue.isEmpty()) {
 				txtGrupo.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px; -fx-prompt-text-fill: #3a3d3a");
 			}
 		});
 
+    // Carrega a instancia volatil do controller
 		principal = this;
+
+		// Carrega as informacoes do usuario
 		carregarInformacoes();
+
+    // Coloca o TCP para escutar solicitacoes de JOIN e LEAVE
+		Usuario.getUsuario().getTCP().receber();
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: abrirChat
+   * Funcao: abre a tela de chat ao selecionar um grupo
+   * Parametros: HBox caixa - caixa clicada
+                 Grupo g - grupo selecionado
+                 MouseEvent event - evento gerado ao clicar na caixa
+   * Retorno: void
+   ****************************************************************/
 
 	@FXML
 	private void abrirChat(HBox caixa, Grupo g, MouseEvent event) {
+		// Interrompe o metodo se o grupo ja estiver aberto		
 		if (g.isSelected()) return;
 
+    // Marca o grupo como selecionado e colore a caixa
 		g.setSelected(true);
 		caixa.setStyle("-fx-background-color: #969696");
 
+    // Desmarca todos os grupos que nao estiverem abertos
 		for (Grupo grupo : grupos) {
 			if (!grupo.getNome().equals(g.getNome())) {
 				grupo.setSelected(false);
 			}
 		}
 
+    // Descolore os botoes dos grupos para fins de demarcacao
 		for (Node filho : listaGrupos.getChildren()) {
 			if (filho instanceof HBox && !filho.equals(caixa)) {
 				HBox caixaAtual = (HBox) filho;
@@ -108,50 +142,94 @@ public class TelaPrincipalController implements Initializable {
 			}
 		}
 
+    // Inicio do bloco try/catch
 		try {
+			// Carrega a tela de chat
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaGrupo.fxml"));
 			Parent root = loader.load();
 
+      // Carrega o grupo na tela de chat
 			TelaGrupoController chat = loader.getController();
 			chat.carregarGrupo(g);
 
+      // Esvazia o painel e carrega os elementos da tela de chat
 			painelChat.getChildren().clear();
 			painelChat.getChildren().add(root);
 		}
 		catch (IOException e) {
+			// Em caso de excecao, sua origem eh rastreada no console
 			e.printStackTrace();
-		}
+		} // Fim do bloco try/catch
 	}
+
+  
+  /*
+   * ***************************************************************
+   * Metodo: juntarGrupo
+   * Funcao: exibe a janela de criacao de grupos
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
 
 	@FXML
 	private void juntarGrupo(ActionEvent event) {
+		// Carrega o perfil e a caixa de texto contendo o nome do grupo
 		perfilGrupo = semFoto;
 		imgGrupo.setFill(new ImagePattern(semFoto));
 		txtGrupo.clear();
+
+		// Exibe a janela de adicionar grupos
 		painelJuntarGrupo.setVisible(true);
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: entrarGrupo
+   * Funcao: entra em um novo grupo
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
 	@FXML
-	private void entrarGrupo(ActionEvent event) {
+	private void entrarGrupo(ActionEvent event) throws IOException {
+		// Obtem o nome do grupo a ser criado
 		String nomeGrupo = txtGrupo.getText();
 
+    // Inicio do bloco if/else if
+    // Se o usuario nao tiver inserido nenhum nome para o grupo
 		if (nomeGrupo.isEmpty()) {
+			// Exibe um aviso ao usuario e interrompe o metodo
 			txtGrupo.setStyle("-fx-background-color: #D9D9D9; -fx-padding: 8px; -fx-background-radius: 15px; -fx-prompt-text-fill: #3a3d3a; -fx-border-color: #ff0000; -fx-border-radius: 15px; -fx-border-width: 2px");
 			carregarAviso(GRUPO_VAZIO);
 			return; 
 		}
 		else if (novoGrupoExiste(nomeGrupo)) {
+			// Porem se o usuario ja tiver entrado no grupo, ele tambem sera notificado disso
 			carregarAviso(GRUPO_EXISTENTE);
 			return;
-		}
+		} // Fim do bloco if/else if
 
+    // Cria um novo grupo, adiciona a lista de grupos e oculta o painel
 		Grupo g = new Grupo(perfilGrupo, nomeGrupo);
 		grupos.add(g);
 		painelJuntarGrupo.setVisible(false);
-		Usuario.getUsuario().getTCP().enviarAPDU(new APDU("JOIN", Usuario.getUsuario().getNome(), g.getNome()));
 
+		byte[] perfil = Files.readAllBytes(Paths.get(Usuario.getUsuario().getCaminhoImagem()));
+
+		// Envia uma nova APDU JOIN para o servidor TCP
+		Usuario.getUsuario().getTCP().enviarAPDU(new APDU("JOIN", Usuario.getUsuario().getNome(), g.getNome(), perfil, Usuario.getUsuario().getIpServidor()));
+
+    // Recarrega os grupos
 		carregarGrupos();
 	}
+ 
+  /*
+   * ***************************************************************
+   * Metodo: mudarImagem
+   * Funcao: altera a imagem do perfil do grupo
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
 
 	@FXML
 	private void mudarImagem(ActionEvent event) {
@@ -170,10 +248,26 @@ public class TelaPrincipalController implements Initializable {
 		} // Fim do bloco if
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: fecharJanelaGrupo
+   * Funcao: oculta o painel de criacao de grupos
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
 	@FXML
 	private void fecharJanelaGrupo(ActionEvent event) {
 		painelJuntarGrupo.setVisible(false);
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: encerrarSessao
+   * Funcao: encerra a sessao do usuario e retorna a tela de login
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
 
 	@FXML
 	private void encerrarSessao(ActionEvent event) throws IOException {
@@ -187,10 +281,26 @@ public class TelaPrincipalController implements Initializable {
 		stage.setScene(scene);
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: ocultarAviso
+   * Funcao: oculta o painel de aviso
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
 	@FXML
 	private void ocultarAviso(ActionEvent event) {
 		painelAviso.setVisible(false);
 	}	
+
+  /*
+   * ***************************************************************
+   * Metodo: novoGrupoExiste
+   * Funcao: verifica se ja existe um grupo com o nome especificado
+   * Parametros: String nome - nome do grupo
+   * Retorno: boolean
+   ****************************************************************/
 
 	private boolean novoGrupoExiste(String nome) {
 		// Inicio do bloco for
@@ -207,7 +317,15 @@ public class TelaPrincipalController implements Initializable {
 		return false;
 	}
 
-	public void carregarInformacoes() {
+  /*
+   * ***************************************************************
+   * Metodo: carregarInformacoes
+   * Funcao: carrega as informacoes do usuario na interface
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+	private void carregarInformacoes() {
 		// Carrega as informacoes basicas do usuario (nome, ip do servidor e perfil)
 		lblUsuario.setText(Usuario.getUsuario().getNome());
 		lblIpServidor.setText("Servidor: " + Usuario.getUsuario().getIpServidor());
@@ -217,7 +335,16 @@ public class TelaPrincipalController implements Initializable {
 		carregarGrupos();
 	}
 
-	public void carregarGrupos() {
+  /*
+   * ***************************************************************
+   * Metodo: carregarGrupos
+   * Funcao: carrega os grupos existentes do usuario
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
+	public synchronized void carregarGrupos() {
+		// Obtem os grupos do usuario		
 		grupos = Usuario.getUsuario().getGrupos();
 
 		// Interompe o metodo caso o usuario nao for parte de nenhum grupo
@@ -286,14 +413,30 @@ public class TelaPrincipalController implements Initializable {
 		} // Fim do bloco for
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: recarregarComponentes
+   * Funcao: recarrega o painel de chat vazio
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
 	public void recarregarComponentes() {
-		// Limpa a janela e recarrega os componentes da tela vazia
+		// Limpa a janela e recarrega os componentes do chat vazio
 		painelChat.getChildren().clear();
 		painelChat.getChildren().addAll(componentesAntigos);
 
     // Recarrega os grupos
 		carregarGrupos();
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: carregarAviso
+   * Funcao: exibe o painel de aviso na tela do usuario
+   * Parametros: String aviso - aviso a ser exibido
+   * Retorno: void
+   ****************************************************************/
 
 	private void carregarAviso(String aviso) {
 		lblAviso.setText(aviso);

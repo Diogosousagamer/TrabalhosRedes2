@@ -1,0 +1,29 @@
+.caixaTexto {
+	-fx-background-color: black;
+	-fx-background-radius: 15px;
+	-fx-border-radius: 15px;
+	-fx-padding: 4px;
+	-fx-text-fill: #16b550;
+	-fx-font-family: 'VCR OSD Mono';
+	-fx-font-size: 13px;
+}
+
+.caixaTexto .content {
+	-fx-background-color: black;
+	-fx-background-radius: 11px;
+	-fx-padding: 4px;
+	-fx-font-family: 'VCR OSD Mono';
+	-fx-font-size: 13px;
+}
+
+.caixaTexto .viewport {
+	-fx-background-color: transparent;
+}
+
+.caixaTexto:focused {
+    -fx-background-color: black;
+}
+
+.labels {
+	-fx-font-family: 'VCR OSD Mono';
+}

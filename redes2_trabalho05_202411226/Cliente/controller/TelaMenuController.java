@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 21/06/2026
+* Ultima alteracao.: 25/06/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -55,6 +55,7 @@ public class TelaMenuController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
+		caminhoImagem = "/img/SemFoto.png";
 		perfil = semFoto;
 		imgPerfil.setFill(new ImagePattern(perfil));
 
@@ -80,15 +81,19 @@ public class TelaMenuController implements Initializable {
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
-		Usuario.conectarUsuario(perfil, nome, ip);
-		Usuario.getUsuario().iniciarProtocolos();
+		boolean conectado = Usuario.conectarUsuario(perfil, nome, ip, caminhoImagem);
 
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
-		Parent root = loader.load();
-		Scene scene = new Scene(root);
+		if (conectado) {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
+			Parent root = loader.load();
+			Scene scene = new Scene(root);
 
-		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-		stage.setScene(scene);
+			Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+			stage.setScene(scene);
+		}
+		else {
+			System.err.println("Nao conectado. Tente novamente mais tarde.");
+		}
 	}
 
 	@FXML

@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaPrincipalController">
    <children>
       <AnchorPane prefHeight="500.0" prefWidth="237.0" style="-fx-background-color: #2c332e;">
          <children>
@@ -64,11 +64,11 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </padding>
             </HBox>
-            <ScrollPane hbarPolicy="NEVER" layoutY="59.0" prefHeight="441.0" prefWidth="237.0" stylesheets="@../util/principal.css">
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" layoutY="59.0" prefHeight="441.0" prefWidth="237.0" stylesheets="@../util/principal.css">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="439.0" prefWidth="237.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="237.0">
                      <children>
-                        <VBox fx:id="listaGrupos" prefHeight="441.0" prefWidth="237.0" />
+                        <VBox fx:id="listaGrupos" prefWidth="237.0" />
                      </children>
                   </AnchorPane>
               </content>

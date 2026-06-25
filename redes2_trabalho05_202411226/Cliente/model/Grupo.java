@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 22/06/2026
+* Ultima alteracao.: 24/06/2026
 * Nome.............: Grupo
 * Funcao...........: Classe que controla as operacoes dos grupos do aplicativo.
                      
@@ -12,9 +12,11 @@ package model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import javafx.scene.image.Image;
 
 public class Grupo {
+	// Variaveis e instancias
 	private Image perfilGrupo;
 	private String nome;
 	private Mensagem ultimaMensagem;
@@ -44,8 +46,9 @@ public class Grupo {
 		}
 	}
 
-	public void adicionarMensagem(Mensagem m) {
+	public synchronized void adicionarMensagem(Mensagem m) {
 		mensagens.add(m);
+		mensagens.sort(Comparator.comparing(Mensagem::getTempoEnvio));
 	}
 
 	public void setPerfilGrupo(Image perfilGrupo) {

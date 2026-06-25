@@ -2,16 +2,20 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 23/06/2026
+* Ultima alteracao.: 24/06/2026
 * Nome.............: BancoGrupos
 * Funcao...........: Classe que gerencia a criacao e manutencao dos grupos.
-                     
+					 
 *************************************************************** */
+
+package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import controller.*;
 
 public class BancoGrupos {
+	// Variaveis e instancias
 	private static HashMap<String, ArrayList<String>> gruposUsuarios;
 	private static HashMap<String, String> listaIpUsuario;
 	private static HashMap<String, String> listaUsuarioIp;
@@ -28,7 +32,7 @@ public class BancoGrupos {
 			gruposUsuarios.put(grupo, new ArrayList<>());
 		}	
 		else {
-			System.out.println("Grupo ja existente.");
+			TelaPrincipalController.controller.logTCP("Grupo ja existente.");
 		}
 	}
 
@@ -41,7 +45,7 @@ public class BancoGrupos {
 			gruposUsuarios.get(grupo).add(usuario);
 		}
 		else {
-			System.out.println("Usuario ja se encontra no grupo.");
+			TelaPrincipalController.controller.logTCP("Usuario ja se encontra no grupo.");
 		}
 	}
 
@@ -49,36 +53,40 @@ public class BancoGrupos {
 		if (gruposUsuarios.get(grupo) != null && !gruposUsuarios.get(grupo).isEmpty()) {
 			if (gruposUsuarios.get(grupo).contains(usuario)) {
 				gruposUsuarios.get(grupo).remove(usuario);
-				System.out.println("Usuario removido do grupo " + grupo + " com sucesso.");
+				TelaPrincipalController.controller.logTCP("Usuario removido do grupo " + grupo + " com sucesso.");
 
 				if (gruposUsuarios.get(grupo).isEmpty()) {
 					gruposUsuarios.remove(grupo);
-					System.out.println("Grupo " + grupo + " excluido do servidor.");
+					TelaPrincipalController.controller.logTCP("Grupo " + grupo + " excluido do servidor.");
 				}
 			}
 			else {
-				System.out.println("Este usuario nao se encontra no grupo.");
+				TelaPrincipalController.controller.logTCP("Este usuario nao se encontra no grupo.");
 			}
 		}
 	}
 
 	public synchronized void limparGruposUsuario(String usuario) {
 		for (ArrayList<String> listaUsuarios : gruposUsuarios.values()) {
-      		listaUsuarios.remove(usuario);
-      	}
+			listaUsuarios.remove(usuario);
+		}
 
-	    gruposUsuarios.entrySet().removeIf(entry -> {
-	    	boolean vazio = entry.getValue().isEmpty();
-	    	if (vazio) System.out.println("Grupo " + entry.getKey() + " excluido do servidor.");
-	    	return vazio;
-	    });
+		gruposUsuarios.entrySet().removeIf(entry -> {
+			boolean vazio = entry.getValue().isEmpty();
+			if (vazio) TelaPrincipalController.controller.logTCP("Grupo " + entry.getKey() + " excluido do servidor.");
+			return vazio;
+		});
 	}
 
-	public synchronized void removerUsuarioIp(String usuario) {
+	public synchronized String obterIpUsuario(String usuario) {
+		return listaIpUsuario.get(usuario);
+	}
+
+	public synchronized void removerIpUsuario(String usuario) {
 		listaIpUsuario.remove(usuario);
 	}
 
-	public synchronized void removerIpUsuario(String ip) {
+	public synchronized void removerUsuarioIp(String ip) {
 		listaUsuarioIp.remove(ip);
 	}
 

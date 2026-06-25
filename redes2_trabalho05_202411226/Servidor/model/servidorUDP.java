@@ -2,24 +2,28 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 17/06/2026
+* Ultima alteracao.: 24/06/2026
 * Nome.............: servidorUDP
 * Funcao...........: Interface do servidor no protocolo UDP.
                      
 *************************************************************** */
 
+package model;
+
 import java.io.*;
 import java.lang.Thread;
 import java.net.*;
+import controller.*;
 
 public class servidorUDP extends Thread {
+	private final int PORTA = 6789;
+
 	@Override
 	public void run() {
 		try {
-			final int portaLocal = 6789;
-			DatagramSocket servidor = new DatagramSocket(portaLocal);
+			DatagramSocket servidor = new DatagramSocket(PORTA);
 			byte[] dadosEntrada = new byte[1024];
-			System.out.println("Servidor UDP na porta " + portaLocal);
+			TelaPrincipalController.controller.logUDP("Servidor UDP na porta " + PORTA);
 
 			while (true) {
 				DatagramPacket datagramaRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);

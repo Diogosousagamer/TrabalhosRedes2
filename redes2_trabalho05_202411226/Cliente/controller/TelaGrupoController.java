@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 23/06/2026
+* Ultima alteracao.: 25/06/2026
 * Nome.............: TelaGrupoController
 * Funcao...........: Classe que controla os eventos da TelaGrupo.
                      
@@ -10,7 +10,10 @@
 
 package controller;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -46,13 +49,21 @@ public class TelaGrupoController implements Initializable {
   @FXML private VBox listaMensagens;
 
   // Variaveis e instancias
+  public static volatile TelaGrupoController grupos;
   private Grupo g;
 
   @Override
   public void initialize(URL url, ResourceBundle rb) {
+    grupos = this;
+    
     txtMensagem.setOnKeyPressed(event -> {
       if (event.getCode() == KeyCode.ENTER) {
-        enviarMensagem(new ActionEvent());
+        try {
+          enviarMensagem(new ActionEvent());
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
       }
     }); 
   }
@@ -64,14 +75,15 @@ public class TelaGrupoController implements Initializable {
   } 
 
   @FXML
-  private void sairGrupo(ActionEvent event) {
+  private void sairGrupo(ActionEvent event) throws IOException {
     Usuario.getUsuario().getGrupos().remove(g);
-    Usuario.getUsuario().getTCP().enviarAPDU(new APDU("LEAVE", Usuario.getUsuario().getNome(), g.getNome()));
+    byte[] perfilBytes = Files.readAllBytes(Paths.get(Usuario.getUsuario().getCaminhoImagem()));
+    Usuario.getUsuario().getTCP().enviarAPDU(new APDU("LEAVE", Usuario.getUsuario().getNome(), g.getNome(), perfilBytes, Usuario.getUsuario().getIpServidor()));
     sairChat(event);
   }
 
   @FXML
-  private void enviarMensagem(ActionEvent event) {
+  private void enviarMensagem(ActionEvent event) throws IOException {
     if (txtMensagem.getText().isEmpty()) return;
     
     String mensagem = txtMensagem.getText();
@@ -81,6 +93,8 @@ public class TelaGrupoController implements Initializable {
     txtMensagem.clear();
 
     g.adicionarMensagem(m);
+    byte[] perfilBytes = Files.readAllBytes(Paths.get(m.getAutor().getCaminhoImagem()));
+    Usuario.getUsuario().getUDP().enviarAPDU(new APDU("SEND", m.getAutor().getNome(), g.getNome(), perfilBytes, m.getAutor().getIpServidor(), m.getTexto(), m.getTempoEnvio()));
     carregarMensagens();
   }
 
@@ -90,7 +104,7 @@ public class TelaGrupoController implements Initializable {
     carregarMensagens();
   }  
 
-  private void carregarMensagens() {
+  public synchronized void carregarMensagens() {
     ArrayList<Mensagem> mensagens = g.getMensagens();
     if (mensagens == null) return;
     if (!listaMensagens.getChildren().isEmpty()) listaMensagens.getChildren().clear();
@@ -144,7 +158,13 @@ public class TelaGrupoController implements Initializable {
 
       conteudoMensagem.getChildren().addAll(autor, painelMensagem, horario);
       
-      mensagem.getChildren().addAll(perfilAutor, conteudoMensagem);
+      if (ehUsuario) {
+        mensagem.getChildren().addAll(conteudoMensagem, perfilAutor);
+      }
+      else {
+        mensagem.getChildren().addAll(perfilAutor, conteudoMensagem);
+      }
+
       listaMensagens.getChildren().add(mensagem);
     }
 
