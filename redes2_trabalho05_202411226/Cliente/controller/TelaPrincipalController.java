@@ -103,9 +103,6 @@ public class TelaPrincipalController implements Initializable {
 
 		// Carrega as informacoes do usuario
 		carregarInformacoes();
-
-    // Coloca o TCP para escutar solicitacoes de JOIN e LEAVE
-		Usuario.getUsuario().getTCP().receber();
 	}
 
   /*

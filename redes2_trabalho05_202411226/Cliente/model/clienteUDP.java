@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 25/06/2026
 * Nome.............: clienteUDP
 * Funcao...........: Interface do cliente no protocolo UDP.
                      
@@ -21,6 +21,11 @@ public class clienteUDP extends Thread {
 	final int PORTA = 6789;
 	private DatagramSocket conexaoCliente;
 	private InetAddress ipServidor;
+
+	@Override
+	public void run() {
+		escutarServidor();
+	}
 
 	public void enviarAPDU(APDU apdu) {
 		try {

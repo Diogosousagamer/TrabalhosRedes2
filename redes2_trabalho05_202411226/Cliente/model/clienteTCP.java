@@ -47,6 +47,11 @@ public class clienteTCP extends Thread {
 		}  // Fim do bloco try/catch
 	}
 
+	@Override
+	public void run() {
+		receber();
+	}
+
   /*
    * ***************************************************************
    * Metodo: enviarAPDU

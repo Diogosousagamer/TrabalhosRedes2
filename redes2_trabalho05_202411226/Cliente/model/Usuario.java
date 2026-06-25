@@ -78,9 +78,7 @@ public class Usuario {
     udp.setDaemon(true);
       
     tcp.start();
-    udp.start();
-
-    udp.escutarServidor();
+    udp.start();  
   }
 
   public void setIpServidor(String ipServidor) {
