@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: TelaGrupoController
 * Funcao...........: Classe que controla os eventos da TelaGrupo.
                      
@@ -13,6 +13,7 @@ package controller;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -102,8 +103,10 @@ public class TelaGrupoController implements Initializable {
 
   public synchronized void carregarMensagens() {
     ArrayList<Mensagem> mensagens = g.getMensagens();
+
     if (mensagens == null) return;
     if (!listaMensagens.getChildren().isEmpty()) listaMensagens.getChildren().clear();
+    if (!mensagens.isEmpty()) mensagens.sort(Comparator.comparing(Mensagem::getTempoEnvio));
 
     for (Mensagem m : mensagens) {
       boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));

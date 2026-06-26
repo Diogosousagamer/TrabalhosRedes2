@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -51,6 +51,7 @@ public class TelaMenuController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
+		// Listener no txtNomeUsuario que reage ao texto digitado
 		txtNomeUsuario.textProperty().addListener((obs, oldValue, newValue) -> {
 			if (usuarioVazio && !newValue.isEmpty()) {
 				txtNomeUsuario.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px");
@@ -58,6 +59,7 @@ public class TelaMenuController implements Initializable {
 			}
 		});
 		
+		// Listener no txtIpServidor que reage ao texto digitado
 		txtIpServidor.textProperty().addListener((obs, oldValue, newValue) -> {
 			if (ipVazio && !newValue.isEmpty()) {
 				txtIpServidor.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px");

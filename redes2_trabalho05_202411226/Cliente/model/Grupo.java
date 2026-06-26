@@ -12,7 +12,6 @@ package model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import javafx.scene.image.Image;
 
 public class Grupo {
@@ -46,7 +45,6 @@ public class Grupo {
 
 	public synchronized void adicionarMensagem(Mensagem m) {
 		mensagens.add(m);
-		mensagens.sort(Comparator.comparing(Mensagem::getTempoEnvio).reversed());
 	}
 
 	public void setNome(String nome) {
