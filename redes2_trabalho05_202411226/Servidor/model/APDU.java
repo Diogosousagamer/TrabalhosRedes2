@@ -27,6 +27,8 @@ public class APDU {
 		this.tipo = tipo;
 		this.usuario = usuario;
 		this.grupo = grupo;
+		this.mensagem = null;
+		this.tempoEnvio = null;
 	}
 
 	public APDU(String tipo, String usuario, String grupo, String mensagem, LocalDateTime tempoEnvio) {
@@ -38,7 +40,7 @@ public class APDU {
 	}
 
 	public String enviarMensagem() {
-		return (this.mensagem == null) ? codificarMensagem(this.tipo, this.usuario, this.grupo)
+		return (this.mensagem == null && this.tempoEnvio == null) ? codificarMensagem(this.tipo, this.usuario, this.grupo)
 		       : codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio());
 	}
 
