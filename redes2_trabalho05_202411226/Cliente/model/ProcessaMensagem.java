@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 24/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: ProcessaMensagem
 * Funcao...........: Thread que processa as APDUs enviadas para o cliente.
                      
@@ -11,6 +11,7 @@
 package model;
 
 import controller.TelaGrupoController;
+import controller.TelaPrincipalController;
 import java.io.*;
 import java.net.*;
 import java.lang.Thread;
@@ -41,7 +42,12 @@ public class ProcessaMensagem extends Thread {
 					}
 				}
 
-				Platform.runLater(() -> TelaGrupoController.grupos.carregarMensagens());
+				if (TelaGrupoController.grupos != null) {
+					Platform.runLater(() -> TelaGrupoController.grupos.carregarMensagens());
+				}
+				else {
+					Platform.runLater(() -> TelaPrincipalController.principal.carregarGrupos());
+				}
 			}
 		}
 		catch (Exception e) {

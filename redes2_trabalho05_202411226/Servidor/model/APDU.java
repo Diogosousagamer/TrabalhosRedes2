@@ -77,7 +77,7 @@ public class APDU {
 			String tempoStr = partes[4].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 
 			if (tempoStr.length() > 16) {
-				tempoStr.substring(0, 16);
+				tempoStr = tempoStr.substring(0, 16);
 			}
 
 			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
