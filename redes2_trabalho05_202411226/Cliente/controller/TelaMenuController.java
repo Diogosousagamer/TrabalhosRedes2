@@ -46,8 +46,18 @@ public class TelaMenuController implements Initializable {
 
   // Variaveis e instancias
 	private final String DADOS_VAZIOS = "Preencha todos os dados obrigatorios antes de prosseguir.";
+	private final String NAO_CONECTADO = "Nao conectado. Tente novamente mais tarde.";
 	private boolean usuarioVazio;
 	private boolean ipVazio;
+
+  /*
+   * ***************************************************************
+   * Metodo: initialize
+   * Funcao: executa um conjunto de instrucoes durante a inicializacao da aplicacao
+   * Parametros: URL url: endereco do programa
+                 ResourceBundle rb: recursos para inicializacao
+   * Retorno: void
+   ****************************************************************/
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
@@ -72,7 +82,7 @@ public class TelaMenuController implements Initializable {
 		txtNomeUsuario.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER) {
 				try {
-					entrar(new ActionEvent());
+					entrar(new ActionEvent(txtNomeUsuario, null));
 				}
 				catch (IOException e) {
 					e.printStackTrace();
@@ -85,7 +95,7 @@ public class TelaMenuController implements Initializable {
 		txtIpServidor.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER) {
 				try {
-					entrar(new ActionEvent());
+					entrar(new ActionEvent(txtIpServidor, null));
 				}
 				catch (IOException e) {
 					e.printStackTrace();
@@ -94,52 +104,105 @@ public class TelaMenuController implements Initializable {
 		});	
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: entrar
+   * Funcao: loga o usuario na aplicacao
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
+
 	@FXML
 	private void entrar(ActionEvent event) throws IOException {
+		// Interrompe o processo se algum dado estiver faltando
 		if (!verificarDados()) return;
 
+    // Obtem o nome e o ip inseridos
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
+    // Estabelece uma nova conexao com o usuario e armazena o seu resultado
+    // em forma de booleano
 		boolean conectado = Usuario.conectarUsuario(nome, ip);
 
+    // Inicio do bloco if/else
+    // Se o usuario tiver sido conectado
 		if (conectado) {
+			// Carrega a tela principal
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
 			Parent root = loader.load();
 			Scene scene = new Scene(root);
 
+      // Importa ela para dentro da janela
 			Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 			stage.setScene(scene);
 		}
 		else {
-			System.err.println("Nao conectado. Tente novamente mais tarde.");
-		}
+			// Senao, eh exibida uma mensagem de erro
+			carregarAviso("Nao conectado. Tente novamente mais tarde.");
+		} // Fim do bloco if/else
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: ocultarAviso
+   * Funcao: oculta o painel de aviso na tela
+   * Parametros: ActionEvent event - evento gerado ao clicar no botao
+   * Retorno: void
+   ****************************************************************/
 
 	@FXML
 	private void ocultarAviso(ActionEvent event) {
 		painelAviso.setVisible(false);
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: verificarDados
+   * Funcao: verifica se todos os dados necessarios para conexao (nome de usuario
+             e ip do servidor) foram preenchidos
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
+
 	private boolean verificarDados() {
+		// Obtem os dados e verifica se um deles esta vazio
 		String nome = txtNomeUsuario.getText();
 		String ip = txtIpServidor.getText();
 		usuarioVazio = nome.isEmpty();
 		ipVazio = ip.isEmpty();
 
+    // Inicio do bloco if
+    // Se um dos dados (ou ambos) estiver vazio
 		if (usuarioVazio || ipVazio) {
+			// Marca os componentes que estao vazios
 			if (usuarioVazio) txtNomeUsuario.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px; -fx-border-color: #ff0000; -fx-border-radius: 15px; -fx-border-width: 2px");
 			if (ipVazio) txtIpServidor.setStyle("-fx-background-color: #d9d9d9; -fx-background-radius: 15px; -fx-padding: 8px; -fx-border-color: #ff0000; -fx-border-radius: 15px; -fx-border-width: 2px");
+
+			// Exibe um aviso
 			carregarAviso(DADOS_VAZIOS);
 
+      // Retorna falso
 			return false;
-		}
+		} // Fim do bloco if
 
+    // Retorna verdadeiro caso nenhum dado estiver vazio
 		return true;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: carregarAviso
+   * Funcao: exibe um aviso dentro do painel de aviso
+   * Parametros: String aviso - aviso a ser exibido
+   * Retorno: boolean
+   ****************************************************************/
+
 	private void carregarAviso(String aviso) {
+		// Carrega o aviso na Label
 		lblAviso.setText(aviso);
+
+		// Exibe o painel de aviso
 		painelAviso.setVisible(true);
 	}
 }
