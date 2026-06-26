@@ -80,7 +80,7 @@ public class APDU {
 				tempoStr = tempoStr.substring(0, 16);
 			}
 
-			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 			envioLocal = LocalDateTime.parse(tempoStr, formato);
 		}
 
@@ -129,7 +129,7 @@ public class APDU {
 	}
 
 	private String formatarTempoEnvio() {
-		DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+		DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 		String dataEnvio = tempoEnvio.format(formatador);
 
 		return dataEnvio;
