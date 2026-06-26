@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: clienteTCP
 * Funcao...........: Interface do cliente no protocolo TCP.
                      
@@ -79,13 +79,15 @@ public class clienteTCP extends Thread {
 	}
 
 	public void receber() {
+		System.out.println("Cliente TCP escutando na porta " + PORTA);
+
 		try {
 			ObjectInputStream entrada = new ObjectInputStream(s.getInputStream());
 
 			while (true) {
 				String msg = (String) entrada.readObject();
 
-				if (msg != null && !msg.isEmpty()) {
+				if (msg != null) {
 					APDU apdu = APDU.decodificarMensagem(msg);
 					String tipo = apdu.getTipo();
 					String usuario = apdu.getUsuario();

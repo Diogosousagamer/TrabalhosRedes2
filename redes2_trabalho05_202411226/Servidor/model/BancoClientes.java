@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: BancoClientes
 * Funcao...........: Thread que gerencia a conexao dos clientes.
                      
@@ -59,7 +59,7 @@ public class BancoClientes extends Thread {
 
 				String usuario = apdu.getUsuario();
 
-	      		HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
+    		HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
 				HashMap<String, String> listaUsuarioIp = bancoGrupos.getListaUsuarioIp();
 
 				listaIpUsuario.putIfAbsent(usuario, ipCliente);
@@ -67,26 +67,28 @@ public class BancoClientes extends Thread {
 
 				String tipo = apdu.getTipo();
 
-				switch (tipo) {
-					case "JOIN":
-						bancoGrupos.adicionarUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());					
-						break;
+				if (tipo.equals("JOIN") || tipo.equals("LEAVE")) {
+					switch (tipo) {
+						case "JOIN":
+							bancoGrupos.adicionarUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());					
+							break;
 
-					case "LEAVE":
-						bancoGrupos.removerUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());
-						break;
+						case "LEAVE":
+							bancoGrupos.removerUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());
+							break;
 
-					default:
-						break;
-				} 
+						default:
+							break;
+					} 
 
-				ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
-				String grupo = apdu.getGrupo();
+					ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
+					String grupo = apdu.getGrupo();
 
-				for (String u : bancoGrupos.obterUsuariosGrupo(grupo)) {
-					if (u.equals(usuario)) continue;
-					String ipUsuario = bancoGrupos.obterIpUsuario(usuario);
-					enviarMensagem(ipUsuario, apdu);
+					for (String u : bancoGrupos.obterUsuariosGrupo(grupo)) {
+						if (u.equals(usuario)) continue;
+						String ipUsuario = bancoGrupos.obterIpUsuario(u);
+						enviarMensagem(ipUsuario, apdu);
+					}
 				}
 			}
 		}

@@ -67,7 +67,7 @@ public class APDU {
 		String tipoLocal = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		String usuarioLocal = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		String grupoLocal = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-		String msgLocal = "";
+		String msgLocal = null;
 		LocalDateTime envioLocal = null;
 
 		if (partes.length > 3 && !partes[3].isEmpty() && !partes[4].isEmpty()) {
@@ -82,7 +82,7 @@ public class APDU {
 			envioLocal = LocalDateTime.parse(tempoStr, formato);
 		}
 
-		return (msgLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal) 
+		return (msgLocal == null && envioLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal) 
 		       : new APDU(tipoLocal, usuarioLocal, grupoLocal, msgLocal, envioLocal);
 	}
 

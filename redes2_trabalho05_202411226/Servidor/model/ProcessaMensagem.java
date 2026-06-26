@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: ProcessaMensagem
 * Funcao...........: Thread que processa as APDUs enviadas para o servidor.
                      
@@ -17,7 +17,7 @@ import controller.*;
 
 public class ProcessaMensagem extends Thread {
 	private String mensagem;
-	private final int PORTA = 6789;
+	private final int PORTA = 6790;
 
 	public ProcessaMensagem(String mensagem) {
 		this.mensagem = mensagem;
@@ -59,7 +59,7 @@ public class ProcessaMensagem extends Thread {
 			byte[] dadosSaida = new byte[1024];
 
 			String mensagem = apdu.enviarMensagem();
-			dadosSaida = mensagem.getBytes();
+			dadosSaida = mensagem.getBytes("UTF-8");
 
 			DatagramPacket pacote = new DatagramPacket(dadosSaida, dadosSaida.length, enderecoDestino, PORTA);
 			socket.send(pacote);

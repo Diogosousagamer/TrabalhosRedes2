@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: clienteUDP
 * Funcao...........: Interface do cliente no protocolo UDP.
                      
@@ -34,7 +34,7 @@ public class clienteUDP extends Thread {
 			byte[] dadosSaida = new byte[1024];
 
 			String mensagemEnviada = (apdu != null) ? apdu.enviarMensagem() : "";
-			dadosSaida = mensagemEnviada.getBytes();
+			dadosSaida = mensagemEnviada.getBytes("UTF-8");
 			DatagramPacket pacoteEnviado = new DatagramPacket(dadosSaida, dadosSaida.length, ipServidor, PORTA);
 
 			conexaoCliente.send(pacoteEnviado);
@@ -46,14 +46,15 @@ public class clienteUDP extends Thread {
 
 	public void escutarServidor() {
 		try {		
-			DatagramSocket socket = new DatagramSocket();
+			DatagramSocket socket = new DatagramSocket(6790);
 			byte[] entrada = new byte[1024];
+			System.out.println("Cliente UDP escutando na porta 6790.");
 
 			while (true) {
 				DatagramPacket datagramaRecebido = new DatagramPacket(entrada, entrada.length);
 				socket.receive(datagramaRecebido);
 
-				String mensagemRecebida  = new String(datagramaRecebido.getData());
+				String mensagemRecebida = new String(datagramaRecebido.getData(), 0, datagramaRecebido.getLength(), "UTF-8");
 				ProcessaMensagem p = new ProcessaMensagem(mensagemRecebida);
 				p.start();
 			}
