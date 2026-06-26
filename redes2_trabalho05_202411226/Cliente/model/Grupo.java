@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: Grupo
 * Funcao...........: Classe que controla as operacoes dos grupos do aplicativo.
                      
@@ -46,7 +46,7 @@ public class Grupo {
 
 	public synchronized void adicionarMensagem(Mensagem m) {
 		mensagens.add(m);
-		mensagens.sort(Comparator.comparing(Mensagem::getTempoEnvio));
+		mensagens.sort(Comparator.comparing(Mensagem::getTempoEnvio).reversed());
 	}
 
 	public void setNome(String nome) {
