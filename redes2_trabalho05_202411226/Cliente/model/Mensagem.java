@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 21/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: Mensagem
 * Funcao...........: Classe que controla as operacoes das mensagens enviadas no chat do aplicativo.
                      
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Mensagem {
+	// Variaveis e instancias
 	private String texto;
 	private String autor;
 	private LocalDateTime tempoEnvio;

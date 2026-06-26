@@ -56,7 +56,7 @@
             </Button>
          </children>
       </AnchorPane>
-      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" layoutY="67.0" prefHeight="368.0" prefWidth="513.0" stylesheets="@../util/grupo.css">
+      <ScrollPane fx:id="barraRolagem" fitToWidth="true" hbarPolicy="NEVER" layoutY="67.0" prefHeight="368.0" prefWidth="513.0" stylesheets="@../util/grupo.css">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="512.0">
                <children>
