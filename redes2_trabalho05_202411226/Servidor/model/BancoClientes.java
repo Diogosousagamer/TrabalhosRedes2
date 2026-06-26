@@ -51,64 +51,35 @@ public class BancoClientes extends Thread {
 	}
 
 	private void processarMensagem(APDU apdu) {
-		try {
-			if (apdu != null && (apdu.getTipo().equals("JOIN") || apdu.getTipo().equals("LEAVE"))) {
-				TelaPrincipalController.controller.logTCP("Tipo: " + apdu.getTipo());
-				TelaPrincipalController.controller.logTCP("Usuario: " + apdu.getUsuario());
-				TelaPrincipalController.controller.logTCP("Grupo: " + apdu.getGrupo());
+		if (apdu != null && (apdu.getTipo().equals("JOIN") || apdu.getTipo().equals("LEAVE"))) {
+			TelaPrincipalController.controller.logTCP("Tipo: " + apdu.getTipo());
+			TelaPrincipalController.controller.logTCP("Usuario: " + apdu.getUsuario());
+			TelaPrincipalController.controller.logTCP("Grupo: " + apdu.getGrupo());
 
-				String usuario = apdu.getUsuario();
+			String usuario = apdu.getUsuario();
 
-    		HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
-				HashMap<String, String> listaUsuarioIp = bancoGrupos.getListaUsuarioIp();
+  		HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
+			HashMap<String, String> listaUsuarioIp = bancoGrupos.getListaUsuarioIp();
 
-				listaIpUsuario.putIfAbsent(usuario, ipCliente);
-				listaUsuarioIp.putIfAbsent(ipCliente, usuario);
+			listaIpUsuario.putIfAbsent(usuario, ipCliente);
+			listaUsuarioIp.putIfAbsent(ipCliente, usuario);
 
-				String tipo = apdu.getTipo();
+			String tipo = apdu.getTipo();
 
-				if (tipo.equals("JOIN") || tipo.equals("LEAVE")) {
-					switch (tipo) {
-						case "JOIN":
-							bancoGrupos.adicionarUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());					
-							break;
+			if (tipo.equals("JOIN") || tipo.equals("LEAVE")) {
+				switch (tipo) {
+					case "JOIN":
+						bancoGrupos.adicionarUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());					
+						break;
 
-						case "LEAVE":
-							bancoGrupos.removerUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());
-							break;
+					case "LEAVE":
+						bancoGrupos.removerUsuarioGrupo(apdu.getUsuario(), apdu.getGrupo());
+						break;
 
-						default:
-							break;
-					} 
-
-					ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
-					String grupo = apdu.getGrupo();
-
-					for (String u : bancoGrupos.obterUsuariosGrupo(grupo)) {
-						if (u.equals(usuario)) continue;
-						String ipUsuario = bancoGrupos.obterIpUsuario(u);
-						enviarMensagem(ipUsuario, apdu);
-					}
-				}
+					default:
+						break;
+				} 
 			}
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void enviarMensagem(String ipUsuario, APDU apdu) {
-		try {
-			ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
-			String msg = (apdu != null) ? apdu.enviarMensagem() : null;
-
-			if (msg != null) {
-				saida.writeObject(msg);
-				saida.flush();
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 

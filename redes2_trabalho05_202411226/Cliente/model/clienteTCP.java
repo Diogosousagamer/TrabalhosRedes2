@@ -45,11 +45,6 @@ public class clienteTCP extends Thread {
 		}  // Fim do bloco try/catch
 	}
 
-	@Override
-	public void run() {
-		receber();
-	}
-
   /*
    * ***************************************************************
    * Metodo: enviarAPDU
@@ -76,42 +71,5 @@ public class clienteTCP extends Thread {
 			// Em caso de excecao, sua origem eh rastreada no console
 			e.printStackTrace();
 		} // Fim do bloco try/catch
-	}
-
-	public void receber() {
-		System.out.println("Cliente TCP escutando na porta " + PORTA);
-
-		try {
-			ObjectInputStream entrada = new ObjectInputStream(s.getInputStream());
-
-			while (true) {
-				String msg = (String) entrada.readObject();
-
-				if (msg != null) {
-					APDU apdu = APDU.decodificarMensagem(msg);
-					String tipo = apdu.getTipo();
-					String usuario = apdu.getUsuario();
-
-					switch (tipo) {
-						case "JOIN":
-							System.out.println("Usuario " + usuario + " entrou no grupo.");
-							break;
-
-						case "LEAVE":
-							System.out.println("Usuario " + usuario + " saiu do grupo.");
-							break;
-
-						default:
-							break;
-					}
-				}
-			}
-		}
-		catch (IOException e) {
-			System.err.println(e.getMessage());
-		}
-		catch (ClassNotFoundException e) {
-			System.err.println(e.getMessage());
-		}
 	}
 }
