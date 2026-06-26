@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: APDU
 * Funcao...........: Classe que gerencia as operacoes das APDUs.
                      
@@ -70,10 +70,16 @@ public class APDU {
 		String msgLocal = "";
 		LocalDateTime envioLocal = null;
 
-		if (partes.length > 3 && !partes[3].isEmpty() && !partes[4].isEmpty())  {
+		if (partes.length > 3 && !partes[3].isEmpty() && !partes[4].isEmpty()) {
 			msgLocal = partes[3].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+			String tempoStr = partes[4].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+
+			if (tempoStr.length() > 16) {
+				tempoStr = tempoStr.substring(0, 16);
+			}
+
 			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-			envioLocal = LocalDateTime.parse(partes[4], formato);
+			envioLocal = LocalDateTime.parse(tempoStr, formato);
 		}
 
 		return (msgLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal) 
