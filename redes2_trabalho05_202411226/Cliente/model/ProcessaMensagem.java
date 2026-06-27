@@ -35,7 +35,7 @@ public class ProcessaMensagem extends Thread {
 			String usuario = apdu.getUsuario();
 			LocalDateTime tempoEnvio = apdu.getTempoEnvio();
 
-			if (apdu.getTipo().equals("SEND")) {
+			if ("SEND".equals(apdu.getTipo().trim())) {
 				Mensagem m = new Mensagem(apdu.getMensagem(), usuario, tempoEnvio);
 
 				for (Grupo g : Usuario.getUsuario().getGrupos()) {
@@ -47,7 +47,7 @@ public class ProcessaMensagem extends Thread {
 
 				udp.enviarAPDU(new APDU("CONFIRM", usuario, apdu.getGrupo(), apdu.getMensagem(), apdu.getTempoEnvio(), "DELIVERED"));
 			}
-			else if (usuario.equals(apdu.getUsuario()) && apdu.getTipo().equals("CONFIRM")) {
+			else if (usuario.equals(Usuario.getUsuario().getNome()) && "CONFIRM".equals(apdu.getTipo().trim())) {
 				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo());
 
 				if (g != null) {
