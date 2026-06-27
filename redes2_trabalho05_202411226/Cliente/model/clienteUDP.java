@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: clienteUDP
 * Funcao...........: Interface do cliente no protocolo UDP.
                      
@@ -47,10 +47,10 @@ public class clienteUDP extends Thread {
 	public void escutarServidor() {
 		try {		
 			DatagramSocket socket = new DatagramSocket(6790);
-			byte[] entrada = new byte[1024];
 			System.out.println("Cliente UDP escutando na porta 6790.");
 
 			while (true) {
+				byte[] entrada = new byte[1024];
 				DatagramPacket datagramaRecebido = new DatagramPacket(entrada, entrada.length);
 				socket.receive(datagramaRecebido);
 

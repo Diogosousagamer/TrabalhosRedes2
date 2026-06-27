@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: servidorUDP
 * Funcao...........: Interface do servidor no protocolo UDP.
                      
@@ -29,7 +29,7 @@ public class servidorUDP extends Thread {
 				DatagramPacket datagramaRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
 				servidor.receive(datagramaRecebido);
 
-				String mensagemRecebida  = new String(datagramaRecebido.getData());
+				String mensagemRecebida  = new String(datagramaRecebido.getData(), 0, datagramaRecebido.getLength(), "UTF-8");
 				ProcessaMensagem p = new ProcessaMensagem(mensagemRecebida);
 				p.start();
 			}

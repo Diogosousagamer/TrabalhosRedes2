@@ -30,7 +30,7 @@ public class Usuario {
 
   public static boolean conectarUsuario(String nome, String ipServidor) {
     try {
-      if (usuario == null) usuario = new Usuario(nome, ipServidor);
+      usuario = new Usuario(nome, ipServidor);
       usuario.iniciarProtocolos();
       return true;
     }

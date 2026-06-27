@@ -318,19 +318,39 @@ public class TelaGrupoController implements Initializable {
     TelaPrincipalController.principal.carregarGrupos();
   }
 
+  /*
+   * ***************************************************************
+   * Metodo: confirmarLeitura
+   * Funcao: confirma a leitura de mensagens nao vistas
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
   private void confirmarLeitura() {
+    // Interrompe o metodo se o grupo ou a lista de mensagens forem nulos
     if (g == null || g.getMensagens() == null) return;
+
+    // Obtem a lista de mensagens do grupo
     ArrayList<Mensagem> mensagens = new ArrayList<>(g.getMensagens());
 
+    // Inicio do bloco for
     for (Mensagem m : mensagens) {
       // Verifica se a mensagem atual eh do usuario
       boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
+
+      // Obtem o status da mensagem
       String status = m.getStatus();
 
+      // Inicio do bloco if
+      // Se a mensagem nao for do usuario e o status dela nao tiver sido definido 
+      // ou nao for igual a READ (ou seja, a mensagem nao tiver sido lida anteriormente)
       if (!ehUsuario && (status == null || !status.equals("READ"))) {
+        // Marca a mensagem como lida
         m.setStatus("READ");
+
+        // Envia uma APDU CONFIRM notificando que a mensagem foi lida
         Usuario.getUsuario().getUDP().enviarAPDU(new APDU("CONFIRM", m.getAutor(), g.getNome(), m.getTexto(), m.getTempoEnvio(), "READ"));
-      }
-    }
+      } // Fim do bloco if
+    } // Fim do bloco for
   }
 }
