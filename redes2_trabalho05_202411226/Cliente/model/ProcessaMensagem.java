@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 24/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: ProcessaMensagem
 * Funcao...........: Thread que processa as APDUs enviadas para o cliente
                      no protocolo UDP.
@@ -47,12 +47,18 @@ public class ProcessaMensagem extends Thread {
 
 				udp.enviarAPDU(new APDU("CONFIRM", usuario, apdu.getGrupo(), apdu.getMensagem(), apdu.getTempoEnvio(), "DELIVERED"));
 			}
-			else if (usuario.equals(Usuario.getUsuario().getNome()) && apdu.getTipo().equals("CONFIRM")) {
+			else if (apdu.getTipo().equals("CONFIRM")) {
 				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo());
 
 				if (g != null) {
 					Mensagem m = g.buscarMensagem(usuario, apdu.getTempoEnvio());
-					if (m != null) m.setStatus(apdu.getStatus());
+
+					if (m != null) {
+						m.setStatus(apdu.getStatus());
+					}
+					else {
+						System.out.println("Mensagem nao encontrada.");
+					}
 				}
 			}
 
