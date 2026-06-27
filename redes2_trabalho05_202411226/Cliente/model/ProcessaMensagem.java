@@ -47,7 +47,7 @@ public class ProcessaMensagem extends Thread {
 
 				udp.enviarAPDU(new APDU("CONFIRM", usuario, apdu.getGrupo(), apdu.getMensagem(), apdu.getTempoEnvio(), "DELIVERED"));
 			}
-			else if (apdu.getTipo().equals("CONFIRM")) {
+			else if (usuario.equals(apdu.getUsuario()) && apdu.getTipo().equals("CONFIRM")) {
 				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo());
 
 				if (g != null) {
