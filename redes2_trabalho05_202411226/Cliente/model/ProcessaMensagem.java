@@ -51,14 +51,7 @@ public class ProcessaMensagem extends Thread {
 				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo());
 
 				if (g != null) {
-					Mensagem m = g.buscarMensagem(usuario, apdu.getTempoEnvio());
-
-					if (m != null) {
-						m.setStatus(apdu.getStatus());
-					}
-					else {
-						System.out.println("Mensagem nao encontrada.");
-					}
+					g.atualizarStatusMensagem(usuario, apdu.formatarTempoEnvio(), apdu.getStatus());
 				}
 			}
 

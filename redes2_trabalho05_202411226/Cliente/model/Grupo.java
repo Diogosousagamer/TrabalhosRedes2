@@ -47,14 +47,16 @@ public class Grupo {
 		mensagens.add(m);
 	}
 
-	public synchronized Mensagem buscarMensagem(String usuario, LocalDateTime tempoEnvio) {
+	public synchronized void atualizarStatusMensagem(String usuario, String tempoEnvio, String status) {
 		for (Mensagem m : mensagens) {
-			if (m.getAutor().equals(usuario) && m.getTempoEnvio().withNano(0).equals(tempoEnvio.withNano(0))) {
-				return m;
+			String autor = m.getAutor();
+			String tempoMsgAtual = m.formatarTempoEnvio();
+
+			if (autor.equals(usuario) && tempoMsgAtual.equals(tempoEnvio)) {
+				m.setStatus(status);
+				break;
 			}
 		}
-
-		return null;
 	}
 
 	public void setNome(String nome) {
