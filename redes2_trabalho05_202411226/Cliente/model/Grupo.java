@@ -49,7 +49,7 @@ public class Grupo {
 
 	public synchronized Mensagem buscarMensagem(String usuario, LocalDateTime tempoEnvio) {
 		for (Mensagem m : mensagens) {
-			if (m.getAutor().equals(usuario) && m.getTempoEnvio()..withNano(0).equals(tempoEnvio..withNano(0))) {
+			if (m.getAutor().equals(usuario) && m.getTempoEnvio().withNano(0).equals(tempoEnvio.withNano(0))) {
 				return m;
 			}
 		}
