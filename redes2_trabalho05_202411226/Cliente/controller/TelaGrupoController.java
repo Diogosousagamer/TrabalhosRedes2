@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: TelaGrupoController
 * Funcao...........: Classe que controla os eventos da TelaGrupo.
                      
@@ -25,13 +25,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -51,6 +52,9 @@ public class TelaGrupoController implements Initializable {
   @FXML private VBox listaMensagens;
 
   // Variaveis e instancias
+  private static final Image SENT = new Image(TelaGrupoController.class.getResource("/img/Sent.png").toExternalForm());
+  private static final Image DELIVERED = new Image(TelaGrupoController.class.getResource("/img/Delivered.png").toExternalForm());
+  private static final Image READ = new Image(TelaGrupoController.class.getResource("/img/Read.png").toExternalForm());
   public static volatile TelaGrupoController grupos;
   private Grupo g;
 
@@ -134,7 +138,7 @@ public class TelaGrupoController implements Initializable {
     // Cria uma nova mensagem a partir do conteudo no txtMensagem e o nome do usuario
     String mensagem = txtMensagem.getText();
     String autor = Usuario.getUsuario().getNome();
-    Mensagem m = new Mensagem(mensagem, autor);
+    Mensagem m = new Mensagem(mensagem, autor, "SENT");
 
     // Limpa a caixa de texto
     txtMensagem.clear();
@@ -190,6 +194,9 @@ public class TelaGrupoController implements Initializable {
     // Ordena a lista de mensagens pelo tempo de envio (em ordem crescente)
     if (!mensagens.isEmpty()) mensagens.sort(Comparator.comparing(Mensagem::getTempoEnvio));
 
+    // Confirma a leitura das mensagens que nao foram vistas
+    confirmarLeitura();
+
     // Inicio do bloco for
     for (Mensagem m : mensagens) {
       // Verifica se a mensagem atual eh do usuario
@@ -237,13 +244,52 @@ public class TelaGrupoController implements Initializable {
       texto.setWrapText(true);
       texto.setMinHeight(Label.USE_PREF_SIZE);
 
-      // Adiciona o texto dentro do painel e o alinha na esquerda
-      // ao centro
+      // Adiciona o texto dentro do painel e o alinha na esquerda ao centro
       painelMensagem.getChildren().add(texto);
       StackPane.setAlignment(texto, Pos.CENTER_LEFT);
 
+      HBox caixaStatus = new HBox();
+      caixaStatus.setPadding(new Insets(3, 3, 3, 3));
+      caixaStatus.setSpacing(5);
+      caixaStatus.getChildren().add(horario);
+
+      // Imagem que representa o status da mensagem (via APDU CONFIRM)
+      ImageView imgStatus = new ImageView();
+      imgStatus.setFitWidth(17);
+      imgStatus.setFitHeight(25);
+      imgStatus.setPreserveRatio(true);
+
+      // Obtem o status da mensagem
+      String status = m.getStatus();
+
+      // Inicio do bloco if
+      // Se a mensagem for do usuario e o status nao for nulo
+      if (ehUsuario && status != null) {
+        // Inicio do bloco switch/case
+        switch (status) {
+          case "SENT": 
+            // Mostra um traco cinza caso tiver sido enviada recentemente
+            imgStatus.setImage(SENT);
+            break;
+
+          case "DELIVERED":
+            // Mostra dois tracos cinzas caso tiver chegado aos outros membros do grupo
+            imgStatus.setImage(DELIVERED);
+            break;
+
+          case "READ":
+            // Mostra dois tracos azuis caso todos os membros do grupo tiverem
+            // visto a mensagem
+            imgStatus.setImage(READ);
+            break;
+          } // Fim do bloco switch/case
+
+        // Adiciona a imagem dentro da caixa de status
+        caixaStatus.getChildren().add(imgStatus);
+      } // Fim do bloco if
+
       // Adiciona os itens dentro da VBox com o conteudo da mensagem
-      conteudoMensagem.getChildren().addAll(autor, painelMensagem, horario);
+      conteudoMensagem.getChildren().addAll(autor, painelMensagem, caixaStatus);
       
       // Adiciona o conteudo da mensagem dentro da HBox 
       mensagem.getChildren().add(conteudoMensagem);
@@ -264,11 +310,27 @@ public class TelaGrupoController implements Initializable {
       // Inicio do bloco if
       if (ehUsuario) {
         // Joga o chat pra baixo se a ultima mensagem foi enviada pelo usuario
-        Platform.runLater(() -> barraRolagem.setVvalue(1.0));
+        Platform.runLater(() -> barraRolagem.setVvalue(barraRolagem.getVmax()));
       } // Fim do bloco if
     } // Fim do bloco if
 
     // Recarrega a lista de grupos na TelaPrincipal
     TelaPrincipalController.principal.carregarGrupos();
+  }
+
+  private void confirmarLeitura() {
+    if (g == null || g.getMensagens() == null) return;
+    ArrayList<Mensagem> mensagens = new ArrayList<>(g.getMensagens());
+
+    for (Mensagem m : mensagens) {
+      // Verifica se a mensagem atual eh do usuario
+      boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
+      String status = m.getStatus();
+
+      if (!ehUsuario && (status == null || !status.equals("READ"))) {
+        m.setStatus("READ");
+        Usuario.getUsuario().getUDP().enviarAPDU(new APDU("CONFIRM", m.getAutor(), g.getNome(), m.getTexto(), m.getTempoEnvio(), "READ"));
+      }
+    }
   }
 }

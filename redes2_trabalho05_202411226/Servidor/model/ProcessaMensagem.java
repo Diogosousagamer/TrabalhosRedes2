@@ -2,9 +2,10 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: ProcessaMensagem
-* Funcao...........: Thread que processa as APDUs enviadas para o servidor.
+* Funcao...........: Thread que processa as APDUs enviadas para o servidor 
+                     no protocolo UDP.
                      
 *************************************************************** */
 
@@ -27,6 +28,7 @@ public class ProcessaMensagem extends Thread {
 	public void run() {
 		try {
 			APDU apdu = APDU.decodificarMensagem(mensagem);
+			BancoGrupos bancoGrupos = BancoGrupos.getBancoGrupos();
 
 			if (apdu.getTipo().equals("SEND")) {
 				TelaPrincipalController.controller.logUDP("Tipo: " + apdu.getTipo());
@@ -38,12 +40,46 @@ public class ProcessaMensagem extends Thread {
 				}
 
 				String grupo = apdu.getGrupo();
-				BancoGrupos bancoGrupos = BancoGrupos.getBancoGrupos();
 
 				for (String usuario : bancoGrupos.obterUsuariosGrupo(grupo)) {
 					if (usuario.equals(apdu.getUsuario())) continue;
 					String ipUsuario = bancoGrupos.obterIpUsuario(usuario);
 					enviarMensagem(ipUsuario, apdu);
+				}
+			}
+			else if (apdu.getTipo().equals("CONFIRM") && apdu.getStatus() != null) {
+				TelaPrincipalController.controller.logUDP("Tipo: " + apdu.getTipo());
+				TelaPrincipalController.controller.logUDP("Usuario: " + apdu.getUsuario());
+				TelaPrincipalController.controller.logUDP("Grupo: " + apdu.getGrupo());
+
+				if (apdu.getMensagem() != null && !apdu.getMensagem().isEmpty()) {
+					TelaPrincipalController.controller.logUDP("Mensagem: " + apdu.getMensagem());
+				}
+
+				if (!apdu.getStatus().isEmpty()) {
+					String status = apdu.getStatus();
+					TelaPrincipalController.controller.logUDP("Status: " + status);
+
+					String ipAutor = bancoGrupos.obterIpUsuario(apdu.getUsuario());
+
+					switch (status) {
+						case "DELIVERED":
+							enviarMensagem(ipAutor, apdu);
+							break;
+
+						case "READ":
+							bancoGrupos.registrarLeiturasMensagem(apdu.getGrupo(), apdu.getUsuario(), apdu.getMensagem(), apdu.formatarTempoEnvio());
+
+							String msgFormatada = apdu.getGrupo() + " " + apdu.getUsuario() + " " + apdu.getMensagem() + " " + apdu.formatarTempoEnvio();
+							int leiturasFeitas = bancoGrupos.obterNumRegistrosMensagem(apdu.getGrupo(), msgFormatada);
+							int leiturasNecessarias = bancoGrupos.obterNumUsuariosGrupo(apdu.getGrupo()) - 1;
+
+							if (leiturasFeitas >= leiturasNecessarias) {
+								enviarMensagem(ipAutor, apdu);
+							}
+
+							break; 
+					}
 				}
 			}
 		}

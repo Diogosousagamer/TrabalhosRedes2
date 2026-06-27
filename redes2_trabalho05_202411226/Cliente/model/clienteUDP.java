@@ -55,7 +55,7 @@ public class clienteUDP extends Thread {
 				socket.receive(datagramaRecebido);
 
 				String mensagemRecebida = new String(datagramaRecebido.getData(), 0, datagramaRecebido.getLength(), "UTF-8");
-				ProcessaMensagem p = new ProcessaMensagem(mensagemRecebida);
+				ProcessaMensagem p = new ProcessaMensagem(this, mensagemRecebida);
 				p.start();
 			}
 		}

@@ -17,11 +17,13 @@ public class Mensagem {
 	// Variaveis e instancias
 	private String texto;
 	private String autor;
+	private String status;
 	private LocalDateTime tempoEnvio;
 
-	public Mensagem(String texto, String autor) {
+	public Mensagem(String texto, String autor, String status) {
 		this.texto = texto;
 		this.autor = autor;
+		this.status = status;
 		tempoEnvio = LocalDateTime.now();
 	}
 
@@ -45,6 +47,14 @@ public class Mensagem {
 
 	public String getAutor() {
 		return autor;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getStatus() {
+		return status;
 	}
 
 	public void setTempoEnvio(LocalDateTime tempoEnvio) {

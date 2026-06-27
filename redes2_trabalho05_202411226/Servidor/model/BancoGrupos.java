@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 24/06/2026
+* Ultima alteracao.: 26/06/2026
 * Nome.............: BancoGrupos
 * Funcao...........: Classe que gerencia a criacao e manutencao dos grupos.
 					 
@@ -17,6 +17,7 @@ import controller.*;
 public class BancoGrupos {
 	// Variaveis e instancias
 	private static HashMap<String, ArrayList<String>> gruposUsuarios;
+	private static HashMap<String, HashMap<String, Integer>> numLeituras;
 	private static HashMap<String, String> listaIpUsuario;
 	private static HashMap<String, String> listaUsuarioIp;
 	private static BancoGrupos bancoGrupos;
@@ -25,11 +26,13 @@ public class BancoGrupos {
 		gruposUsuarios = new HashMap<>();
 		listaIpUsuario = new HashMap<>();
 		listaUsuarioIp = new HashMap<>();
+		numLeituras = new HashMap<>();
 	}
 
 	public void criarGrupo(String grupo) {
 		if (!gruposUsuarios.containsKey(grupo)) {
 			gruposUsuarios.put(grupo, new ArrayList<>());
+			if (!numLeituras.containsKey(grupo)) numLeituras.put(grupo, new HashMap<>());
 		}	
 		else {
 			TelaPrincipalController.controller.logTCP("Grupo ja existente.");
@@ -57,6 +60,7 @@ public class BancoGrupos {
 
 				if (gruposUsuarios.get(grupo).isEmpty()) {
 					gruposUsuarios.remove(grupo);
+					numLeituras.remove(grupo);
 					TelaPrincipalController.controller.logTCP("Grupo " + grupo + " excluido do servidor.");
 				}
 			}
@@ -73,9 +77,42 @@ public class BancoGrupos {
 
 		gruposUsuarios.entrySet().removeIf(entry -> {
 			boolean vazio = entry.getValue().isEmpty();
-			if (vazio) TelaPrincipalController.controller.logTCP("Grupo " + entry.getKey() + " excluido do servidor.");
+
+			if (vazio) {
+				TelaPrincipalController.controller.logTCP("Grupo " + entry.getKey() + " excluido do servidor.");
+				numLeituras.remove(entry.getKey());
+			}
+
 			return vazio;
 		});
+	}
+
+	public synchronized void registrarLeiturasMensagem(String grupo, String autor, String mensagem, String tempoEnvio) {
+		if (!numLeituras.containsKey(grupo)) numLeituras.put(grupo, new HashMap<>());
+		HashMap<String, Integer> registros = numLeituras.get(grupo);
+
+		String msg = grupo + " " + autor + " " + mensagem + " " + tempoEnvio;
+		if (!registros.containsKey(msg)) registros.put(msg, 0);
+
+		int numRegistrosAtual = registros.get(msg) + 1;
+		registros.put(msg, numRegistrosAtual);
+	}
+
+	public synchronized int obterNumRegistrosMensagem(String grupo, String msg) {
+		HashMap<String, Integer> registros = numLeituras.get(grupo);
+
+		if (registros == null || !registros.containsKey(msg)) {
+			return 0;
+		}
+
+		int numRegistros = registros.get(msg);
+		int registrosMax = obterNumUsuariosGrupo(grupo) - 1;
+
+		if (numRegistros >= registrosMax) {
+			registros.remove(msg);
+		}
+
+		return numRegistros;
 	}
 
 	public synchronized String obterIpUsuario(String usuario) {
@@ -92,6 +129,10 @@ public class BancoGrupos {
 
 	public ArrayList<String> obterUsuariosGrupo(String grupo) {
 		return gruposUsuarios.get(grupo);
+	}
+
+	public int obterNumUsuariosGrupo(String grupo) {
+		return gruposUsuarios.get(grupo).size();
 	}
 
 	public static BancoGrupos getBancoGrupos() {

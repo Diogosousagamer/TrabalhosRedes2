@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: Usuario
 * Funcao...........: Classe que controla as operacoes dos usuarios do aplicativo.
                      
@@ -53,6 +53,16 @@ public class Usuario {
       
     tcp.start();
     udp.start();  
+  }
+
+  public synchronized Grupo buscarGrupo(String grupo) {
+    for (Grupo g : grupos) {
+      if (g.getNome().equals(grupo)) {
+        return g;
+      }
+    }
+
+    return null;
   }
 
   public void setIpServidor(String ipServidor) {

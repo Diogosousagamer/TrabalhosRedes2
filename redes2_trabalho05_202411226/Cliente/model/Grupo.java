@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 27/06/2026
 * Nome.............: Grupo
 * Funcao...........: Classe que controla as operacoes dos grupos do aplicativo.
                      
@@ -45,6 +45,16 @@ public class Grupo {
 
 	public synchronized void adicionarMensagem(Mensagem m) {
 		mensagens.add(m);
+	}
+
+	public synchronized Mensagem buscarMensagem(String usuario, LocalDateTime tempoEnvio) {
+		for (Mensagem m : mensagens) {
+			if (m.getAutor().equals(usuario) && m.getTempoEnvio().equals(tempoEnvio)) {
+				return m;
+			}
+		}
+
+		return null;
 	}
 
 	public void setNome(String nome) {

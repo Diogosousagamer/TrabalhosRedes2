@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="513.0" styleClass="painel" stylesheets="@../util/grupo.css" xmlns="http://javafx.com/javafx/8.0.431" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaGrupoController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="513.0" styleClass="painel" stylesheets="@../util/grupo.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TelaGrupoController">
    <children>
       <AnchorPane prefHeight="67.0" prefWidth="513.0" style="-fx-background-color: #2c332e;">
          <children>
@@ -88,6 +88,11 @@
                                           <Font name="Calibri" size="14.0" />
                                        </font>
                                     </Label>
+                                    <ImageView fitHeight="25.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../img/Sent.png" />
+                                       </image>
+                                    </ImageView>
                                  </children>
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
