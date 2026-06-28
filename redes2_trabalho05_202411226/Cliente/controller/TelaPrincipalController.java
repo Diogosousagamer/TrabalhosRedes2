@@ -52,7 +52,6 @@ public class TelaPrincipalController implements Initializable {
 	@FXML private AnchorPane painelAviso;
 	@FXML private AnchorPane painelChat;
 	@FXML private AnchorPane painelJuntarGrupo;
-	@FXML private Button btnEncerrarSessao;
 	@FXML private Button btnEntrarGrupo;
 	@FXML private Button btnFecharGrupo;
 	@FXML private Button btnOk;
@@ -233,26 +232,6 @@ public class TelaPrincipalController implements Initializable {
 	@FXML
 	private void fecharJanelaGrupo(ActionEvent event) {
 		painelJuntarGrupo.setVisible(false);
-	}
-
-  /*
-   * ***************************************************************
-   * Metodo: encerrarSessao
-   * Funcao: encerra a sessao do usuario e retorna a tela de login
-   * Parametros: ActionEvent event - evento gerado ao clicar no botao
-   * Retorno: void
-   ****************************************************************/
-
-	@FXML
-	private void encerrarSessao(ActionEvent event) throws IOException {
-		// Carrega o menu principal
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaMenu.fxml"));
-		Parent root = loader.load();
-		Scene scene = new Scene(root);
-
-    // Carrega a nova cena na janela atual
-		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-		stage.setScene(scene);
 	}
 
   /*
