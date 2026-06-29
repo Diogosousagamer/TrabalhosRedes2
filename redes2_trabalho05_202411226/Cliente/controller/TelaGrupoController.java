@@ -260,7 +260,7 @@ public class TelaGrupoController implements Initializable {
       imgStatus.setPreserveRatio(true);
 
       // Obtem o status da mensagem
-      String status = m.getStatus();
+      String status = m.getStatus().trim();
 
       // Inicio do bloco if
       // Se a mensagem for do usuario e o status nao for nulo
