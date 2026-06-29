@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 29/06/2026
 * Nome.............: TelaGrupoController
 * Funcao...........: Classe que controla os eventos da TelaGrupo.
                      
@@ -269,18 +269,18 @@ public class TelaGrupoController implements Initializable {
         switch (status) {
           case "SENT": 
             // Mostra um traco cinza caso tiver sido enviada recentemente
-            imgStatus.setImage(SENT);
+            Platform.runLater(() -> imgStatus.setImage(SENT));
             break;
 
           case "DELIVERED":
             // Mostra dois tracos cinzas caso tiver chegado aos outros membros do grupo
-            imgStatus.setImage(DELIVERED);
+            Platform.runLater(() -> imgStatus.setImage(DELIVERED));
             break;
 
           case "READ":
             // Mostra dois tracos azuis caso todos os membros do grupo tiverem
             // visto a mensagem
-            imgStatus.setImage(READ);
+            Platform.runLater(() -> imgStatus.setImage(READ));
             break;
           } // Fim do bloco switch/case
 

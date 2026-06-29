@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 06/06/2026
-* Ultima alteracao.: 28/06/2026
+* Ultima alteracao.: 29/06/2026
 * Nome.............: DsgChat (Principal/Cliente)
 * Funcao...........: Aplicativo de Instant Messaging desenvolvido utilizando protocolos
                      da camada de transporte TCP/UDP (Cliente).
