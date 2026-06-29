@@ -65,6 +65,13 @@ public class ProcessaMensagem extends Thread {
 
         // Obtem o grupo com o qual o usuario pertence
 				String grupo = apdu.getGrupo();
+				int numMembrosGrupo = bancoGrupos.obterNumUsuariosGrupo(grupo);
+
+				if (numMembrosGrupo == 1) {
+					String ipUsuario = bancoGrupos.obterIpUsuario(grupo);
+					enviarMensagem(ipUsuario, new APDU("CONFIRM", apdu.getUsuario(), apdu.getGrupo(), apdu.getMensagem(), apdu.getTempoEnvio(), "READ"));
+					return;
+				}
 
         // Inicio do bloco for
 				for (String usuario : bancoGrupos.obterUsuariosGrupo(grupo)) {
