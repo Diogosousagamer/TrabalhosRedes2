@@ -269,18 +269,22 @@ public class TelaGrupoController implements Initializable {
         switch (status) {
           case "SENT": 
             // Mostra um traco cinza caso tiver sido enviada recentemente
-            Platform.runLater(() -> imgStatus.setImage(SENT));
+            imgStatus.setImage(SENT);
             break;
 
           case "DELIVERED":
             // Mostra dois tracos cinzas caso tiver chegado aos outros membros do grupo
-            Platform.runLater(() -> imgStatus.setImage(DELIVERED));
+            imgStatus.setImage(DELIVERED);
             break;
 
           case "READ":
             // Mostra dois tracos azuis caso todos os membros do grupo tiverem
             // visto a mensagem
-            Platform.runLater(() -> imgStatus.setImage(READ));
+            imgStatus.setImage(READ);
+            break;
+
+          default:
+            System.err.println("Status nao atualizado.");
             break;
           } // Fim do bloco switch/case
 
