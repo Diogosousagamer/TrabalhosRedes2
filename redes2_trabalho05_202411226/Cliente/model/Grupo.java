@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 29/06/2026
 * Nome.............: Grupo
 * Funcao...........: Classe que controla as operacoes dos grupos do aplicativo.
                      
@@ -107,8 +107,9 @@ public class Grupo {
 			String tempoMsgAtual = m.formatarTempoEnvio();
 
       // Inicio do bloco if
-      // Se o autor e o tempo de envio corresponderem aos da mensagem atual
-			if (autor.equals(usuario) && tempoMsgAtual.equals(tempoEnvio)) {
+      // Se o autor e o tempo de envio corresponderem aos da mensagem atual e a mensagem nao tiver sido marcada como lida
+      // anteriormente
+			if (autor.equals(usuario) && tempoMsgAtual.equals(tempoEnvio) && (m.getStatus() != null && !m.getStatus().equals("READ"))) {
 				// Atualiza o status da mensagem e interrompe o laco
 				m.setStatus(status);
 				break;
