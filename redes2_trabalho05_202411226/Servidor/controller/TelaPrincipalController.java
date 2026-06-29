@@ -5,13 +5,14 @@
 * Ultima alteracao.: 27/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
-                     
+					 
 *************************************************************** */
 
 package controller;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
@@ -32,7 +33,7 @@ public class TelaPrincipalController implements Initializable {
    * Metodo: initialize
    * Funcao: executa um conjunto de instrucoes durante a inicializacao da aplicacao
    * Parametros: URL url: endereco do programa
-                 ResourceBundle rb: recursos para inicializacao
+				 ResourceBundle rb: recursos para inicializacao
    * Retorno: void
    ****************************************************************/
   
@@ -41,7 +42,7 @@ public class TelaPrincipalController implements Initializable {
 		// Inicializa a instancia volatil do controller
 		controller = this;
 
-    // Inicializa as Threads UDP e TCP do servidor
+		// Inicializa as Threads UDP e TCP do servidor
 		serverUDP = new servidorUDP();
 		serverTCP = new servidorTCP();
 		serverUDP.setDaemon(true);
@@ -59,7 +60,7 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
   
 	public void logUDP(String texto) {
-		txtUDP.appendText(texto + "\n");
+		Platform.runLater(() -> txtUDP.appendText(texto + "\n"));
 	}
 
   /*
@@ -71,6 +72,6 @@ public class TelaPrincipalController implements Initializable {
    ****************************************************************/
 
 	public void logTCP(String texto) {
-		txtTCP.appendText(texto + "\n");
+		Platform.runLater(() -> txtTCP.appendText(texto + "\n"));
 	}
 }
