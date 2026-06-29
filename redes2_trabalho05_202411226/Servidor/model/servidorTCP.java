@@ -42,7 +42,7 @@ public class servidorTCP extends Thread {
 
 				// Obtem o endereco IP do cliente
 				String ipCliente = conexao.getInetAddress().getHostAddress();
-
+				
 				// Notifica o sucesso da conexao
 				TelaPrincipalController.controller.logTCP("Novo cliente conectado com sucesso: " + ipCliente);
 
