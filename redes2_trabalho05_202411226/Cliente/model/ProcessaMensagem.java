@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 24/06/2026
-* Ultima alteracao.: 28/06/2026
+* Ultima alteracao.: 30/06/2026
 * Nome.............: ProcessaMensagem
 * Funcao...........: Thread que processa as APDUs enviadas para o cliente
                      no protocolo UDP.

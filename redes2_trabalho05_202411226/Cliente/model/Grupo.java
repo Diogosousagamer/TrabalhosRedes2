@@ -12,6 +12,7 @@ package model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 
 public class Grupo {
@@ -116,17 +117,23 @@ public class Grupo {
         // Inicio do bloco switch/case
 				switch (status) {
           case "DELIVERED":
-            m.setStatus(DELIVERED);
+            Platform.runLater(() -> m.setStatus(DELIVERED));
             break;
 
           case "READ":
-            m.setStatus(READ);
+            Platform.runLater(() -> m.setStatus(READ));
             m.setRead(true);
             break;
 
           default:
             break;
         } // Fim do bloco switch/case
+
+        System.out.println("---- Debug da Classe Grupo ----");
+        System.out.println("GRUPO: " + nome + "\n"
+                           + "USUARIO: " + usuario + "\n"
+                           + "MENSAGEM: " + m.getTexto() + "\n"
+                           + "STATUS: " + m.getStatus());
 
         // Interrompe o laco
         break; 
