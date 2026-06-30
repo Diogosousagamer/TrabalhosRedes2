@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 17/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 30/06/2026
 * Nome.............: ProcessaMensagem
 * Funcao...........: Thread que processa as APDUs enviadas para o servidor 
                      no protocolo UDP.
@@ -64,11 +64,14 @@ public class ProcessaMensagem extends Thread {
 				}
 
         // Obtem o grupo com o qual o usuario pertence
-				String grupo = apdu.getGrupo();
+				String grupo = apdu.getGrupo().trim();
+
+				// Obtem o numero de usuarios do grupo
 				int numMembrosGrupo = bancoGrupos.obterNumUsuariosGrupo(grupo);
 
+				// Se o usuario for o unico presente no grupo
 				if (numMembrosGrupo == 1) {
-					String ipUsuario = bancoGrupos.obterIpUsuario(grupo);
+					String ipUsuario = bancoGrupos.obterIpUsuario(apdu.getUsuario());
 					enviarMensagem(ipUsuario, new APDU("CONFIRM", apdu.getUsuario(), apdu.getGrupo(), apdu.getMensagem(), apdu.getTempoEnvio(), "READ"));
 					return;
 				}
