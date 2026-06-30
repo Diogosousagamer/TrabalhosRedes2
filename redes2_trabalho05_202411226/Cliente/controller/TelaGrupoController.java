@@ -250,6 +250,7 @@ public class TelaGrupoController implements Initializable {
       caixaStatus.setPadding(new Insets(3, 3, 3, 3));
       caixaStatus.setSpacing(5);
       caixaStatus.getChildren().add(horario);
+      caixaStatus.setAlignment(ehUsuario ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
 
       // Imagem que representa o status da mensagem (via APDU CONFIRM)
       ImageView imgStatus = new ImageView();

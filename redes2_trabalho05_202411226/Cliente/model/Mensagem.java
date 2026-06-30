@@ -155,23 +155,6 @@ public class Mensagem {
 
   /*
    * ***************************************************************
-   * Metodo: formatarTempoHoraEnvio
-   * Funcao: converte o tempo de envio da mensagem para String
-   * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: String
-   ****************************************************************/
-
-	public String formatarTempoHoraEnvio() {
-		// Formata o tempo de envio em String (Dia/Mes/Ano Horas:Minutos)
-		DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-		String dataEnvio = tempoEnvio.format(formatador);
-
-		// Retorna a data convertida em String
-		return dataEnvio;
-	}
-
-  /*
-   * ***************************************************************
    * Metodo: formatarTempoEnvio
    * Funcao: converte o tempo de envio da mensagem para String
    * Parametros: nenhum parametro foi definido para esta funcao
@@ -181,6 +164,23 @@ public class Mensagem {
   public String formatarTempoEnvio() {
     // Formata o tempo de envio em String (Dia/Mes/Ano Horas:Minutos)
     DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    String dataEnvio = tempoEnvio.format(formatador);
+
+    // Retorna a data convertida em String
+    return dataEnvio;
+  }
+
+  /*
+   * ***************************************************************
+   * Metodo: formatarTempoHoraEnvio
+   * Funcao: converte o tempo de envio da mensagem para String (incluindo segundos)
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: String
+   ****************************************************************/
+
+  public String formatarTempoHoraEnvio() {
+    // Formata o tempo de envio em String (Dia/Mes/Ano Horas:Minutos)
+    DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     String dataEnvio = tempoEnvio.format(formatador);
 
     // Retorna a data convertida em String

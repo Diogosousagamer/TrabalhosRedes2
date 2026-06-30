@@ -129,12 +129,6 @@ public class Grupo {
             break;
         } // Fim do bloco switch/case
 
-        System.out.println("---- Debug da Classe Grupo ----");
-        System.out.println("GRUPO: " + nome + "\n"
-                           + "USUARIO: " + usuario + "\n"
-                           + "MENSAGEM: " + m.getTexto() + "\n"
-                           + "STATUS: " + m.getStatus());
-
         // Interrompe o laco
         break; 
 			} // Fim do bloco if

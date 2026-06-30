@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 25/06/2026
+* Ultima alteracao.: 30/06/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -36,6 +36,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
@@ -353,6 +354,14 @@ public class TelaPrincipalController implements Initializable {
       // Adiciona a imagem e as informacoes dentro do botao do grupo
 			grupo.getChildren().addAll(infoGrupo, envioUltimaMensagem);
 
+			if (verificarMensagensNaoLidas(g)) {
+				Circle sinal = new Circle();
+				sinal.setRadius(5);
+				sinal.setStrokeWidth(0);
+				sinal.setFill(Color.web("#02c72d"));
+				grupo.getChildren().add(sinal);
+			}
+
       // Importa o evento que abre o chat do grupo 
       // caso o usuario clicar no botao
 			grupo.setOnMouseClicked(event -> {
@@ -392,5 +401,20 @@ public class TelaPrincipalController implements Initializable {
 	private void carregarAviso(String aviso) {
 		lblAviso.setText(aviso);
 		painelAviso.setVisible(true);
+	}
+
+	private boolean verificarMensagensNaoLidas(Grupo g) {
+		ArrayList<Mensagem> mensagens = g.getMensagens();
+		if (mensagens == null) return false;
+
+		for (Mensagem m : mensagens) {
+			boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
+
+			if (!ehUsuario && !m.isRead()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
