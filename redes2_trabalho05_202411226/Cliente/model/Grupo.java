@@ -109,7 +109,7 @@ public class Grupo {
 		for (Mensagem m : mensagens) {
 			// Obtem o autor e o tempo de envio da mensagem atual
 			String autor = m.getAutor();
-			String tempoMsgAtual = m.formatarTempoEnvio();
+			String tempoMsgAtual = m.formatarTempoHoraEnvio();
 
       // Inicio do bloco if
       // Se o autor e o tempo de envio corresponderem aos da mensagem atual e a mensagem nao tiver sido lida anteriormente
