@@ -83,7 +83,7 @@ public class ProcessaMensagem extends Thread {
 				// Atualiza o status da mensagem correspondente se o grupo informado na APDU for encontrado
 				if (g != null) g.atualizarStatusMensagem(usuario, apdu.formatarTempoEnvio(), apdu.getStatus().trim());
 
-				System.out.println("Mensagem: " + apdu.getMensagem() + " Grupo: " + apdu.getTempoEnvio() + " Envio: " + apdu.formatarTempoEnvio() + " Status: " + apdu.getStatus());
+				System.out.println("Mensagem: " + apdu.getMensagem() + " Grupo: " + apdu.getGrupo() + " Envio: " + apdu.formatarTempoEnvio() + " Status: " + apdu.getStatus());
 			} // Fim do bloco if/else if
 
       // Inicio do bloco if/else

@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 29/06/2026
+* Ultima alteracao.: 30/06/2026
 * Nome.............: Grupo
 * Funcao...........: Classe que controla as operacoes dos grupos do aplicativo.
                      
@@ -20,6 +20,8 @@ public class Grupo {
 	private Mensagem ultimaMensagem;
 	private ArrayList<Mensagem> mensagens;
 	private boolean selected;
+  private static final Image DELIVERED = new Image(Grupo.class.getResource("/img/Delivered.png").toExternalForm());
+  private static final Image READ = new Image(Grupo.class.getResource("/img/Read.png").toExternalForm());
 
   /*
    * ***************************************************************
@@ -100,6 +102,8 @@ public class Grupo {
    ****************************************************************/
 
 	public synchronized void atualizarStatusMensagem(String usuario, String tempoEnvio, String status) {
+    if (usuario == null || tempoEnvio == null || status == null) return;
+
 		// Inicio do bloco for
 		for (Mensagem m : mensagens) {
 			// Obtem o autor e o tempo de envio da mensagem atual
@@ -107,12 +111,25 @@ public class Grupo {
 			String tempoMsgAtual = m.formatarTempoEnvio();
 
       // Inicio do bloco if
-      // Se o autor e o tempo de envio corresponderem aos da mensagem atual e a mensagem nao tiver sido marcada como lida
-      // anteriormente
-			if (autor.equals(usuario) && tempoMsgAtual.equals(tempoEnvio) && (m.getStatus() != null && !m.getStatus().equals("READ"))) {
-				// Atualiza o status da mensagem e interrompe o laco
-				m.setStatus(status);
-				break;
+      // Se o autor e o tempo de envio corresponderem aos da mensagem atual e a mensagem nao tiver sido lida anteriormente
+			if (autor.equals(usuario) && tempoMsgAtual.equals(tempoEnvio) && !m.isRead()) {
+        // Inicio do bloco switch/case
+				switch (status) {
+          case "DELIVERED":
+            m.setStatus(DELIVERED);
+            break;
+
+          case "READ":
+            m.setStatus(READ);
+            m.setRead(true);
+            break;
+
+          default:
+            break;
+        } // Fim do bloco switch/case
+
+        // Interrompe o laco
+        break; 
 			} // Fim do bloco if
 		} // Fim do bloco for
 	}

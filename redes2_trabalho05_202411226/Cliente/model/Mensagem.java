@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 21/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 30/06/2026
 * Nome.............: Mensagem
 * Funcao...........: Classe que controla as operacoes das mensagens enviadas no chat do aplicativo.
                      
@@ -12,12 +12,14 @@ package model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import javafx.scene.image.Image;
 
 public class Mensagem {
 	// Variaveis e instancias
 	private String texto;
 	private String autor;
-	private String status;
+	private Image status;
+  private boolean read;
 	private LocalDateTime tempoEnvio;
 
   /*
@@ -26,15 +28,16 @@ public class Mensagem {
    * Funcao: inicializa uma nova instancia da classe Mensagem
    * Parametros: String texto - conteudo da mensagem
                  String autor - autor da mensagem
-                 String status - status da mensagem
+                 Image status - status da mensagem
    * Retorno: nenhum
    ****************************************************************/
 
-	public Mensagem(String texto, String autor, String status) {
+	public Mensagem(String texto, String autor, Image status) {
 		this.texto = texto;
 		this.autor = autor;
 		this.status = status;
 		tempoEnvio = LocalDateTime.now();
+    read = false;
 	}
 
   /*
@@ -106,11 +109,11 @@ public class Mensagem {
    * ***************************************************************
    * Metodo: setStatus
    * Funcao: define o status da mensagem
-   * Parametros: String status - valor a ser definido
+   * Parametros: Image status - valor a ser definido
    * Retorno: void
    ****************************************************************/
 
-	public void setStatus(String status) {
+	public void setStatus(Image status) {
 		this.status = status;
 	}
 
@@ -119,10 +122,10 @@ public class Mensagem {
    * Metodo: getStatus
    * Funcao: retorna o status da mensagem
    * Parametros: nenhum parametro foi definido para esta funcao
-   * Retorno: String
+   * Retorno: Image
    ****************************************************************/
 
-	public String getStatus() {
+	public Image getStatus() {
 		return status;
 	}
 
@@ -183,4 +186,12 @@ public class Mensagem {
     // Retorna o valor obtido
 		return horaEnvio;
 	}
+
+  public void setRead(boolean r) {
+    this.read = r;
+  }
+
+  public boolean isRead() {
+    return read;
+  }
 }

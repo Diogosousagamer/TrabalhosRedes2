@@ -53,8 +53,6 @@ public class TelaGrupoController implements Initializable {
 
   // Variaveis e instancias
   private static final Image SENT = new Image(TelaGrupoController.class.getResource("/img/Sent.png").toExternalForm());
-  private static final Image DELIVERED = new Image(TelaGrupoController.class.getResource("/img/Delivered.png").toExternalForm());
-  private static final Image READ = new Image(TelaGrupoController.class.getResource("/img/Read.png").toExternalForm());
   public static volatile TelaGrupoController grupos;
   private Grupo g;
 
@@ -138,7 +136,7 @@ public class TelaGrupoController implements Initializable {
     // Cria uma nova mensagem a partir do conteudo no txtMensagem e o nome do usuario
     String mensagem = txtMensagem.getText();
     String autor = Usuario.getUsuario().getNome();
-    Mensagem m = new Mensagem(mensagem, autor, "SENT");
+    Mensagem m = new Mensagem(mensagem, autor, SENT);
 
     // Limpa a caixa de texto
     txtMensagem.clear();
@@ -256,37 +254,18 @@ public class TelaGrupoController implements Initializable {
       // Imagem que representa o status da mensagem (via APDU CONFIRM)
       ImageView imgStatus = new ImageView();
       imgStatus.setFitWidth(17);
-      imgStatus.setFitHeight(25);
+      imgStatus.setFitHeight(17);
       imgStatus.setPreserveRatio(true);
+      imgStatus.setSmooth(true);
 
       // Obtem o status da mensagem
-      String status = m.getStatus().trim();
+      Image status = m.getStatus();
 
       // Inicio do bloco if
       // Se a mensagem for do usuario e o status nao for nulo
       if (ehUsuario && status != null) {
-        // Inicio do bloco switch/case
-        switch (status) {
-          case "SENT": 
-            // Mostra um traco cinza caso tiver sido enviada recentemente
-            imgStatus.setImage(SENT);
-            break;
-
-          case "DELIVERED":
-            // Mostra dois tracos cinzas caso tiver chegado aos outros membros do grupo
-            imgStatus.setImage(DELIVERED);
-            break;
-
-          case "READ":
-            // Mostra dois tracos azuis caso todos os membros do grupo tiverem
-            // visto a mensagem
-            imgStatus.setImage(READ);
-            break;
-
-          default:
-            System.err.println("Status nao atualizado.");
-            break;
-          } // Fim do bloco switch/case
+        // Carrega a imagem do status
+        imgStatus.setImage(status);
 
         // Adiciona a imagem dentro da caixa de status
         caixaStatus.getChildren().add(imgStatus);
@@ -342,15 +321,14 @@ public class TelaGrupoController implements Initializable {
       // Verifica se a mensagem atual eh do usuario
       boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
 
-      // Obtem o status da mensagem
-      String status = m.getStatus();
+      // Verifica se a mensagem ja foi lida
+      boolean read = m.isRead();
 
       // Inicio do bloco if
-      // Se a mensagem nao for do usuario e o status dela nao tiver sido definido 
-      // ou nao for igual a READ (ou seja, a mensagem nao tiver sido lida anteriormente)
-      if (!ehUsuario && (status == null || !status.equals("READ"))) {
+      // Se a mensagem nao for do usuario e nao tiver sido lida anteriormente
+      if (!ehUsuario && !read) {
         // Marca a mensagem como lida
-        m.setStatus("READ");
+        m.setRead(true);
 
         // Envia uma APDU CONFIRM notificando que a mensagem foi lida
         Usuario.getUsuario().getUDP().enviarAPDU(new APDU("CONFIRM", m.getAutor(), g.getNome(), m.getTexto(), m.getTempoEnvio(), "READ"));
