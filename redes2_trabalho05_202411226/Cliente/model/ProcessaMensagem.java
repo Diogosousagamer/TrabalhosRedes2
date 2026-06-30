@@ -88,8 +88,8 @@ public class ProcessaMensagem extends Thread {
 
       // Inicio do bloco if/else
       // Se a tela de grupos estiver aberta
-			if (TelaGrupoController.grupos != null) {
-				// Recarrega as mensagen
+			if (TelaGrupoController.grupos != null && TelaGrupoController.grupos.aberto) {
+				// Recarrega as mensagens
 				Platform.runLater(() -> TelaGrupoController.grupos.carregarMensagens());
 			}
 			else {

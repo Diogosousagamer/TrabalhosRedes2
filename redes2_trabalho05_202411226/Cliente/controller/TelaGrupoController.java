@@ -54,6 +54,7 @@ public class TelaGrupoController implements Initializable {
   // Variaveis e instancias
   private static final Image SENT = new Image(TelaGrupoController.class.getResource("/img/Sent.png").toExternalForm());
   public static volatile TelaGrupoController grupos;
+  public static volatile boolean aberto;
   private Grupo g;
 
   /*
@@ -69,6 +70,8 @@ public class TelaGrupoController implements Initializable {
   public void initialize(URL url, ResourceBundle rb) {
     // Inicializa uma instancia volatil do controller
     grupos = this;
+
+    aberto = true;
     
     // Ao apertar ENTER, o usuario envia uma mensagem
     txtMensagem.setOnKeyPressed(event -> {
@@ -93,6 +96,8 @@ public class TelaGrupoController implements Initializable {
   
   @FXML
   private void sairChat(ActionEvent event) {
+    aberto = false;
+
     // Desmarca o grupo como selecionado
     g.setSelected(false);
 
