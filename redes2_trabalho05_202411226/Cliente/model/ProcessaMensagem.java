@@ -78,7 +78,7 @@ public class ProcessaMensagem extends Thread {
 				                                                                                                    // e o autor da mensagem for correspondente
 				                                                                                                    // ao usuario
 				// Busca o grupo informado na APDU
-				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo());
+				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo().trim());
 
 				// Atualiza o status da mensagem correspondente se o grupo informado na APDU for encontrado
 				if (g != null) g.atualizarStatusMensagem(usuario, apdu.formatarTempoEnvio(), apdu.getStatus().trim());
