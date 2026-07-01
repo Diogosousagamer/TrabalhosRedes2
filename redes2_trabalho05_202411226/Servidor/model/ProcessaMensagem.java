@@ -69,12 +69,14 @@ public class ProcessaMensagem extends Thread {
 				// Obtem o numero de usuarios do grupo
 				int numMembrosGrupo = bancoGrupos.obterNumUsuariosGrupo(grupo);
 
+ 				// Inicio do bloco if
 				// Se o usuario for o unico presente no grupo
 				if (numMembrosGrupo == 1) {
+					// Marca a mensagem como LIDA pelo proprio autor
 					String ipUsuario = bancoGrupos.obterIpUsuario(apdu.getUsuario());
 					enviarMensagem(ipUsuario, new APDU("CONFIRM", apdu.getUsuario(), apdu.getGrupo(), apdu.getMensagem(), apdu.getTempoEnvio(), "READ"));
 					return;
-				}
+				} // Fim do bloco if
 
         // Inicio do bloco for
 				for (String usuario : bancoGrupos.obterUsuariosGrupo(grupo)) {
@@ -110,8 +112,21 @@ public class ProcessaMensagem extends Thread {
           // Inicio do bloco switch/case
 					switch (status) {
 						case "DELIVERED": // Caso a mensagem tiver sido entregue a algum membro do grupo
-							// Envia a APDU para o autor original da mensagem
-							enviarMensagem(ipAutor, apdu);
+							// Registra a entrega da mensagem
+							bancoGrupos.registrarEntregasMensagem(apdu.getGrupo(), apdu.getUsuario(), apdu.getMensagem(), apdu.formatarTempoEnvio());
+
+							// Obtem a quantidade de entregas feitas e a quantidade de entregas necessarias
+							String msgFinal = apdu.getGrupo() + " " + apdu.getUsuario() + " " + apdu.getMensagem() + " " + apdu.formatarTempoEnvio();
+							int entregasFeitas = bancoGrupos.obterNumEntregasMensagem(apdu.getGrupo(), msgFinal);
+							int entregasNecessarias = bancoGrupos.obterNumUsuariosGrupo(apdu.getGrupo()) - 1;
+
+							// Inicio do bloco if
+              // Se todos os usuarios do grupo tiverem recebido a mensagem
+							if (entregasFeitas >= entregasNecessarias) {
+								// Envia a APDU para o autor original da mensagem
+								enviarMensagem(ipAutor, apdu);
+							} // Fim do bloco if
+
 							break;
 
 						case "READ": // Caso a mensagem tiver sido lida

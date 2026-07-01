@@ -18,6 +18,7 @@ public class BancoGrupos {
 	// Variaveis e instancias
 	private static HashMap<String, ArrayList<String>> gruposUsuarios;
 	private static HashMap<String, HashMap<String, Integer>> numLeituras;
+	private static HashMap<String, HashMap<String, Integer>> numEntregas;
 	private static HashMap<String, String> listaIpUsuario;
 	private static HashMap<String, String> listaUsuarioIp;
 	private static BancoGrupos bancoGrupos;
@@ -85,6 +86,34 @@ public class BancoGrupos {
 
 			return vazio;
 		});
+	}
+
+	public synchronized void registrarEntregasMensagem(String grupo, String autor, String mensagem, String tempoEnvio) {
+		if (!numEntregas.containsKey(grupo)) numEntregas.put(grupo, new HashMap<>());
+		HashMap<String, Integer> registros = numEntregas.get(grupo);
+
+		String msg = grupo + " " + autor + " " + mensagem + " " + tempoEnvio;
+		if (!registros.containsKey(msg)) registros.put(msg, 0);
+
+		int numRegistrosAtual = registros.get(msg) + 1;
+		registros.put(msg, numRegistrosAtual);
+	}
+
+	public synchronized int obterNumEntregasMensagem(String grupo, String msg) {
+		HashMap<String, Integer> registros = numEntregas.get(grupo);
+
+		if (registros == null || !registros.containsKey(msg)) {
+			return 0;
+		}
+
+		int numRegistros = registros.get(msg);
+		int registrosMax = obterNumUsuariosGrupo(grupo) - 1;
+
+		if (numRegistros >= registrosMax) {
+			registros.remove(msg);
+		}
+
+		return numRegistros;
 	}
 
 	public synchronized void registrarLeiturasMensagem(String grupo, String autor, String mensagem, String tempoEnvio) {
