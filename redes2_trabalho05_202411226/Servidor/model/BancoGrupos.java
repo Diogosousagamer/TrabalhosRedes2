@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 01/07/2026
 * Nome.............: BancoGrupos
 * Funcao...........: Classe que gerencia a criacao e manutencao dos grupos.
 					 
@@ -159,6 +159,10 @@ public class BancoGrupos {
 
 	public ArrayList<String> obterUsuariosGrupo(String grupo) {
 		return gruposUsuarios.get(grupo);
+	}
+
+	public boolean usuarioExiste(String usuario) {
+		return listaIpUsuario.containsKey(usuario);
 	}
 
 	public int obterNumUsuariosGrupo(String grupo) {

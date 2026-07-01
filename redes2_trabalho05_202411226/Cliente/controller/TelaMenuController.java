@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 01/07/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -33,6 +33,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import model.APDU;
 import model.Usuario;
 
 public class TelaMenuController implements Initializable {
@@ -121,9 +122,9 @@ public class TelaMenuController implements Initializable {
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
-    // Estabelece uma nova conexao com o usuario e armazena o seu resultado
-    // em forma de booleano
-		boolean conectado = Usuario.conectarUsuario(nome, ip);
+    // Conecta o usuario e envia uma APDU solicitando resposta do servidor
+		Usuario.conectarUsuario(nome, ip);
+		boolean conectado = Usuario.getUsuario().getTCP().conectar(new APDU("REGISTER", Usuario.getUsuario().getNome()));
 
     // Inicio do bloco if/else
     // Se o usuario tiver sido conectado

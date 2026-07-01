@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 28/06/2026
+* Ultima alteracao.: 01/07/2026
 * Nome.............: servidorTCP
 * Funcao...........: Interface do servidor no protocolo TCP.
                      
@@ -42,11 +42,8 @@ public class servidorTCP extends Thread {
 
 				// Obtem o endereco IP do cliente
 				String ipCliente = conexao.getInetAddress().getHostAddress();
-				
-				// Notifica o sucesso da conexao
-				TelaPrincipalController.controller.logTCP("Novo cliente conectado com sucesso: " + ipCliente);
 
-				// Executa o banco de clientes para processar as APDUs encaminhadas via TCP (JOIN e LEAVE)
+				// Executa o banco de clientes para processar as APDUs encaminhadas via TCP (REGISTER, JOIN e LEAVE)
 				BancoClientes bancoClientes = new BancoClientes(conexao, ipCliente);
 				bancoClientes.start();
 			}	// Fim do bloco while

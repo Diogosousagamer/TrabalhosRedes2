@@ -27,6 +27,24 @@ public class APDU {
   /*
    * ***************************************************************
    * Metodo: APDU
+   * Funcao: inicializa uma nova instancia da classe APDU (para a APDU REGISTER)
+   * Parametros: String tipo - tipo da APDU
+                 String usuario - usuario autor da solicitacao
+   * Retorno: nenhum
+   ****************************************************************/
+
+	public APDU(String tipo, String usuario) {
+		this.tipo = tipo;
+		this.usuario = usuario;
+		this.grupo = null;
+		this.mensagem = null;
+		this.status = null;
+		this.tempoEnvio = null;
+	}
+
+  /*
+   * ***************************************************************
+   * Metodo: APDU
    * Funcao: inicializa uma nova instancia da classe APDU (para as APDUs
              JOIN e LEAVE)
    * Parametros: String tipo - tipo da APDU
@@ -96,9 +114,40 @@ public class APDU {
    ****************************************************************/
 
 	public String enviarMensagem() {
-		return (this.mensagem == null && this.tempoEnvio == null) ? codificarMensagem(this.tipo, this.usuario, this.grupo)
-		       : ((this.status == null) ? codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio()) : 
-		     		 codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio(), this.status));
+		if (this.grupo == null) {
+			return codificarMensagem(this.tipo, this.usuario);
+		}
+		else {
+			if (this.mensagem == null && this.tempoEnvio == null) {
+				return codificarMensagem(this.tipo, this.usuario, this.grupo);
+			}
+			else if (this.status == null) {
+				return codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio());
+			}
+			else {
+				return codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio(), this.status);
+			}
+		}
+	}
+
+	/*
+   * ***************************************************************
+   * Metodo: codificarMensagem
+   * Funcao: codifica a mensagem da APDU (para a APDU REGISTER)
+   * Parametros: String tipo - tipo da APDU
+                 String usuario - usuario autor da solicitacao
+   * Retorno: String
+   ****************************************************************/
+
+	public String codificarMensagem(String tipo, String usuario) {
+		// Inclui caracteres de escape caso o delimitador ou o escape fizerem parte do conteudo dos itens
+		// mencionados
+		tipo = tipo.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
+		usuario = usuario.replace(ESCAPE, ESCAPE + ESCAPE).replace(DELIMITADOR, ESCAPE + DELIMITADOR);
+
+    // Retorna a mensagem codificada, com cada item sendo separado por um asterisco para facilitar
+    // a decodificacao
+		return tipo + DELIMITADOR + usuario;
 	}
 
   /*
@@ -195,45 +244,50 @@ public class APDU {
     // Decodifica o tipo, o usuario e o grupo citados na mensagem (variaveis globais)
 		String tipoLocal = partes[0].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 		String usuarioLocal = partes[1].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-		String grupoLocal = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 
 		// Inicializa as variaveis exclusivas das APDUs SEND e CONFIRM
+		String grupoLocal = null;
 		String msgLocal = null;
 		LocalDateTime envioLocal = null;
 		String statusLocal = null;
 
 		// Inicio do bloco if
-		// Se a quantidade de partes da mensagem for maior ou igual a 5 e as duas ultimas partes
-		// nao forem vazias
-		if (partes.length >= 5 && !partes[3].isEmpty() && !partes[4].isEmpty()) {
+		// Se a quantidade de partes da mensagem for maior ou igual a 3 e a ultima parte nao for 
+		if (partes.length >= 3 && !partes[2].isEmpty()) {
 			// Decodifica o conteudo e o tempo de envio da mensagem
-			msgLocal = partes[3].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
-			String tempoStr = partes[4].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+			grupoLocal = partes[2].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 
-      // Inicio do bloco if
-      // Se o tamanho da String for maior que o formato esperado de data/hora
-			if (tempoStr.length() > 19) {
-				// Exclui o lixo gerado
-				tempoStr = tempoStr.substring(0, 19);
-			} // Fim do bloco if
+      // Se a quantidade de partes da mensagem for maior ou igual a 5 e as duas ultimas partes
+			// nao forem vazias
+			if (partes.length >= 5 && !partes[3].isEmpty() && !partes[4].isEmpty()) {
+				msgLocal = partes[3].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+				String tempoStr = partes[4].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
 
-      // Converte a String em LocalDateTime
-			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-			envioLocal = LocalDateTime.parse(tempoStr, formato);
- 
+	      // Inicio do bloco if
+	      // Se o tamanho da String for maior que o formato esperado de data/hora
+				if (tempoStr.length() > 19) {
+					// Exclui o lixo gerado
+					tempoStr = tempoStr.substring(0, 19);
+				} // Fim do bloco if
 
-      // Inicio do bloco if
-			if (partes.length >= 6 && !partes[5].isEmpty()) {
-				// Decodifica o status da mensagem caso ele existir (a quantidade de partes for maior ou igual a 6
-			  // e a ultima parte nao for vazia)
-				statusLocal = partes[5].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+	      // Converte a String em LocalDateTime
+				DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+				envioLocal = LocalDateTime.parse(tempoStr, formato);
+
+	      // Inicio do bloco if
+				if (partes.length >= 6 && !partes[5].isEmpty()) {
+					// Decodifica o status da mensagem caso ele existir (a quantidade de partes for maior ou igual a 6
+				  // e a ultima parte nao for vazia)
+					statusLocal = partes[5].replace(ESCAPE + DELIMITADOR, DELIMITADOR).replace(ESCAPE + ESCAPE, ESCAPE);
+				} // Fim do bloco if
 			} // Fim do bloco if
 		} // Fim do bloco if
 
     // Retorna uma nova APDU formada a partir das informacoes decodificadas
-		return (msgLocal == null && envioLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal) 
-		       : ((statusLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal, msgLocal, envioLocal) : 
-		                                  new APDU(tipoLocal, usuarioLocal, grupoLocal, msgLocal, envioLocal, statusLocal));
+		return (grupoLocal == null) ? new APDU(tipoLocal, usuarioLocal) : 
+		       ((msgLocal == null && envioLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal) : 
+		       	 ((statusLocal == null) ? new APDU(tipoLocal, usuarioLocal, grupoLocal, msgLocal, envioLocal) : 
+		                                  new APDU(tipoLocal, usuarioLocal, grupoLocal, msgLocal, envioLocal, statusLocal)));
 	}
 
   /*

@@ -32,6 +32,35 @@ public class BancoClientes extends Thread {
 	public void run() {
 		try {
 			ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream());
+			ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
+
+			String msgInicial = (String) entrada.readObject();
+			APDU apduRegistro = (msgInicial != null) ? APDU.decodificarMensagem(msgInicial) : null;
+
+			if (apduRegistro != null && "CONFIRM".equals(apduRegistro.getTipo().trim())) {
+				String usuario = apduRegistro.getUsuario();
+
+				if (!bancoGrupos.usuarioExiste(usuario)) {
+					saida.writeBoolean(true);
+					saida.flush();
+
+					HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
+					HashMap<String, String> listaUsuarioIp = bancoGrupos.getListaUsuarioIp();
+
+					listaIpUsuario.putIfAbsent(usuario, ipCliente);
+					listaUsuarioIp.putIfAbsent(ipCliente, usuario);
+
+					TelaPrincipalController.controller.logTCP("Novo cliente conectado com sucesso: " + ipCliente);
+				}
+				else {
+					saida.writeBoolean(false);
+					saida.flush();
+
+					TelaPrincipalController.controller.logTCP("Conexao rejeitada! O usuario " + usuario + " ja existe.");
+					conexao.close();
+					return;
+				}
+			} 
 
 			while (!conexao.isClosed()) {
 				String mensagem = (String) entrada.readObject();
@@ -55,14 +84,6 @@ public class BancoClientes extends Thread {
 			TelaPrincipalController.controller.logTCP("Tipo: " + apdu.getTipo());
 			TelaPrincipalController.controller.logTCP("Usuario: " + apdu.getUsuario());
 			TelaPrincipalController.controller.logTCP("Grupo: " + apdu.getGrupo());
-
-			String usuario = apdu.getUsuario();
-
-  		HashMap<String, String> listaIpUsuario = bancoGrupos.getListaIpUsuario();
-			HashMap<String, String> listaUsuarioIp = bancoGrupos.getListaUsuarioIp();
-
-			listaIpUsuario.putIfAbsent(usuario, ipCliente);
-			listaUsuarioIp.putIfAbsent(ipCliente, usuario);
 
 			String tipo = apdu.getTipo();
 

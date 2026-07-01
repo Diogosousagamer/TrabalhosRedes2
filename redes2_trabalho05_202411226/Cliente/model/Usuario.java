@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 01/07/2026
 * Nome.............: Usuario
 * Funcao...........: Classe que controla as operacoes dos usuarios do aplicativo.
                      
@@ -46,18 +46,16 @@ public class Usuario {
    * Retorno: boolean
    ****************************************************************/
 
-  public static boolean conectarUsuario(String nome, String ipServidor) {
+  public static void conectarUsuario(String nome, String ipServidor) {
     // Inicio do bloco try/catch
     try {
       // Inicializa o usuario, inicia os protocolos e retorna verdadeiro
       usuario = new Usuario(nome, ipServidor);
       usuario.iniciarProtocolos();
-      return true;
     }
     catch (Exception e) {
       // Em caso de excecao, notifica erro e retorna falso
       System.err.println("Nao foi possivel conectar ao servidor " + ipServidor + ". Tente novamente mais tarde.");
-      return false;
     } // Fim do bloco try/catch
   }
 
