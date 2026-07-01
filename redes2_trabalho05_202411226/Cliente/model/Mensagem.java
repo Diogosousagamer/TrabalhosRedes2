@@ -204,9 +204,25 @@ public class Mensagem {
 		return horaEnvio;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: setRead
+   * Funcao: define se a mensagem foi lida ou nao
+   * Parametros: boolean r - valor a ser definido
+   * Retorno: void
+   ****************************************************************/
+
   public void setRead(boolean r) {
     this.read = r;
   }
+
+  /*
+   * ***************************************************************
+   * Metodo: getRead
+   * Funcao: retorna se a mensagem foi lida ou nao
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: boolean
+   ****************************************************************/
 
   public boolean isRead() {
     return read;

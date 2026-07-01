@@ -57,19 +57,17 @@ public class ProcessaMensagem extends Thread {
 			String usuario = apdu.getUsuario();
 			LocalDateTime tempoEnvio = apdu.getTempoEnvio();
 
+			// Busca o grupo informado na APDU
+			Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo().trim());
+
       // Inicio do bloco if/else if
       // Se for uma APDU SEND
 			if ("SEND".equals(apdu.getTipo().trim())) {
 				// Carrega a mensagem encaminhada pela APDU
 				Mensagem m = new Mensagem(apdu.getMensagem(), usuario, tempoEnvio);
 
-        // Carrega ela para o grupo correspondente
-				for (Grupo g : Usuario.getUsuario().getGrupos()) {
-					if (g.getNome().equals(apdu.getGrupo())) {
-						g.adicionarMensagem(m);
-						break;
-					}
-				}
+				// Adiciona a nova mensagem no grupo se ele tiver sido encontrado
+        if (g != null) g.adicionarMensagem(m);
 
 				// Envia uma APDU informando que ela foi entregue
 				udp.enviarAPDU(new APDU("CONFIRM", usuario, apdu.getGrupo(), apdu.getMensagem(), tempoEnvio, "DELIVERED"));
@@ -77,8 +75,6 @@ public class ProcessaMensagem extends Thread {
 			else if (usuario.equals(Usuario.getUsuario().getNome()) && "CONFIRM".equals(apdu.getTipo().trim())) { // Porem se for uma APDU CONFIRM
 				                                                                                                    // e o autor da mensagem for correspondente
 				                                                                                                    // ao usuario
-				// Busca o grupo informado na APDU
-				Grupo g = Usuario.getUsuario().buscarGrupo(apdu.getGrupo().trim());
 
 				// Atualiza o status da mensagem correspondente se o grupo informado na APDU for encontrado
 				if (g != null) g.atualizarStatusMensagem(usuario, apdu.formatarTempoEnvio(), apdu.getStatus().trim());
@@ -88,7 +84,7 @@ public class ProcessaMensagem extends Thread {
 
       // Inicio do bloco if/else
       // Se a tela de grupos estiver aberta
-			if (TelaGrupoController.grupos != null && TelaGrupoController.grupos.aberto) {
+			if (g.isSelected()) {
 				// Recarrega as mensagens
 				Platform.runLater(() -> TelaGrupoController.grupos.carregarMensagens());
 			}

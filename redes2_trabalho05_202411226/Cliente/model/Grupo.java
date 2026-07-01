@@ -116,11 +116,11 @@ public class Grupo {
 			if (autor.equals(usuario) && tempoMsgAtual.equals(tempoEnvio) && !m.isRead()) {
         // Inicio do bloco switch/case
 				switch (status) {
-          case "DELIVERED":
+          case "DELIVERED": // Coloca dois tracos cinzas caso a mensagem tiver sido entregue pra todos os usuarios do grupo
             Platform.runLater(() -> m.setStatus(DELIVERED));
             break;
 
-          case "READ":
+          case "READ": // Coloca dois tracos azuis caso a mensagem tiver sido lida por todos os usuarios do grupo
             Platform.runLater(() -> m.setStatus(READ));
             m.setRead(true);
             break;

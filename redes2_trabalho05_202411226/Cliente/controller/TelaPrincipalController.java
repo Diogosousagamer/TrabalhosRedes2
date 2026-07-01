@@ -34,6 +34,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -356,10 +357,22 @@ public class TelaPrincipalController implements Initializable {
 
 			if (verificarMensagensNaoLidas(g)) {
 				Circle sinal = new Circle();
-				sinal.setRadius(5);
+				sinal.setRadius(10);
 				sinal.setStrokeWidth(0);
 				sinal.setFill(Color.web("#02c72d"));
-				grupo.getChildren().add(sinal);
+
+				int quantidade = contarMensagensNaoLidas(g);
+				String textoQuantidade = (quantidade > 99) ? "99+" : Integer.toString(quantidade);
+
+				Label lblNumero = new Label(textoQuantidade);
+				lblNumero.setFont(Font.font("Calibri", FontWeight.BOLD, 10));
+				lblNumero.setTextFill(Color.WHITE);
+
+				StackPane badge = new StackPane();
+				badge.setAlignment(Pos.CENTER);
+				badge.getChildren().addAll(sinal, lblNumero);
+
+				grupo.getChildren().add(badge);
 			}
 
       // Importa o evento que abre o chat do grupo 
@@ -416,5 +429,18 @@ public class TelaPrincipalController implements Initializable {
 		}
 
 		return false;
+	}
+
+	private int contarMensagensNaoLidas(Grupo g) {
+		ArrayList<Mensagem> mensagens = g.getMensagens();
+		if (mensagens == null) return 0;
+		int contador = 0;
+
+		for (Mensagem m : mensagens) {
+			boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
+			if (!ehUsuario && !m.isRead()) contador++;
+		}
+
+		return contador;
 	}
 }
