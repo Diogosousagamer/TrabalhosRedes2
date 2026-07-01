@@ -28,6 +28,7 @@ public class BancoGrupos {
 		listaIpUsuario = new HashMap<>();
 		listaUsuarioIp = new HashMap<>();
 		numLeituras = new HashMap<>();
+		numEntregas = new HashMap<>();
 	}
 
 	public void criarGrupo(String grupo) {
