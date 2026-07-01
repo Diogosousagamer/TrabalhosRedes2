@@ -46,16 +46,18 @@ public class Usuario {
    * Retorno: boolean
    ****************************************************************/
 
-  public static void conectarUsuario(String nome, String ipServidor) {
+  public static boolean conectarUsuario(String nome, String ipServidor) {
     // Inicio do bloco try/catch
     try {
       // Inicializa o usuario, inicia os protocolos e retorna verdadeiro
       usuario = new Usuario(nome, ipServidor);
       usuario.iniciarProtocolos();
+      return usuario.getTCP().conectar(new APDU("REGISTER", usuario.getNome()));
     }
     catch (Exception e) {
       // Em caso de excecao, notifica erro e retorna falso
       System.err.println("Nao foi possivel conectar ao servidor " + ipServidor + ". Tente novamente mais tarde.");
+      return false;
     } // Fim do bloco try/catch
   }
 

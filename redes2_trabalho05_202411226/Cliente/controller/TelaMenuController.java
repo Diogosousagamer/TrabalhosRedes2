@@ -12,9 +12,11 @@ package controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.Thread;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -82,12 +84,7 @@ public class TelaMenuController implements Initializable {
     // o evento de entrar no sistema eh executado
 		txtNomeUsuario.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER) {
-				try {
-					entrar(new ActionEvent(txtNomeUsuario, null));
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
+				entrar(new ActionEvent(txtNomeUsuario, null));
 			}
 		});	
 
@@ -95,12 +92,7 @@ public class TelaMenuController implements Initializable {
     // o evento de entrar no sistema eh executado
 		txtIpServidor.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER) {
-				try {
-					entrar(new ActionEvent(txtIpServidor, null));
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
+				entrar(new ActionEvent(txtIpServidor, null));
 			}
 		});	
 	}
@@ -114,7 +106,7 @@ public class TelaMenuController implements Initializable {
    ****************************************************************/
 
 	@FXML
-	private void entrar(ActionEvent event) throws IOException {
+	private void entrar(ActionEvent event) {
 		// Interrompe o processo se algum dado estiver faltando
 		if (!verificarDados()) return;
 
@@ -122,26 +114,34 @@ public class TelaMenuController implements Initializable {
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
-    // Conecta o usuario e envia uma APDU solicitando resposta do servidor
-		Usuario.conectarUsuario(nome, ip);
-		boolean conectado = Usuario.getUsuario().getTCP().conectar(new APDU("REGISTER", Usuario.getUsuario().getNome()));
+		new Thread(() -> {
+	    // Tenta conectar o usuario enviando uma APDU solicitando resposta do servidor
+			boolean conectado = Usuario.conectarUsuario(nome, ip);
 
-    // Inicio do bloco if/else
-    // Se o usuario tiver sido conectado
-		if (conectado) {
-			// Carrega a tela principal
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
-			Parent root = loader.load();
-			Scene scene = new Scene(root);
+			Platform.runLater(() -> {
+		    // Inicio do bloco if/else
+		    // Se o usuario tiver sido conectado
+				if (conectado) {
+					try {
+						// Carrega a tela principal
+						FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
+						Parent root = loader.load();
+						Scene scene = new Scene(root);
 
-      // Importa ela para dentro da janela
-			Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-			stage.setScene(scene);
-		}
-		else {
-			// Senao, eh exibida uma mensagem de erro
-			carregarAviso("Nao conectado. Tente novamente mais tarde.");
-		} // Fim do bloco if/else
+			      // Importa ela para dentro da janela
+						Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+						stage.setScene(scene);
+					}
+					catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				else {
+					// Senao, eh exibida uma mensagem de erro
+					carregarAviso("Nao conectado. Tente novamente mais tarde.");
+				} // Fim do bloco if/else
+			});
+		}).start();
 	}
 
   /*

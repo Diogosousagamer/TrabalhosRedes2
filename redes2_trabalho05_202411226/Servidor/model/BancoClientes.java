@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 26/06/2026
+* Ultima alteracao.: 01/07/2026
 * Nome.............: BancoClientes
 * Funcao...........: Thread que gerencia a conexao dos clientes.
                      
@@ -17,16 +17,34 @@ import java.util.HashMap;
 import controller.*;
 
 public class BancoClientes extends Thread {
+	// Variaveis e instancias
 	private Socket conexao;
 	private String ipCliente;
 	private APDU apduRecebida;
 	private BancoGrupos bancoGrupos;
+
+  /*
+   * ***************************************************************
+   * Metodo: BancoClientes
+   * Funcao: Inicializa uma nova instancia da Thread BancoClientes
+   * Parametros: Socket socket - conexao entre o cliente e o servidor
+                 String ipCliente - endereco IP do cliente
+   * Retorno: nenhum
+   ****************************************************************/
 
 	public BancoClientes(Socket conexao, String ipCliente) {
 		this.conexao = conexao;
 		this.ipCliente = ipCliente;
 		bancoGrupos = BancoGrupos.getBancoGrupos();
 	}
+
+	/*
+   * ***************************************************************
+   * Metodo: run
+   * Funcao: executa as operacoes da Thread
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
 	@Override
 	public void run() {
@@ -37,7 +55,7 @@ public class BancoClientes extends Thread {
 			String msgInicial = (String) entrada.readObject();
 			APDU apduRegistro = (msgInicial != null) ? APDU.decodificarMensagem(msgInicial) : null;
 
-			if (apduRegistro != null && "CONFIRM".equals(apduRegistro.getTipo().trim())) {
+			if (apduRegistro != null && "REGISTER".equals(apduRegistro.getTipo().trim())) {
 				String usuario = apduRegistro.getUsuario();
 
 				if (!bancoGrupos.usuarioExiste(usuario)) {
@@ -79,6 +97,14 @@ public class BancoClientes extends Thread {
 		}
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: processarMensagem
+   * Funcao: processa as mensagens enviadas para o TCP
+   * Parametros: APDU apdu - mensagem a ser processada
+   * Retorno: void
+   ****************************************************************/
+
 	private void processarMensagem(APDU apdu) {
 		if (apdu != null && (apdu.getTipo().equals("JOIN") || apdu.getTipo().equals("LEAVE"))) {
 			TelaPrincipalController.controller.logTCP("Tipo: " + apdu.getTipo());
@@ -103,6 +129,14 @@ public class BancoClientes extends Thread {
 			}
 		}
 	}
+
+  /*
+   * ***************************************************************
+   * Metodo: encerrarConexao
+   * Funcao: encerra a conexao do usuario
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
 	private void encerrarConexao() {
 		try {

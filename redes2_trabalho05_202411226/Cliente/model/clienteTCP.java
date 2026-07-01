@@ -37,8 +37,11 @@ public class clienteTCP extends Thread {
 			host = Usuario.getUsuario().getIpServidor();
 			s = new Socket(host, PORTA);
 
-			// Carrega um novo fluxo de saida para o socket
+			// Carrega um novo fluxo de entrada/saida para o socket
 			saida = new ObjectOutputStream(s.getOutputStream());
+			saida.flush();
+
+			entrada = new ObjectInputStream(s.getInputStream());
 		}
 		catch (IOException e) {
 			// Em caso de excecao, sua origem eh rastreada no console
@@ -76,6 +79,11 @@ public class clienteTCP extends Thread {
 
 	public boolean conectar(APDU apdu) {
 		try {
+			if (entrada == null || saida == null) {
+				System.err.println("Erro de conexao.");
+				return false;
+			}
+
 			if (apdu != null && apdu.getTipo().equals("REGISTER")) {
 				String msg = (apdu != null) ? apdu.enviarMensagem() : null;
 
