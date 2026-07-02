@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 01/07/2026
+* Ultima alteracao.: 02/07/2026
 * Nome.............: TelaMenuController
 * Funcao...........: Classe que controla os eventos da TelaMenu.
                      
@@ -114,14 +114,17 @@ public class TelaMenuController implements Initializable {
 		String nome = txtNomeUsuario.getText().trim();
 		String ip = txtIpServidor.getText().trim();
 
+		// Abre uma Thread para executar a conexao com o usuario
 		new Thread(() -> {
 	    // Tenta conectar o usuario enviando uma APDU solicitando resposta do servidor
 			boolean conectado = Usuario.conectarUsuario(nome, ip);
 
+			// Inicio do bloco Platform.runLater
 			Platform.runLater(() -> {
 		    // Inicio do bloco if/else
 		    // Se o usuario tiver sido conectado
 				if (conectado) {
+					// Inicio do bloco try/catch
 					try {
 						// Carrega a tela principal
 						FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/TelaPrincipal.fxml"));
@@ -133,14 +136,16 @@ public class TelaMenuController implements Initializable {
 						stage.setScene(scene);
 					}
 					catch (IOException e) {
+						// Em caso de excecao, emite a pilha de execucao
+						// para rastrear a sua origem
 						e.printStackTrace();
-					}
+					} // Fim do bloco try/catch
 				}
 				else {
 					// Senao, eh exibida uma mensagem de erro
 					carregarAviso("Nao conectado. Tente novamente mais tarde.");
 				} // Fim do bloco if/else
-			});
+			}); // Fim do bloco Platform.runLater
 		}).start();
 	}
 

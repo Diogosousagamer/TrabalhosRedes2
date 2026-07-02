@@ -60,7 +60,7 @@ public class Usuario {
       if (!sucesso && usuario != null) {
         // Encerra os protocolos se a conexao nao for bem sucedida (para evitar BindException)
         // e a instancia estatica do usuario nao for nula 
-        usuario.encerrarProtoclos();
+        usuario.encerrarProtocolos();
       } // Fim do bloco if
 
       // Retorna o resultado da conexao (sucesso ou fracasso)
@@ -91,14 +91,20 @@ public class Usuario {
     udp.start();  
   }
 
-  private void encerrarProtocolos() {
-    if (tcp != null) {
-      tcp.fecharConexao();
-    }
+  /*
+   * ***************************************************************
+   * Metodo: encerrarProtocolos
+   * Funcao: encerra os protocolos de comunicacao com o servidor
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
 
-    if (udp != null) {
-      udp.fecharConexao();
-    }
+  private void encerrarProtocolos() {
+    // Fecha a conexao do TCP se ela estiver aberta
+    if (tcp != null) tcp.fecharConexao();
+
+    // Fecha a conexao do UDP se ela estiver aberta
+    if (udp != null) udp.fecharConexao();
   }
 
   /*

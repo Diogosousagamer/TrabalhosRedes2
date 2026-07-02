@@ -40,7 +40,6 @@ public class clienteTCP extends Thread {
 			// Carrega um novo fluxo de entrada/saida para o socket
 			saida = new ObjectOutputStream(s.getOutputStream());
 			saida.flush();
-
 			entrada = new ObjectInputStream(s.getInputStream());
 		}
 		catch (IOException e) {
