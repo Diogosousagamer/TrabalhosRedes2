@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 30/06/2026
+* Ultima alteracao.: 02/07/2026
 * Nome.............: TelaPrincipalController
 * Funcao...........: Classe que controla os eventos da TelaPrincipal.
                      
@@ -355,25 +355,33 @@ public class TelaPrincipalController implements Initializable {
       // Adiciona a imagem e as informacoes dentro do botao do grupo
 			grupo.getChildren().addAll(infoGrupo, envioUltimaMensagem);
 
+			// Inicio do bloco if
+			// Se o grupo possuir mensagens que nao foram lidas
 			if (verificarMensagensNaoLidas(g)) {
+				// Cria um circulo para sinalizar o recebimento de mensagens
+				// nao lidas
 				Circle sinal = new Circle();
 				sinal.setRadius(10);
 				sinal.setStrokeWidth(0);
 				sinal.setFill(Color.web("#02c72d"));
 
+				// Calcula a quantidade de mensagens nao lidas e a converte em texto
 				int quantidade = contarMensagensNaoLidas(g);
 				String textoQuantidade = (quantidade > 99) ? "99+" : Integer.toString(quantidade);
 
+        // Cria uma Label armazenando a quantidade de mensagens nao lidas
 				Label lblNumero = new Label(textoQuantidade);
 				lblNumero.setFont(Font.font("Calibri", FontWeight.BOLD, 10));
 				lblNumero.setTextFill(Color.WHITE);
 
+				// Cria uma StackPane para representar a "badge" de mensagens nao lidas
 				StackPane badge = new StackPane();
 				badge.setAlignment(Pos.CENTER);
 				badge.getChildren().addAll(sinal, lblNumero);
 
+				// Adiciona a badge dentro do grupo
 				grupo.getChildren().add(badge);
-			}
+			} // Fim do bloco if
 
       // Importa o evento que abre o chat do grupo 
       // caso o usuario clicar no botao
@@ -416,31 +424,64 @@ public class TelaPrincipalController implements Initializable {
 		painelAviso.setVisible(true);
 	}
 
+	/*
+   * ***************************************************************
+   * Metodo: verificarMensagensNaoLidas
+   * Funcao: verifica se um grupo possui mensagens que nao foram lidas
+             pelo usuario
+   * Parametros: Grupo g - grupo a ser verificado
+   * Retorno: boolean
+   ****************************************************************/
+
 	private boolean verificarMensagensNaoLidas(Grupo g) {
+		// Obtem a lista de mensagens do grupo
 		ArrayList<Mensagem> mensagens = g.getMensagens();
+
+		// Retorna falso se a lista de mensagens nao tiver sido inicializada
 		if (mensagens == null) return false;
 
+		// Inicio do bloco for
 		for (Mensagem m : mensagens) {
+			// Verifica se a autoria da mensagem atual eh de outro usuario
 			boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
 
-			if (!ehUsuario && !m.isRead()) {
-				return true;
-			}
-		}
+			// Retorna verdadeiro se encontrar uma mensagem que nao foi escrita e lida pelo usuario
+			if (!ehUsuario && !m.isRead()) return true;
+		} // Fim do bloco for
 
+		// Retorna falso caso nenhuma mensagem nao lida tiver sido descoberta
 		return false;
 	}
 
+	/*
+   * ***************************************************************
+   * Metodo: contarMensagensNaoLidas
+   * Funcao: calcula a quantidade de mensagens nao lidas pelo usuario
+             em um determinado grupo
+   * Parametros: Grupo g - grupo a ser verificado
+   * Retorno: int
+   ****************************************************************/
+
 	private int contarMensagensNaoLidas(Grupo g) {
+		// Obtem a lista de mensagens do grupo
 		ArrayList<Mensagem> mensagens = g.getMensagens();
+
+		// Retorna zero se a lista de mensagens nao tiver sido inicializada
 		if (mensagens == null) return 0;
+
+		// Inicializa o contador de mensagens nao lidas
 		int contador = 0;
 
+		// Inicio do bloco for
 		for (Mensagem m : mensagens) {
+			// Verifica se a autoria da mensagem atual eh de outro usuario
 			boolean ehUsuario = (m.getAutor() != null && m.getAutor().equals(Usuario.getUsuario().getNome()));
-			if (!ehUsuario && !m.isRead()) contador++;
-		}
 
+			// Incrementa o contador sempre que encontrar uma mensagem que nao foi escrita e lida pelo usuario
+			if (!ehUsuario && !m.isRead()) contador++;
+		} // Fim do bloco for
+
+		// Retorna a quantidade calculada
 		return contador;
 	}
 }

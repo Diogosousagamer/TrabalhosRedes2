@@ -114,28 +114,41 @@ public class clienteUDP extends Thread {
 		}
 		catch (IOException e) {
 			// Em caso de excecao, sinaliza que a escuta foi encerrada abruptamente
-			// e emite a pilha de execucao para rastrear a sua origem
 			System.err.println("Escuta UDP encerrada abruptamente.");
-			e.printStackTrace();
 		} // Fim do bloco try/catch
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: fecharConexao
+   * Funcao: fecha a conexao com o servidor UDP
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
 	public void fecharConexao() {
+		// Inicio do bloco try/catch
 		try {
+			// Interrompe a Thread
 			this.interrupt();
 
+			// Inicio do bloco if
 			if (escuta != null && !escuta.isClosed()) {
+				// Fecha a escuta se ela nao for nula e nao tiver sido fechada
 				escuta.close();
 				escuta = null;
-			}
+			} // Fim do bloco if
 
+			// Inicio do bloco if
 			if (conexaoCliente != null && !conexaoCliente.isClosed()) {
+				// Fecha a conexao de envio caso ela nao for nula e nao tiver sido fechada
 				conexaoCliente.close();
 				conexaoCliente = null;
-			}
+			} // Fim do bloco if
 		}
 		catch (Exception e) {
+			// Em caso de excecao, emite a pilha de execucao para rastrear a sua origem
 			e.printStackTrace();
-		}
+		} // Fim do bloco try/catch
 	}
 }

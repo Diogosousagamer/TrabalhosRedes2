@@ -15,6 +15,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import controller.*;
 
@@ -41,6 +42,10 @@ public class Principal extends Application {
 
    	// Carrega a fonte dentro da interface do programa
 		Font.loadFont(getClass().getResourceAsStream("/util/VCR_OSD_MONO_1.001.ttf"), 18);
+
+		// Configura o icone da janela
+		Image icone = new Image(getClass().getResource("/img/play.png").toExternalForm());
+		stage.getIcons().add(icone);
 
     // Configura a janela
 		stage.setScene(scene);

@@ -156,6 +156,15 @@ public class ProcessaMensagem extends Thread {
 		} // Fim do bloco try/catch
 	}
 
+	/*
+   * ***************************************************************
+   * Metodo: enviarMensagem
+   * Funcao: envia uma mensagem para o cliente
+   * Parametros: String ipUsuario - endereco IP da maquina do cliente destinatario
+                 APDU apdu - APDU a ser transmitida
+   * Retorno: void
+   ****************************************************************/
+
 	private void enviarMensagem(String ipUsuario, APDU apdu) {
 		// Inicio do bloco try/catch
 		try {
@@ -170,6 +179,7 @@ public class ProcessaMensagem extends Thread {
 			socket.send(pacote);
 		}
 		catch (IOException e) {
+			// Em caso de excecao, emite a pilha de execucao para rastrear a sua origem
 			e.printStackTrace();
 		} // Fim do bloco try/catch
 	}

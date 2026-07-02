@@ -76,53 +76,91 @@ public class clienteTCP extends Thread {
 		} // Fim do bloco try/catch
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: conectar
+   * Funcao: solicita conexao com o servidor TCP
+   * Parametros: APDU apdu - apdu de solicitacao (REGISTER)
+   * Retorno: boolean
+   ****************************************************************/
+
 	public boolean conectar(APDU apdu) {
+		// Inicio do bloco try/catch
 		try {
+			// Inicio do bloco if
 			if (entrada == null || saida == null) {
+				// Encerra a conexao se o fluxo de entrada/saida nao for inicializado
+				// e retorna falso
 				System.err.println("Erro de conexao.");
 				fecharConexao();
 				return false;
-			}
+			} // Fim do bloco if
 
+			// Inicio do bloco if
+			// Se a APDU nao for nula e de fato, for uma solicitacao de login
 			if (apdu != null && apdu.getTipo().equals("REGISTER")) {
+				// Extrai a mensagem da APDU
 				String msg = (apdu != null) ? apdu.enviarMensagem() : null;
 
+        // Inicio do bloco if
+        // Se a mensagem nao for nula
 				if (msg != null) {
+					// Escreve a mensagem no fluxo de saida
 					saida.writeObject(msg);
 					saida.flush();
 
+          // Retorna o resultado emitido pelo servidor TCP (consulte
+				  // a Thread BancoClientes na pasta do Servidor)
 					return entrada.readBoolean();
-				}
-			}
+				} // Fim do bloco if
+			} // Fim do bloco if
 		}
 		catch (IOException e) {
+			// Em caso de excecao, emite a pilha de execucao para rastrear a sua origem
 			e.printStackTrace();
+
+			// Retorna falso
 			return false;
 		}
 
+		// Retorna falso por padrao
 		return false;
 	}
 
+  /*
+   * ***************************************************************
+   * Metodo: fecharConexao
+   * Funcao: fecha a conexao com o servidor TCP
+   * Parametros: nenhum parametro foi definido para esta funcao
+   * Retorno: void
+   ****************************************************************/
+
 	public void fecharConexao() {
+		// Inicio do bloco try/catch
 		try {
+			// Interrompe a Thread
 			this.interrupt();
 
+			// Inicio do bloco if
 			if (entrada != null) {
+				// Fecha o fluxo de entrada se ele nao for nulo
 				entrada.close();
 				entrada = null;
-			}
+			} // Fim do bloco if
 
+			// Inicio do bloco if
 			if (saida != null) {
+				// Fecha o fluxo de saida se ele nao for nulo
 				saida.close();
 				saida = null;
-			}
+			} // Fim do bloco if
 
-			if (s != null && !s.isClosed()) {
-				s.close();
-			}
+			// Interrompe a conexao se ela nao tiver sido fechada
+			if (s != null && !s.isClosed()) s.close();
 		}
 		catch (Exception e) {
+			// Em caso de excecao, emite a pilha de execucao para rastrear a sua origem
 			e.printStackTrace();
-		}
+		} // Fim do bloco try/catch
 	}
 }

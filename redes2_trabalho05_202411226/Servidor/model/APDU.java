@@ -114,20 +114,26 @@ public class APDU {
    ****************************************************************/
 
 	public String enviarMensagem() {
+		// Inicio do bloco if/else
 		if (this.grupo == null) {
+			// Retorna uma mensagem codificada sem o grupo (APDU REGISTER)
 			return codificarMensagem(this.tipo, this.usuario);
 		}
 		else {
+			// Inicio do bloco if/else if/else
 			if (this.mensagem == null && this.tempoEnvio == null) {
+				// Retorna uma mensagem codificada sem mensagem e tempo de envio (APDUs JOIN e LEAVE)
 				return codificarMensagem(this.tipo, this.usuario, this.grupo);
 			}
 			else if (this.status == null) {
+				// Retorna uma mensagem sem status (APDU SEND)
 				return codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio());
 			}
 			else {
+				// Retorna uma mensagem com todos os itens (APDU CONFIRM)	
 				return codificarMensagem(this.tipo, this.usuario, this.grupo, this.mensagem, formatarTempoEnvio(), this.status);
-			}
-		}
+			} // Fim do bloco if/else if/else
+		} // Fim do bloco if/else
 	}
 
 	/*
