@@ -16,6 +16,7 @@ O grafo exibido é gerado a partir de um arquivo backbone.txt, que informa a qua
 * A primeira linha corresponde à quantidade de nós do grafo;
 * As demais linhas correspondem às arestas do grafo com os seus respectivos custos (ex: A,B,2); os componentes da aresta devem estar separados por vírgula;
 * Os roteadores são especificados por caracteres.
+
 ![INUNDACAO2][inundacaobackbone]
 
 ## Trabalho 2 - Roteamento Pelo Caminho Mais Curto
