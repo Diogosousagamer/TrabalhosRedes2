@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 01/07/2026
+* Ultima alteracao.: 02/07/2026
 * Nome.............: BancoGrupos
 * Funcao...........: Classe que gerencia a criacao e manutencao dos grupos.
 					 
