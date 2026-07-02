@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 01/07/2026
+* Ultima alteracao.: 02/07/2026
 * Nome.............: Usuario
 * Funcao...........: Classe que controla as operacoes dos usuarios do aplicativo.
                      
@@ -49,10 +49,22 @@ public class Usuario {
   public static boolean conectarUsuario(String nome, String ipServidor) {
     // Inicio do bloco try/catch
     try {
-      // Inicializa o usuario, inicia os protocolos e retorna verdadeiro
+      // Inicializa o usuario e inicia os protocolos
       usuario = new Usuario(nome, ipServidor);
       usuario.iniciarProtocolos();
-      return usuario.getTCP().conectar(new APDU("REGISTER", usuario.getNome()));
+
+      // Envia uma APDU solicitando conexao
+      boolean sucesso =  usuario.getTCP().conectar(new APDU("REGISTER", usuario.getNome()));
+
+      // Inicio do bloco if
+      if (!sucesso && usuario != null) {
+        // Encerra os protocolos se a conexao nao for bem sucedida (para evitar BindException)
+        // e a instancia estatica do usuario nao for nula 
+        usuario.encerrarProtoclos();
+      } // Fim do bloco if
+
+      // Retorna o resultado da conexao (sucesso ou fracasso)
+      return sucesso;
     }
     catch (Exception e) {
       // Em caso de excecao, notifica erro e retorna falso
@@ -77,6 +89,16 @@ public class Usuario {
     udp.setDaemon(true); 
     tcp.start();
     udp.start();  
+  }
+
+  private void encerrarProtocolos() {
+    if (tcp != null) {
+      tcp.fecharConexao();
+    }
+
+    if (udp != null) {
+      udp.fecharConexao();
+    }
   }
 
   /*

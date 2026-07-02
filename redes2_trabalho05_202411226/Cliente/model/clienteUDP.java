@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 02/07/2026
 * Nome.............: clienteUDP
 * Funcao...........: Interface do cliente no protocolo UDP.
                      
@@ -20,6 +20,7 @@ public class clienteUDP extends Thread {
 	private ObjectOutputStream saida;
 	final int PORTA = 6789;
 	private DatagramSocket conexaoCliente;
+	private DatagramSocket escuta;
 	private InetAddress ipServidor;
 
   /*
@@ -90,18 +91,18 @@ public class clienteUDP extends Thread {
 		try {		
 			// Inicializa uma socket de datagramas (servico sem conexoes) para se comunicar
 			// com o servidor UDP
-			DatagramSocket socket = new DatagramSocket(6790);
+			escuta = new DatagramSocket(6790);
 			System.out.println("Cliente UDP escutando na porta 6790.");
 
       // Inicio do bloco while
-      // Enquanto a Thread estiver ativa
-			while (true) {
+      // Enquanto a Thread nao for interrompida e a escuta nao for fechada
+			while (!Thread.currentThread().isInterrupted() && !escuta.isClosed()) {
 				// Cria um vetor de bytes para receber uma nova mensagem
 				byte[] entrada = new byte[1024];
 
 				// Recebe um datagrama encaminhado pela socket
 				DatagramPacket datagramaRecebido = new DatagramPacket(entrada, entrada.length);
-				socket.receive(datagramaRecebido);
+				escuta.receive(datagramaRecebido);
 
         // Converte o conteudo do datagrama em String
 				String mensagemRecebida = new String(datagramaRecebido.getData(), 0, datagramaRecebido.getLength(), "UTF-8");
@@ -117,5 +118,24 @@ public class clienteUDP extends Thread {
 			System.err.println("Escuta UDP encerrada abruptamente.");
 			e.printStackTrace();
 		} // Fim do bloco try/catch
+	}
+
+	public void fecharConexao() {
+		try {
+			this.interrupt();
+
+			if (escuta != null && !escuta.isClosed()) {
+				escuta.close();
+				escuta = null;
+			}
+
+			if (conexaoCliente != null && !conexaoCliente.isClosed()) {
+				conexaoCliente.close();
+				conexaoCliente = null;
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

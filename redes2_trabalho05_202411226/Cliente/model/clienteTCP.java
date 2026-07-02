@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 10/06/2026
-* Ultima alteracao.: 01/07/2026
+* Ultima alteracao.: 02/07/2026
 * Nome.............: clienteTCP
 * Funcao...........: Interface do cliente no protocolo TCP.
                      
@@ -81,6 +81,7 @@ public class clienteTCP extends Thread {
 		try {
 			if (entrada == null || saida == null) {
 				System.err.println("Erro de conexao.");
+				fecharConexao();
 				return false;
 			}
 
@@ -101,5 +102,28 @@ public class clienteTCP extends Thread {
 		}
 
 		return false;
+	}
+
+	public void fecharConexao() {
+		try {
+			this.interrupt();
+
+			if (entrada != null) {
+				entrada.close();
+				entrada = null;
+			}
+
+			if (saida != null) {
+				saida.close();
+				saida = null;
+			}
+
+			if (s != null && !s.isClosed()) {
+				s.close();
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
