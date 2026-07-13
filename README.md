@@ -77,6 +77,10 @@ OBS: o grafo é direcionado; ou seja, o custo é diferente dependendo da direç�
 
 Este trabalho se trata de um aplicativo de mensagens instantâneas (de maneira similar ao WhatsApp, Telegram etc.) que visa demonstrar o funcionamento dos protocolos TCP e UDP da camada de transporte com base na arquitetura Cliente/Servidor - uma máquina (cliente) que solicita serviços para uma outra máquina (servidor), que se encarregará de executá-los. 
 
+![DSGCHATCLIENTE][cliente1]
+
+![DSGCHATCLIENTE2][cliente2]
+
 O protocolo TCP (Transmission Control Protocol) foca em estabelecer um fluxo de bytes confiável sobre uma inter-rede não confiável. Logo, se trata de um serviço orientado a conexões, usado para operações que exigem maior confiabilidade em detrimento do tempo de execução, como entrar e sair em grupos. Já o protocolo UDP, sendo um serviço sem conexões, prioriza a entrega de segmentos com baixa latência e não realiza nenhum controle de confiabilidade, essencial para o envio e recepção imediatos de mensagens. 
 
 Para garantir o pleno funcionamento do trabalho e conforme exigências do professor, foram implementadas quatro APDUs (Application Protocol Data Unit), responsáveis por transportar dados importantes para garantir o bom funcionamento dos protocolos que sustentam a aplicação:
@@ -85,6 +89,8 @@ Para garantir o pleno funcionamento do trabalho e conforme exigências do profes
 * **LEAVE (usuario, grupo):** enviada quando o usuário deseja sair de um grupo.
 * **SEND (usuario, grupo, mensagem, tempoEnvio):** enviada quando o usuário deseja enviar uma mensagem em um grupo. Ao processá-la, o servidor encaminha a mensagem para todos os outros usuários que fazem parte do grupo.
 * **CONFIRM (usuario, grupo, mensagem, tempoEnvio, status):** APDU extra solicitada pelo professor, serve para confirmar ao autor da mensagem se ela foi enviada (um traço cinza), entregue a todos os membros do grupo (dois traços cinzas), e lida por todos os membros do grupo (dois traços azuis).
+
+![DSGCHATSERVIDOR][servidor]
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [inundacao]: readme-images/Inundacao1.PNG
@@ -98,3 +104,6 @@ Para garantir o pleno funcionamento do trabalho e conforme exigências do profes
 [estadoenlace3]: readme-images/EstadoEnlaceLink.PNG
 [estadoenlace4]: readme-images/EstadoEnlaceRota.PNG
 [estadoenlacebackbone]: readme-images/EstadoEnlaceBackbone.PNG
+[cliente1]: readme-images/DsgChatCliente.PNG
+[cliente2]: readme-images/DsgChatCliente2.PNG
+[servidor]: readme-images/DsgChatServidor.PNG
