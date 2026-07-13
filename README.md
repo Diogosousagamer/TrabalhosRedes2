@@ -105,5 +105,5 @@ Para garantir o pleno funcionamento do trabalho e conforme exigências do profes
 [estadoenlace4]: readme-images/EstadoEnlaceRota.PNG
 [estadoenlacebackbone]: readme-images/EstadoEnlaceBackbone.PNG
 [cliente1]: readme-images/DsgChatCliente.PNG
-[cliente2]: readme-images/DsgChatCliente2.PNG
-[servidor]: readme-images/DsgChatServidor.PNG
+[cliente2]: readme-images/DsgChatCliente2.png
+[servidor]: readme-images/DsgChatServidor.png
