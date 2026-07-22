@@ -92,6 +92,19 @@ Para garantir o pleno funcionamento do trabalho e conforme exigências do profes
 
 ![DSGCHAT3][servidor]
 
+# Glossário - Redes de Computadores 2
+
+Uma rede de computadores refere-se a um conjunto de computadores independentes interconectados por uma tecnologia (fibra óptica, ondas de rádio, etc), possibilitando a troca de informações entre si. Ao contrário de um sistema distribuído, onde os computadores compõem um único sistema, a rede de computadores não possui essa ideia de coletividade, pois as máquinas realizam operações completamente distintas. 
+
+Segue-se uma lista de conceitos necessários para entender os trabalhos:
+
+* **Camada de rede:** camada responsável por gerenciar as operações da sub-rede, estabelecer as "rotas" dos pacotes de uma origem específica até o destino final, controlar o congestionamento de transmissão de pacotes simultâneos e a qualidade do serviço fornecido, e mitigar problemas de transferência de uma rede pra outra.
+* **Roteamento:** parte do software da camada de rede que foca em processar e atualizar as tabelas de roteamento, possibilitando o encaminhamento do pacote para o destino final.
+* **Encaminhamento:** responsável por determinar as linhas de saída a serem usadas para enviar o pacote para o destino final.
+* **Pacote:** unidade de dados que carrega as informações a serem encaminhadas para o destino final.
+* **Princípio da otimização:** Se o roteador J estiver entre I e K (um caminho ótimo), então o caminho de J à K também será considerado ótimo.
+* **Árvore de escoamento:** árvore que mostra o conjunto de rotas consideradas ótimas a serem seguidas da origem até o destino, tendo como raíz o destino.
+
 <!-- MARKDOWN LINKS & IMAGES -->
 [inundacao]: readme-images/Inundacao1.PNG
 [inundacaobackbone]: readme-images/InundacaoBackbone.PNG
