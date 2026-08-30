@@ -2,7 +2,7 @@
 * Autor............: Diogo Oliveira de Sousa
 * Matricula........: 202411226
 * Inicio...........: 15/03/2026
-* Ultima alteracao.: 22/03/2026
+* Ultima alteracao.: 30/08/2026
 * Nome.............: Roteador
 * Funcao...........: Classe que gerencia as operacoes de cada roteador.
                      
@@ -11,6 +11,7 @@
 package model;
 
 import java.util.ArrayList;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class Roteador {
@@ -66,33 +67,16 @@ public class Roteador {
     vizinhos.add(v);
   }
 
-  /*
-   * ***************************************************************
-   * Metodo: alterarVizinho
-   * Funcao: substitui o vizinho por uma nova instancia deste caso ele for
-             alterado externamente
-   * Parametros: Roteador v - roteador vizinho a ser alterado/substituido
-   * Retorno: void
-   ****************************************************************/
+  public void alterarCorRoteador(String cor) {
+    no.setStroke(Color.web(cor));
+  }
 
-  public void alterarVizinho(Roteador v) {
-    // Inicio do bloco for
-    // Percorremos toda a lista de vizinhos ate achar a instancia correspondente
-    // ao vizinho passado como parametro
-    for (int i = 0; i < vizinhos.size(); i++) {
-      // Guardamos o vizinho localizado na posicao atual em uma variavel
-      Roteador r = vizinhos.get(i);
+  public void bloquearRoteador(boolean bloqueio) {
+    no.setMouseTransparent(bloqueio);
+  }
 
-      // Inicio do bloco if
-      if (r.getNome().equals(v.getNome())) {
-        // Troca o vizinho da posicao atual pelo vizinho passado como parametro
-        // se eles possuirem o mesmo rotulo, efetuando assim a modificacao
-        vizinhos.set(i, v);
-
-        // Interrompe o laco
-        break;
-      } // Fim do bloco if
-    } // Fim do bloco for
+  public void redefinirCorRoteador() {
+    no.setStroke(Color.BLACK);
   }
 
   /*
